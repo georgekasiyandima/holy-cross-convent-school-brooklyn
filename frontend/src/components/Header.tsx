@@ -71,7 +71,7 @@ const navigationItems = [
   { name: 'School Board', path: '/school-board' },
   { name: 'Staff', path: '/staff' },
   { name: 'Info', path: '/info' },
-  { name: 'Forms', path: '/forms' },
+  { name: 'Forms & Fees', path: '/forms' },
   { name: 'Photos', path: '/photos' },
   { name: 'Links', path: '/links' },
   { name: 'Music', path: '/music' },

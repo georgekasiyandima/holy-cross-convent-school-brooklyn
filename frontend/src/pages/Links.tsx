@@ -1,152 +1,116 @@
 import React from 'react';
-import { Container, Typography, Box, Card, CardContent, Button, Divider, List, ListItem, ListItemIcon, ListItemText, useTheme, Paper, Stack } from '@mui/material';
-import { PictureAsPdf, Download, HelpOutline, Email, Phone } from '@mui/icons-material';
+import { Container, Typography, Box, Card, Divider, Link as MuiLink } from '@mui/material';
+import { Language, Church, LocalHospital, Public, Radio, AccountBalance } from '@mui/icons-material';
 
-const resources = [
+const externalLinks = [
   {
-    title: 'Indemnity Form',
-    file: '', // Add file path when available
-    description: 'Required for all students. Download, sign, and return to the school office.',
+    name: 'Holy Cross Switzerland',
+    url: 'https://www.holycross.ch/',
+    icon: <Language sx={{ color: '#1a237e', fontSize: 40 }} />,
+    description: 'International Holy Cross Sisters congregation.'
   },
   {
-    title: 'School Fees 2023',
-    file: '',
-    description: 'Current fee structure for the academic year.',
+    name: 'Our Lady of the Assumption Parish / Milnerton',
+    url: 'https://www.milnertoncatholicparish.org.za/',
+    icon: <Church sx={{ color: '#ffd700', fontSize: 40 }} />,
+    description: 'Our local parish community.'
   },
   {
-    title: 'Code of Conduct',
-    file: '',
-    description: 'Guidelines and expectations for student behavior.',
+    name: 'H.O.P.E Project Tygerberg Hospital',
+    url: 'https://www.tygerberghospital.org.za/hope/',
+    icon: <LocalHospital sx={{ color: '#1a237e', fontSize: 40 }} />,
+    description: 'H.O.P.E Project at Tygerberg Hospital.'
   },
   {
-    title: 'School Uniform',
-    file: '',
-    description: 'Uniform requirements and guidelines.',
+    name: 'The Vatican',
+    url: 'https://www.vatican.va/',
+    icon: <Public sx={{ color: '#ffd700', fontSize: 40 }} />,
+    description: 'Official website of the Holy See.'
   },
   {
-    title: 'General School Policy',
-    file: '',
-    description: 'Comprehensive school policies and procedures.',
+    name: 'Radio Veritas South Africa',
+    url: 'https://www.radioveritas.co.za/',
+    icon: <Radio sx={{ color: '#1a237e', fontSize: 40 }} />,
+    description: 'Catholic radio station for South Africa.'
   },
   {
-    title: 'Admissions Policy',
-    file: '',
-    description: 'Criteria and process for student admissions.',
-  },
-  {
-    title: 'School Transport',
-    file: '',
-    description: 'Information about school transport options.',
+    name: 'Archdiocese of Cape Town',
+    url: 'https://adct.org.za/',
+    icon: <AccountBalance sx={{ color: '#ffd700', fontSize: 40 }} />,
+    description: 'Catholic Archdiocese of Cape Town.'
   },
 ];
 
 const Links: React.FC = () => {
-  const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>
-          Documents, Forms & School Fees
+          Catholic & Community Links
         </Typography>
         <Divider sx={{ bgcolor: '#ffd700', height: 4, width: 80, mx: 'auto', mb: 3 }} />
         <Typography variant="h6" sx={{ color: '#555', maxWidth: 700, mx: 'auto', mb: 2 }}>
-          Download important school documents and forms. All files are in PDF format. If you need help, please contact the school office.
+          Explore our wider Catholic and community network. These links connect you to our parish, the international Holy Cross community, and other Catholic resources.
         </Typography>
       </Box>
 
-      {/* Resource List */}
-      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, mb: 6, background: 'linear-gradient(135deg, #f5f7fa 0%, #fffde7 100%)' }}>
-        <List>
-          {resources.map((res, idx) => (
-            <ListItem key={res.title} sx={{ mb: 2, borderRadius: 2, boxShadow: 1, background: 'white', flexWrap: 'wrap' }}>
-              <ListItemIcon>
-                <PictureAsPdf sx={{ color: '#e53935', fontSize: 36 }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={<Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>{res.title}</Typography>}
-                secondary={<Typography variant="body2" sx={{ color: '#555' }}>{res.description}</Typography>}
-              />
-              {res.file ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Download />}
-                  href={res.file}
-                  target="_blank"
-                  sx={{
-                    backgroundColor: '#ffd700',
-                    color: '#1a237e',
-                    fontWeight: 700,
-                    ml: 2,
-                    '&:hover': { backgroundColor: '#ffed4e' },
-                  }}
-                >
-                  Download
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Download />}
-                  disabled
-                  sx={{
-                    backgroundColor: '#ccc',
-                    color: '#666',
-                    fontWeight: 700,
-                    ml: 2,
-                    '&:hover': { backgroundColor: '#ccc' },
-                  }}
-                >
-                  Download
-                </Button>
-              )}
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-
-      {/* Contact/Help Section */}
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Stack direction="column" spacing={2} alignItems="center">
-          <HelpOutline sx={{ color: '#ffd700', fontSize: 40 }} />
-          <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>
-            Need Assistance?
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#555', maxWidth: 600 }}>
-            If you have any queries, please phone the school at <b>(021) 511 4337</b> and ask for assistance or a meeting with the school's management team.
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#555', maxWidth: 600 }}>
-            To apply for your child, please send an email to: <b>admin@holycrossbrooklyn.co.za</b><br/>
-            The application forms will then be emailed to you.
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<Phone />}
-              href="tel:0215114337"
-              sx={{ borderColor: '#ffd700', color: '#1a237e', fontWeight: 700 }}
+      {/* Links Grid */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+          gap: 4,
+          mb: 6,
+        }}
+      >
+        {externalLinks.map((link) => (
+          <Card key={link.name} sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            py: 4,
+            px: 2,
+            borderLeft: `6px solid ${link.icon.props.sx.color}`,
+            boxShadow: 2,
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #fffde7 100%)',
+            transition: 'transform 0.2s',
+            '&:hover': {
+              transform: 'translateY(-4px) scale(1.03)',
+              boxShadow: 6,
+            },
+          }}>
+            <Box sx={{ mb: 2 }}>{link.icon}</Box>
+            <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
+              {link.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#555', mb: 2 }}>
+              {link.description}
+            </Typography>
+            <MuiLink
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="none"
+              sx={{
+                mt: 1,
+                fontWeight: 700,
+                color: '#ffd700',
+                fontSize: '1.1rem',
+                '&:hover': { color: '#1a237e', textDecoration: 'underline' },
+              }}
             >
-              Call School
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<Email />}
-              href="mailto:admin@holycrossbrooklyn.co.za"
-              sx={{ borderColor: '#ffd700', color: '#1a237e', fontWeight: 700 }}
-            >
-              Email Admin
-            </Button>
-          </Stack>
-        </Stack>
+              Visit Site
+            </MuiLink>
+          </Card>
+        ))}
       </Box>
 
       <Divider sx={{ my: 4 }} />
       <Box sx={{ textAlign: 'center', color: '#aaa', mt: 4 }}>
         <Typography variant="body2">
-          <em>More resources and downloadable documents will be added as they become available.</em>
+          <em>More links and resources will be added as our network grows.</em>
         </Typography>
       </Box>
     </Container>
