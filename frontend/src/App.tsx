@@ -14,6 +14,7 @@ import Links from './pages/Links';
 import ExtraMural from './pages/ExtraMural';
 import FormsFees from './pages/FormsFees';
 import News from './pages/News';
+import Music from './pages/Music';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -97,6 +98,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/links" element={<Links />} />
         <Route path="/forms" element={<FormsFees />} />
         <Route path="/extra-mural" element={<ExtraMural />} />
+        <Route path="/music" element={<Music />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>
