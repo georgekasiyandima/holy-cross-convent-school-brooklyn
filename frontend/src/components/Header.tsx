@@ -16,7 +16,9 @@ import {
   styled
 } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
-import schoolLogo from '../assets/Holy-Cross-500x321 logo.svg';
+
+// Logo path constant
+const schoolLogo = '/HCLOGO1.png';
 
 // Styled components for custom styling
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
