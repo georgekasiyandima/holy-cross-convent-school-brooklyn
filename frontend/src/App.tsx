@@ -13,6 +13,7 @@ import Staff from './pages/Staff';
 import Links from './pages/Links';
 import ExtraMural from './pages/ExtraMural';
 import FormsFees from './pages/FormsFees';
+import News from './pages/News';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -87,6 +88,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/photos" element={<Gallery />} />
         <Route path="/history" element={<History />} />
+        <Route path="/news" element={<News />} />
         <Route path="/spiritual" element={<Spiritual />} />
         <Route path="/info" element={<Info />} />
         <Route path="/events" element={<Events />} />
