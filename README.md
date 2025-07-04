@@ -1,18 +1,20 @@
 # Holy Cross Convent School Brooklyn
 
-A modern web application for Holy Cross Convent School Brooklyn, featuring a beautiful React frontend with Material-UI and a TypeScript Express backend.
+A modern, full-stack web application for Holy Cross Convent School Brooklyn, featuring a beautiful React frontend with Material-UI v7 and a TypeScript Express backend.
 
 ## 🏫 About
 
-Holy Cross Convent School Brooklyn is a private Catholic school committed to nurturing excellence, building character, and inspiring faith in students from Kindergarten through 12th grade.
+Holy Cross Convent School Brooklyn is a private Catholic primary school committed to nurturing excellence, building character, and inspiring faith in students from Grade 0 through Grade 7. Located in Brooklyn, Cape Town, our school provides holistic Christian education that nurtures both the mind and the soul.
 
 ## 🚀 Features
 
-### Frontend (React + Material-UI)
+### Frontend (React + Material-UI v7)
 - **Modern UI Design**: Beautiful, responsive interface with school-themed colors (navy blue and gold)
-- **Material-UI Components**: Professional design system with consistent styling
-- **School Information**: Comprehensive display of school programs, events, and contact information
+- **Material-UI v7 Components**: Latest design system with consistent styling and improved performance
+- **Comprehensive Pages**: Home, History, Events, Gallery, School Board, Info, Spiritual, and more
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Interactive Elements**: Lightbox gallery, event filtering, navigation drawer
+- **Accessibility**: WCAG compliant with proper semantic markup
 
 ### Backend (Express + TypeScript)
 - **RESTful API**: Clean, well-structured endpoints for school data
@@ -26,10 +28,23 @@ Holy Cross Convent School Brooklyn is a private Catholic school committed to nur
 Holy Cross Convent School Brooklyn/
 ├── frontend/                 # React application
 │   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── Header.tsx   # Navigation header
+│   │   │   └── Layout.tsx   # Page layout wrapper
+│   │   ├── pages/           # Page components
+│   │   │   ├── Home.tsx     # Landing page
+│   │   │   ├── Gallery.tsx  # Photo gallery
+│   │   │   ├── History.tsx  # School history
+│   │   │   ├── Events.tsx   # School events
+│   │   │   ├── SchoolBoard.tsx # Board members
+│   │   │   ├── Info.tsx     # General information
+│   │   │   └── Spiritual.tsx # Spiritual life
+│   │   ├── assets/          # Images and static files
 │   │   ├── App.tsx          # Main application component
-│   │   └── ...
+│   │   └── index.tsx        # Application entry point
+│   ├── public/              # Public assets and images
 │   ├── package.json
-│   └── ...
+│   └── tsconfig.json
 ├── backend/                  # Express server
 │   ├── src/
 │   │   └── server.ts        # Main server file
@@ -42,7 +57,7 @@ Holy Cross Convent School Brooklyn/
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
-- Node.js (v14 or higher)
+- Node.js (v16 or higher)
 - npm or yarn
 
 ### Frontend Setup
@@ -118,10 +133,20 @@ This project is licensed under the ISC License.
 ## 📞 Contact
 
 **Holy Cross Convent School Brooklyn**
-- Address: 123 School Street, Brooklyn, NY 11201
-- Phone: (555) 123-4567
-- Email: info@holycrossbrooklyn.edu
+- **Address**: 162 Koeberg Road, Brooklyn, Cape Town, 7405 South Africa
+- **Phone**: (021) 511 4337
+- **Fax**: (021) 511 9690
+- **Email**: info@holycrossbrooklyn.edu
+
+### School Information
+- **PBO Number**: 930011798
+- **EMIS Number**: 0103000810
+- **School Reg No.**: 13/3/1/51
+- **Accreditation**: Umalusi Accredited
+- **Grades**: Primary School (Grade 0 - Grade 7)
 
 ---
 
-*Built with ❤️ for Holy Cross Convent School Brooklyn* 
+*Built with ❤️ for Holy Cross Convent School Brooklyn*
+
+**Motto**: "Nurturing Excellence, Building Character, Inspiring Faith" 

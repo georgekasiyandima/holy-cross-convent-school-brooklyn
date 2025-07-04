@@ -6,6 +6,9 @@ import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import History from './pages/History';
 import Spiritual from './pages/Spiritual';
+import Info from './pages/Info';
+import Events from './pages/Events';
+import SchoolBoard from './pages/SchoolBoard';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -81,6 +84,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/photos" element={<Gallery />} />
         <Route path="/history" element={<History />} />
         <Route path="/spiritual" element={<Spiritual />} />
+        <Route path="/info" element={<Info />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/school-board" element={<SchoolBoard />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>

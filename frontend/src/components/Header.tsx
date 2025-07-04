@@ -66,6 +66,7 @@ const NavButton = styled(Button)(({ theme }) => ({
 const navigationItems = [
   { name: 'Home', path: '/' },
   { name: 'History', path: '/history' },
+  { name: 'Events', path: '/events' },
   { name: 'News', path: '/news' },
   { name: 'School Board', path: '/school-board' },
   { name: 'Staff', path: '/staff' },
