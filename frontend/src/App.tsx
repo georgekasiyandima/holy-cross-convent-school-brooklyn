@@ -9,6 +9,7 @@ import Spiritual from './pages/Spiritual';
 import Info from './pages/Info';
 import Events from './pages/Events';
 import SchoolBoard from './pages/SchoolBoard';
+import Staff from './pages/Staff';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -87,6 +88,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/info" element={<Info />} />
         <Route path="/events" element={<Events />} />
         <Route path="/school-board" element={<SchoolBoard />} />
+        <Route path="/staff" element={<Staff />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>
