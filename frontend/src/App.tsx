@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/Layout';
+import PerformanceMonitor from './components/PerformanceMonitor';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import History from './pages/History';
@@ -111,12 +113,30 @@ const NavigationWrapper: React.FC = () => {
 };
 
 function App() {
+  // Register service worker for offline functionality
+  React.useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <NavigationWrapper />
-      </Router>
+      <HelmetProvider>
+        <PerformanceMonitor />
+        <Router>
+          <NavigationWrapper />
+        </Router>
+      </HelmetProvider>
     </ThemeProvider>
   );
 }

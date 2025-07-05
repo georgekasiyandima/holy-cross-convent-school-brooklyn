@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
+import SEO from '../components/SEO';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -174,6 +175,11 @@ const Home: React.FC = () => {
 
   return (
     <>
+      <SEO
+        title="Holy Cross Convent School - Brooklyn, Cape Town"
+        description="Holy Cross Convent School is a prestigious Catholic school in Brooklyn, Cape Town, offering quality education, character development, and spiritual growth."
+        keywords="Holy Cross Convent School, Brooklyn, Cape Town, Catholic school, education, character development, spiritual growth"
+      />
       {/* Enhanced Hero Section */}
       <HeroSection>
         <Container maxWidth="lg">
