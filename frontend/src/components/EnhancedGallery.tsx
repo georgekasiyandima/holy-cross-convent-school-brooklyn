@@ -23,8 +23,7 @@ import {
   Search as SearchIcon,
   Close as CloseIcon,
   NavigateBefore as NavigateBeforeIcon,
-  NavigateNext as NavigateNextIcon,
-  Facebook
+  NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { assetManager, Asset, AssetCategory } from '../utils/assetManager';

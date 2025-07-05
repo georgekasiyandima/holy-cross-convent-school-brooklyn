@@ -94,6 +94,33 @@ export const staffAssets: Asset[] = [
     description: 'Father Theodosius',
     size: '8.7KB',
     dimensions: '46px'
+  },
+  {
+    id: 'principal',
+    filename: 'Pricipal.png',
+    path: '/Pricipal.png',
+    alt: 'School Principal',
+    category: 'staff',
+    description: 'School Principal',
+    size: '279KB'
+  },
+  {
+    id: 'teachers-08',
+    filename: 'HCTEACHERS08.jpg',
+    path: '/HCTEACHERS08.jpg',
+    alt: 'Teachers Group Photo 2025',
+    category: 'staff',
+    description: 'Teachers group photo 2025',
+    size: '346KB'
+  },
+  {
+    id: 'teachers-34',
+    filename: 'HCTEACHERS 34.jpg',
+    path: '/HCTEACHERS 34.jpg',
+    alt: 'Teachers Group Photo 2025',
+    category: 'staff',
+    description: 'Teachers group photo 2025',
+    size: '303KB'
   }
 ];
 
@@ -195,93 +222,84 @@ export const computerLabAssets: Asset[] = [
     alt: 'Computer Lab Overview',
     category: 'computer-lab',
     description: 'Main computer lab overview',
-    size: '200KB',
-    dimensions: '803px'
+    size: '200KB'
   },
   {
     id: 'computer-lab-01',
     filename: 'COMPUTERLAB01.jpg',
     path: '/COMPUTERLAB01.jpg',
-    alt: 'Computer Lab View 1',
+    alt: 'Computer Lab Activity 1',
     category: 'computer-lab',
-    description: 'Computer lab view 1',
-    size: '224KB',
-    dimensions: '761px'
+    description: 'Computer lab activity session',
+    size: '224KB'
   },
   {
     id: 'computer-lab-02',
     filename: 'COMPUTERLAB02.jpg',
     path: '/COMPUTERLAB02.jpg',
-    alt: 'Computer Lab View 2',
+    alt: 'Computer Lab Activity 2',
     category: 'computer-lab',
-    description: 'Computer lab view 2',
-    size: '211KB',
-    dimensions: '774px'
+    description: 'Computer lab activity session',
+    size: '211KB'
   },
   {
     id: 'computer-lab-03',
     filename: 'COMPUTERLAB03.jpg',
     path: '/COMPUTERLAB03.jpg',
-    alt: 'Computer Lab View 3',
+    alt: 'Computer Lab Activity 3',
     category: 'computer-lab',
-    description: 'Computer lab view 3',
-    size: '200KB',
-    dimensions: '739px'
+    description: 'Computer lab activity session',
+    size: '200KB'
   },
   {
     id: 'computer-lab-04',
     filename: 'COMPUTERLAB04.jpg',
     path: '/COMPUTERLAB04.jpg',
-    alt: 'Computer Lab View 4',
+    alt: 'Computer Lab Activity 4',
     category: 'computer-lab',
-    description: 'Computer lab view 4',
-    size: '203KB',
-    dimensions: '753px'
+    description: 'Computer lab activity session',
+    size: '203KB'
   },
   {
     id: 'computer-lab-05',
     filename: 'COMPUTERLAB05.jpg',
     path: '/COMPUTERLAB05.jpg',
-    alt: 'Computer Lab View 5',
+    alt: 'Computer Lab Activity 5',
     category: 'computer-lab',
-    description: 'Computer lab view 5',
-    size: '187KB',
-    dimensions: '697px'
+    description: 'Computer lab activity session',
+    size: '187KB'
   },
   {
     id: 'computer-lab-06',
     filename: 'COMPUTERLAB06.jpg',
     path: '/COMPUTERLAB06.jpg',
-    alt: 'Computer Lab View 6',
+    alt: 'Computer Lab Activity 6',
     category: 'computer-lab',
-    description: 'Computer lab view 6',
-    size: '185KB',
-    dimensions: '724px'
+    description: 'Computer lab activity session',
+    size: '185KB'
   },
   {
     id: 'computer-lab-07',
     filename: 'COMPUTERLAB07.jpg',
     path: '/COMPUTERLAB07.jpg',
-    alt: 'Computer Lab View 7',
+    alt: 'Computer Lab Activity 7',
     category: 'computer-lab',
-    description: 'Computer lab view 7',
-    size: '194KB',
-    dimensions: '785px'
+    description: 'Computer lab activity session',
+    size: '194KB'
   },
   {
     id: 'computer-lab-08',
     filename: 'COMPUTERLAB08.jpg',
     path: '/COMPUTERLAB08.jpg',
-    alt: 'Computer Lab View 8',
+    alt: 'Computer Lab Activity 8',
     category: 'computer-lab',
-    description: 'Computer lab view 8',
-    size: '219KB',
-    dimensions: '797px'
+    description: 'Computer lab activity session',
+    size: '219KB'
   }
 ];
 
 /**
- * Book Day event images
+ * Book Day events images
  */
 export const bookDayAssets: Asset[] = [
   {
@@ -290,114 +308,103 @@ export const bookDayAssets: Asset[] = [
     path: '/BOOKDAY.jpg',
     alt: 'Book Day Main Event',
     category: 'book-day',
-    description: 'Main book day event photo',
-    size: '794KB',
-    dimensions: '3468px'
+    description: 'Main book day celebration',
+    size: '794KB'
   },
   {
     id: 'book-day-01',
     filename: 'BOOKDAY01.jpg',
     path: '/BOOKDAY01.jpg',
-    alt: 'Book Day Event 1',
+    alt: 'Book Day Activity 1',
     category: 'book-day',
-    description: 'Book day event photo 1',
-    size: '835KB',
-    dimensions: '3709px'
+    description: 'Book day reading activity',
+    size: '835KB'
   },
   {
     id: 'book-day-02',
     filename: 'BOOKDAY02.jpg',
     path: '/BOOKDAY02.jpg',
-    alt: 'Book Day Event 2',
+    alt: 'Book Day Activity 2',
     category: 'book-day',
-    description: 'Book day event photo 2',
-    size: '626KB',
-    dimensions: '2724px'
+    description: 'Book day reading activity',
+    size: '626KB'
   },
   {
     id: 'book-day-03',
     filename: 'BOOKDAY03.jpg',
     path: '/BOOKDAY03.jpg',
-    alt: 'Book Day Event 3',
+    alt: 'Book Day Activity 3',
     category: 'book-day',
-    description: 'Book day event photo 3',
-    size: '589KB',
-    dimensions: '2695px'
+    description: 'Book day reading activity',
+    size: '589KB'
   },
   {
     id: 'book-day-04',
     filename: 'BOOKDAY04.jpg',
     path: '/BOOKDAY04.jpg',
-    alt: 'Book Day Event 4',
+    alt: 'Book Day Activity 4',
     category: 'book-day',
-    description: 'Book day event photo 4',
-    size: '563KB',
-    dimensions: '2520px'
+    description: 'Book day reading activity',
+    size: '563KB'
   },
   {
     id: 'book-day-05',
     filename: 'BOOKDAY05.jpg',
     path: '/BOOKDAY05.jpg',
-    alt: 'Book Day Event 5',
+    alt: 'Book Day Activity 5',
     category: 'book-day',
-    description: 'Book day event photo 5',
-    size: '679KB',
-    dimensions: '3101px'
+    description: 'Book day reading activity',
+    size: '679KB'
   },
   {
     id: 'book-day-06',
     filename: 'BOOKDAY06.jpg',
     path: '/BOOKDAY06.jpg',
-    alt: 'Book Day Event 6',
+    alt: 'Book Day Activity 6',
     category: 'book-day',
-    description: 'Book day event photo 6',
-    size: '555KB',
-    dimensions: '2646px'
+    description: 'Book day reading activity',
+    size: '555KB'
   },
   {
     id: 'book-day-07',
     filename: 'BOOKDAY07.jpg',
     path: '/BOOKDAY07.jpg',
-    alt: 'Book Day Event 7',
+    alt: 'Book Day Activity 7',
     category: 'book-day',
-    description: 'Book day event photo 7',
-    size: '705KB',
-    dimensions: '2847px'
+    description: 'Book day reading activity',
+    size: '705KB'
   },
   {
     id: 'book-day-08',
     filename: 'BOOKDAY08.jpg',
     path: '/BOOKDAY08.jpg',
-    alt: 'Book Day Event 8',
+    alt: 'Book Day Activity 8',
     category: 'book-day',
-    description: 'Book day event photo 8',
-    size: '902KB',
-    dimensions: '3961px'
+    description: 'Book day reading activity',
+    size: '902KB'
   },
   {
     id: 'book-day-09',
     filename: 'BOOKDAY09.jpg',
     path: '/BOOKDAY09.jpg',
-    alt: 'Book Day Event 9',
+    alt: 'Book Day Activity 9',
     category: 'book-day',
-    description: 'Book day event photo 9',
-    size: '504KB',
-    dimensions: '1966px'
+    description: 'Book day reading activity',
+    size: '504KB'
   },
   {
     id: 'book-day-10',
     filename: 'BOOKDAY10.jpg',
     path: '/BOOKDAY10.jpg',
-    alt: 'Book Day Event 10',
+    alt: 'Book Day Activity 10',
     category: 'book-day',
-    description: 'Book day event photo 10',
-    size: '508KB',
-    dimensions: '2241px'
+    description: 'Book day reading activity',
+    size: '508KB'
   }
 ];
 
 /**
- * Youth Day event images
+ * Youth Day 2025 images
  */
 export const youthDayAssets: Asset[] = [
   {
@@ -406,34 +413,31 @@ export const youthDayAssets: Asset[] = [
     path: '/YOUTHDAY25.jpg',
     alt: 'Youth Day 2025 Main Event',
     category: 'youth-day',
-    description: 'Main youth day 2025 event photo',
-    size: '668KB',
-    dimensions: '3195px'
+    description: 'Youth Day 2025 main celebration',
+    size: '668KB'
   },
   {
     id: 'youth-day-01',
     filename: 'YOUTHDAY25-01.jpg',
     path: '/YOUTHDAY25-01.jpg',
-    alt: 'Youth Day 2025 Event 1',
+    alt: 'Youth Day 2025 Activity 1',
     category: 'youth-day',
-    description: 'Youth day 2025 event photo 1',
-    size: '663KB',
-    dimensions: '2986px'
+    description: 'Youth Day 2025 celebration activity',
+    size: '663KB'
   },
   {
     id: 'youth-day-02',
     filename: 'YOUTHDAY25-02.jpg',
     path: '/YOUTHDAY25-02.jpg',
-    alt: 'Youth Day 2025 Event 2',
+    alt: 'Youth Day 2025 Activity 2',
     category: 'youth-day',
-    description: 'Youth day 2025 event photo 2',
-    size: '120KB',
-    dimensions: '512px'
+    description: 'Youth Day 2025 celebration activity',
+    size: '120KB'
   }
 ];
 
 /**
- * Quiz Night event images
+ * Quiz Night events images
  */
 export const quizNightAssets: Asset[] = [
   {
@@ -442,167 +446,170 @@ export const quizNightAssets: Asset[] = [
     path: '/QUIZNIGHT25.jpg',
     alt: 'Quiz Night 2025',
     category: 'quiz-night',
-    description: 'Quiz night 2025 event photo',
-    size: '189KB',
-    dimensions: '819px'
+    description: 'Quiz Night 2025 competition',
+    size: '189KB'
   }
 ];
 
 /**
- * Athletics Awards event images
+ * Athletics Awards images
  */
 export const athleticsAssets: Asset[] = [
   {
     id: 'athletics-awards-main',
     filename: 'ATHLECTICS AWARDS25.jpg',
     path: '/ATHLECTICS AWARDS25.jpg',
-    alt: 'Athletics Awards 2025 Main',
+    alt: 'Athletics Awards 2025',
     category: 'athletics',
-    description: 'Main athletics awards 2025 photo',
-    size: '181KB',
-    dimensions: '892px'
+    description: 'Athletics Awards 2025 ceremony',
+    size: '181KB'
   },
   {
     id: 'athletics-awards-02',
     filename: 'ATHLETICSAWARDS25 02.jpg',
     path: '/ATHLETICSAWARDS25 02.jpg',
-    alt: 'Athletics Awards 2025 Event 2',
+    alt: 'Athletics Awards 2025 - Award 2',
     category: 'athletics',
-    description: 'Athletics awards 2025 photo 2',
-    size: '190KB',
-    dimensions: '931px'
+    description: 'Athletics Awards 2025 presentation',
+    size: '190KB'
   },
   {
     id: 'athletics-awards-03',
     filename: 'ATHLETICSAWARDS25 03.jpg',
     path: '/ATHLETICSAWARDS25 03.jpg',
-    alt: 'Athletics Awards 2025 Event 3',
+    alt: 'Athletics Awards 2025 - Award 3',
     category: 'athletics',
-    description: 'Athletics awards 2025 photo 3',
-    size: '204KB',
-    dimensions: '922px'
+    description: 'Athletics Awards 2025 presentation',
+    size: '204KB'
   },
   {
     id: 'athletics-awards-04',
     filename: 'ATHLETICSAWARDS25 04.jpg',
     path: '/ATHLETICSAWARDS25 04.jpg',
-    alt: 'Athletics Awards 2025 Event 4',
+    alt: 'Athletics Awards 2025 - Award 4',
     category: 'athletics',
-    description: 'Athletics awards 2025 photo 4',
-    size: '180KB',
-    dimensions: '959px'
+    description: 'Athletics Awards 2025 presentation',
+    size: '180KB'
   },
   {
     id: 'athletics-awards-05',
     filename: 'ATHLECTICSAWARDS25 05.jpg',
     path: '/ATHLECTICSAWARDS25 05.jpg',
-    alt: 'Athletics Awards 2025 Event 5',
+    alt: 'Athletics Awards 2025 - Award 5',
     category: 'athletics',
-    description: 'Athletics awards 2025 photo 5',
-    size: '157KB',
-    dimensions: '911px'
+    description: 'Athletics Awards 2025 presentation',
+    size: '157KB'
+  },
+  {
+    id: 'sports-01',
+    filename: 'Sports01.jpg',
+    path: '/Sports01.jpg',
+    alt: 'Sports Activity 1',
+    category: 'athletics',
+    description: 'Sports activity and training',
+    size: '329KB'
+  },
+  {
+    id: 'sports-02',
+    filename: 'Sports02.jpg',
+    path: '/Sports02.jpg',
+    alt: 'Sports Activity 2',
+    category: 'athletics',
+    description: 'Sports activity and training',
+    size: '397KB'
   }
 ];
 
 /**
- * Music event images
+ * Music events images
  */
 export const musicAssets: Asset[] = [
   {
     id: 'music-main',
     filename: 'MUSIC.jpg',
     path: '/MUSIC.jpg',
-    alt: 'Music Event Main',
+    alt: 'Music Performance',
     category: 'music',
-    description: 'Main music event photo',
-    size: '337KB',
-    dimensions: '1373px'
+    description: 'Music performance and activities',
+    size: '337KB'
   },
   {
     id: 'music-03',
     filename: 'MUSIC03.jpg',
     path: '/MUSIC03.jpg',
-    alt: 'Music Event 3',
+    alt: 'Music Performance 3',
     category: 'music',
-    description: 'Music event photo 3',
-    size: '359KB',
-    dimensions: '1431px'
+    description: 'Music performance and activities',
+    size: '359KB'
   }
 ];
 
 /**
- * Science Expo event images
+ * Science Expo images
  */
 export const scienceExpoAssets: Asset[] = [
   {
     id: 'science-expo-main',
     filename: 'SCIENCEEXPO24.jpg',
     path: '/SCIENCEEXPO24.jpg',
-    alt: 'Science Expo 2024 Main',
+    alt: 'Science Expo 2024',
     category: 'science-expo',
-    description: 'Main science expo 2024 photo',
-    size: '309KB',
-    dimensions: '1168px'
+    description: 'Science Expo 2024 main event',
+    size: '309KB'
   },
   {
     id: 'science-expo-01',
     filename: 'SCIENCEEXPO24 01.jpg',
     path: '/SCIENCEEXPO24 01.jpg',
-    alt: 'Science Expo 2024 Event 1',
+    alt: 'Science Expo 2024 - Project 1',
     category: 'science-expo',
-    description: 'Science expo 2024 photo 1',
-    size: '291KB',
-    dimensions: '1110px'
+    description: 'Science Expo 2024 project display',
+    size: '291KB'
   },
   {
     id: 'science-expo-02',
     filename: 'SCIENCEEXPO02.jpg',
     path: '/SCIENCEEXPO02.jpg',
-    alt: 'Science Expo Event 2',
+    alt: 'Science Expo - Project 2',
     category: 'science-expo',
-    description: 'Science expo photo 2',
-    size: '232KB',
-    dimensions: '1068px'
+    description: 'Science Expo project display',
+    size: '232KB'
   },
   {
     id: 'science-expo-03',
     filename: 'SCIENCEEXPO03.jpg',
     path: '/SCIENCEEXPO03.jpg',
-    alt: 'Science Expo Event 3',
+    alt: 'Science Expo - Project 3',
     category: 'science-expo',
-    description: 'Science expo photo 3',
-    size: '263KB',
-    dimensions: '922px'
+    description: 'Science Expo project display',
+    size: '263KB'
   },
   {
     id: 'science-expo-04',
     filename: 'SCIENCEEXPO04.jpg',
     path: '/SCIENCEEXPO04.jpg',
-    alt: 'Science Expo Event 4',
+    alt: 'Science Expo - Project 4',
     category: 'science-expo',
-    description: 'Science expo photo 4',
-    size: '149KB',
-    dimensions: '538px'
+    description: 'Science Expo project display',
+    size: '149KB'
   },
   {
     id: 'science-expo-05',
     filename: 'SCIENCEEXPO24 05.jpg',
     path: '/SCIENCEEXPO24 05.jpg',
-    alt: 'Science Expo 2024 Event 5',
+    alt: 'Science Expo 2024 - Project 5',
     category: 'science-expo',
-    description: 'Science expo 2024 photo 5',
-    size: '330KB',
-    dimensions: '1375px'
+    description: 'Science Expo 2024 project display',
+    size: '330KB'
   },
   {
     id: 'science-expo-06',
     filename: 'SCIENCEEXPO24 06.jpg',
     path: '/SCIENCEEXPO24 06.jpg',
-    alt: 'Science Expo 2024 Event 6',
+    alt: 'Science Expo 2024 - Project 6',
     category: 'science-expo',
-    description: 'Science expo 2024 photo 6',
-    size: '259KB',
-    dimensions: '829px'
+    description: 'Science Expo 2024 project display',
+    size: '259KB'
   }
 ];
 
@@ -649,58 +656,77 @@ export const eventAssets: Asset[] = [
 ];
 
 /**
- * Spiritual and religious images (updated)
+ * Creative Arts and Garden Club images
+ */
+export const creativeArtsAssets: Asset[] = [
+  {
+    id: 'creative-art-main',
+    filename: 'HCCREATIVEART.jpg',
+    path: '/HCCREATIVEART.jpg',
+    alt: 'Creative Art Activity',
+    category: 'events',
+    description: 'Creative art activities and projects',
+    size: '173KB'
+  },
+  {
+    id: 'creative-art-01',
+    filename: 'HCCREATIVEART01.jpg',
+    path: '/HCCREATIVEART01.jpg',
+    alt: 'Creative Art Activity 1',
+    category: 'events',
+    description: 'Creative art activities and projects',
+    size: '147KB'
+  },
+  {
+    id: 'garden-club-04',
+    filename: 'Garden Club 04.jpg',
+    path: '/Garden Club 04.jpg',
+    alt: 'Garden Club Activity',
+    category: 'events',
+    description: 'Garden Club activities and projects',
+    size: '274KB'
+  }
+];
+
+/**
+ * Spiritual and religious images
  */
 export const spiritualAssets: Asset[] = [
+  {
+    id: 'spiritual-main',
+    filename: 'SPRITUAL.jpg',
+    path: '/SPRITUAL.jpg',
+    alt: 'Spiritual Activity',
+    category: 'spiritual',
+    description: 'Spiritual and religious activities',
+    size: '249KB'
+  },
+  {
+    id: 'spiritual-01',
+    filename: 'SPRITUAL01.jpg',
+    path: '/SPRITUAL01.jpg',
+    alt: 'Spiritual Activity 1',
+    category: 'spiritual',
+    description: 'Spiritual and religious activities',
+    size: '377KB'
+  },
+  {
+    id: 'spiritual-04',
+    filename: 'Spritual04.jpg',
+    path: '/Spritual04.jpg',
+    alt: 'Spiritual Activity 4',
+    category: 'spiritual',
+    description: 'Spiritual and religious activities',
+    size: '329KB'
+  },
   {
     id: 'jesus-child',
     filename: 'jesus_child.jpg',
     path: '/jesus_child.jpg',
     alt: 'Jesus and Child',
     category: 'spiritual',
-    description: 'Religious image of Jesus with child',
-    size: '33KB',
-    dimensions: '132px'
-  },
-  {
-    id: 'philomena',
-    filename: 'Philomena.jpg',
-    path: '/Philomena.jpg',
-    alt: 'Saint Philomena',
-    category: 'spiritual',
-    description: 'Image of Saint Philomena',
-    size: '30KB',
-    dimensions: '147px'
-  },
-  {
-    id: 'bernarda-bg',
-    filename: 'Bernarda BG.jpg',
-    path: '/Bernarda BG.jpg',
-    alt: 'Bernarda Background',
-    category: 'spiritual',
-    description: 'Bernarda background image',
-    size: '32KB',
-    dimensions: '104px'
-  },
-  {
-    id: 'spiritual-main',
-    filename: 'SPRITUAL.jpg',
-    path: '/SPRITUAL.jpg',
-    alt: 'Spiritual Event Main',
-    category: 'spiritual',
-    description: 'Main spiritual event photo',
-    size: '249KB',
-    dimensions: '860px'
-  },
-  {
-    id: 'spiritual-01',
-    filename: 'SPRITUAL01.jpg',
-    path: '/SPRITUAL01.jpg',
-    alt: 'Spiritual Event 1',
-    category: 'spiritual',
-    description: 'Spiritual event photo 1',
-    size: '377KB',
-    dimensions: '1562px'
+    description: 'Religious imagery',
+    size: '33KB'
   }
 ];
 
@@ -710,11 +736,11 @@ export const spiritualAssets: Asset[] = [
 export const facilityAssets: Asset[] = [
   {
     id: 'hcc-l4',
-    filename: 'HCCL4.jpg',
-    path: '/HCCL4.jpg',
+    filename: 'HCCREATIVEART01.jpg',
+    path: '/HCCREATIVEART01.jpg',
     alt: 'Holy Cross Campus View 4',
     category: 'facilities',
-    description: 'Campus facility view',
+    description: 'Creative Minds',
     size: '255KB',
     dimensions: '1197px'
   },
@@ -730,18 +756,18 @@ export const facilityAssets: Asset[] = [
   },
   {
     id: 'hcl-2',
-    filename: 'HCL2.jpg',
-    path: '/HCL2.jpg',
+    filename: 'HCTEACHERS08.jpg',
+    path: '/HCTEACHERS08.jpg',
     alt: 'Holy Cross Location 2',
     category: 'facilities',
-    description: 'School location view',
+    description: 'Annual Catholic Teachers Mass',
     size: '314KB',
     dimensions: '1098px'
   },
   {
     id: 'hcp-1',
-    filename: 'HCP1.jpg',
-    path: '/HCP1.jpg',
+    filename: 'Sports01.jpg',
+    path: '/Sports01.jpg',
     alt: 'Holy Cross Property 1',
     category: 'facilities',
     description: 'School property view',
@@ -932,8 +958,8 @@ export const assetCollections: AssetCollection[] = [
   },
   {
     category: 'athletics',
-    title: 'Athletics Awards',
-    description: 'Photos from athletics awards ceremonies',
+    title: 'Athletics & Sports',
+    description: 'Photos from athletics awards ceremonies and sports activities',
     assets: athleticsAssets
   },
   {
@@ -952,11 +978,11 @@ export const assetCollections: AssetCollection[] = [
     category: 'events',
     title: 'General Events',
     description: 'Photos from various school events and celebrations',
-    assets: eventAssets
+    assets: [...eventAssets, ...creativeArtsAssets]
   },
   {
     category: 'spiritual',
-    title: 'Spiritual Images',
+    title: 'Spiritual Life',
     description: 'Religious and spiritual imagery and events',
     assets: spiritualAssets
   },
@@ -997,6 +1023,7 @@ export const assetManager = {
       ...spiritualAssets,
       ...facilityAssets,
       ...systemAssets,
+      ...creativeArtsAssets,
       ...facebookPostAssets
     ];
   },
@@ -1016,7 +1043,8 @@ export const assetManager = {
       ...scienceExpoAssets,
       ...eventAssets,
       ...spiritualAssets,
-      ...facilityAssets
+      ...facilityAssets,
+      ...creativeArtsAssets
       // Temporarily removed Facebook posts: ...facebookPostAssets
     ];
   },
