@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/Layout';
 import PerformanceMonitor from './components/PerformanceMonitor';
+import Analytics from './components/Analytics';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import History from './pages/History';
@@ -133,6 +134,7 @@ function App() {
       <CssBaseline />
       <HelmetProvider>
         <PerformanceMonitor />
+        <Analytics />
         <Router>
           <NavigationWrapper />
         </Router>
