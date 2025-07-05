@@ -70,26 +70,6 @@ export const logoAssets: Asset[] = [
     size: '28KB',
     dimensions: '103px'
   },
-  {
-    id: 'react-logo-192',
-    filename: 'logo192.png',
-    path: '/logo192.png',
-    alt: 'React Logo 192px',
-    category: 'logo',
-    description: 'React default logo 192px',
-    size: '5.2KB',
-    dimensions: '20px'
-  },
-  {
-    id: 'react-logo-512',
-    filename: 'logo512.png',
-    path: '/logo512.png',
-    alt: 'React Logo 512px',
-    category: 'logo',
-    description: 'React default logo 512px',
-    size: '9.4KB',
-    dimensions: '43px'
-  }
 ];
 
 /**
@@ -820,9 +800,48 @@ export const facebookPostAssets: Asset[] = [
     description: 'Cardinal visit to Holy Cross Convent School Brooklyn',
     size: 'High Quality',
     isFacebookPost: true,
-    facebookUrl: 'https://www.facebook.com/holycrossbrooklyn/posts/123456789', // Replace with actual URL
-    facebookPostId: '123456789',
+    facebookUrl: 'https://www.facebook.com/share/p/16ogng92kV/',
+    facebookPostId: '16ogng92kV',
     fallbackImage: '/Cardinal Visit 2023 WEB 01.jpg'
+  },
+  {
+    id: 'fb-youth-day-2025',
+    filename: 'Youth Day 2025',
+    path: '/YOUTHDAY25-01.jpg',
+    alt: 'Youth Day 2025 Holy Cross Convent School Brooklyn',
+    category: 'youth-day',
+    description: 'Youth Day 2025 Holy Cross Convent School Brooklyn',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/share/p/1Ppkh2SyYH/',
+    facebookPostId: '1Ppkh2SyYH',
+    fallbackImage: '/YOUTHDAY25-01.jpg'
+  },
+  {
+    id: 'fb-colour-fun-run-trophies',
+    filename: 'Colour Fun Run Trophies',
+    path: '/colour-fun-run-trophies.jpg',
+    alt: 'Colour Fun Run Trophies',
+    category: 'athletics',
+    description: 'Colour Fun Run Trophies celebration at Holy Cross Convent School Brooklyn',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/share/p/1HzA7Ard9Q/',
+    facebookPostId: '1HzA7Ard9Q',
+    fallbackImage: '/colour-fun-run-trophies.jpg'
+  },
+  {
+    id: 'fb-new-post-2025',
+    filename: 'Colour Fun Run 2025',
+    path: '/ColorFun25.jpg',
+    alt: 'Colour Fun Run 2025 at Holy Cross Convent School Brooklyn',
+    category: 'athletics',
+    description: 'Colour Fun Run 2025 celebration and activities at Holy Cross Convent School Brooklyn',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/permalink.php?story_fbid=pfbid0qcjwTxL7uk77fkiCutjL6N3LVJhPWhw6wMAzGkformb2q2JzjdCNV8uymFtqANbMl&id=61553924237049',
+    facebookPostId: 'pfbid0qcjwTxL7uk77fkiCutjL6N3LVJhPWhw6wMAzGkformb2q2JzjdCNV8uymFtqANbMl',
+    fallbackImage: '/ColorFunRun01.jpg'
   },
   {
     id: 'fb-cardinal-visit-2023-2',
@@ -979,6 +998,26 @@ export const assetManager = {
       ...facilityAssets,
       ...systemAssets,
       ...facebookPostAssets
+    ];
+  },
+
+  /**
+   * Get assets suitable for the main gallery (excludes system files and staff photos)
+   */
+  getGalleryAssets: (): Asset[] => {
+    return [
+      ...gradeAssets,
+      ...computerLabAssets,
+      ...bookDayAssets,
+      ...youthDayAssets,
+      ...quizNightAssets,
+      ...athleticsAssets,
+      ...musicAssets,
+      ...scienceExpoAssets,
+      ...eventAssets,
+      ...spiritualAssets,
+      ...facilityAssets
+      // Temporarily removed Facebook posts: ...facebookPostAssets
     ];
   },
 

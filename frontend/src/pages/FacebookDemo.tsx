@@ -21,7 +21,7 @@ const FacebookDemo: React.FC = () => {
       }}>
         {/* Sample Facebook Post 1 */}
         <FacebookEmbed
-          facebookUrl="https://www.facebook.com/holycrossbrooklyn/posts/123456789"
+          facebookUrl="https://www.facebook.com/share/p/16ogng92kV/"
           fallbackImage="/Cardinal Visit 2023 WEB 01.jpg"
           fallbackAlt="Cardinal Visit 2023"
           title="Cardinal Visit 2023"

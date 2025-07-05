@@ -23,16 +23,19 @@ import {
   Search as SearchIcon,
   Close as CloseIcon,
   NavigateBefore as NavigateBeforeIcon,
-  NavigateNext as NavigateNextIcon
+  NavigateNext as NavigateNextIcon,
+  Facebook
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { assetManager, Asset, AssetCategory } from '../utils/assetManager';
-import FacebookEmbed from './FacebookEmbed';
 
 // Styled components
 const GalleryContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4, 0),
-  backgroundColor: '#f8f9fa'
+  backgroundColor: '#f8f9fa',
+  minHeight: '100vh',
+  width: '100%',
+  overflow: 'hidden'
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
@@ -109,8 +112,12 @@ const EnhancedGallery: React.FC<EnhancedGalleryProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Get all assets and collections
-  const allAssets = assetManager.getAllAssets();
-  const collections = assetManager.getAllCollections();
+  const allAssets = assetManager.getGalleryAssets();
+  const collections = assetManager.getAllCollections().filter(collection => 
+    collection.category !== 'logo' && 
+    collection.category !== 'staff' && 
+    collection.category !== 'system'
+  );
 
   // Filter assets based on search and category
   const filteredAssets = useMemo(() => {
@@ -166,7 +173,7 @@ const EnhancedGallery: React.FC<EnhancedGalleryProps> = ({
 
   return (
     <GalleryContainer>
-      <Container maxWidth="xl">
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
@@ -218,61 +225,51 @@ const EnhancedGallery: React.FC<EnhancedGalleryProps> = ({
         {/* Gallery Grid */}
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
-          gap: 3 
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+          gap: { xs: 2, sm: 3 },
+          width: '100%',
+          maxWidth: '100%'
         }}>
           {filteredAssets.map((asset) => (
-            <Box key={asset.id}>
-              {asset.isFacebookPost ? (
-                // Facebook Post Embed
-                <FacebookEmbed
-                  facebookUrl={asset.facebookUrl!}
-                  fallbackImage={asset.fallbackImage}
-                  fallbackAlt={asset.alt}
-                  title={asset.description || asset.alt}
-                  description={asset.description}
-                  category={collections.find(c => c.category === asset.category)?.title || asset.category}
-                  date={asset.size}
-                  onError={() => {
-                    console.warn(`Failed to load Facebook post: ${asset.facebookUrl}`);
+            <Box key={asset.id} sx={{ 
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Static Image Card */}
+              <ImageCard onClick={() => handleImageClick(asset)} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="img"
+                  image={asset.path}
+                  alt={asset.alt}
+                  sx={{
+                    height: 200,
+                    objectFit: 'cover',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
                   }}
                 />
-              ) : (
-                // Static Image Card
-                <ImageCard onClick={() => handleImageClick(asset)}>
-                  <CardMedia
-                    component="img"
-                    image={asset.path}
-                    alt={asset.alt}
-                    sx={{
-                      height: 200,
-                      objectFit: 'cover',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" component="h3" gutterBottom noWrap>
-                      {asset.description || asset.alt}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="h6" component="h3" gutterBottom noWrap>
+                    {asset.description || asset.alt}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 'auto' }}>
+                    <Chip 
+                      label={collections.find(c => c.category === asset.category)?.title || asset.category}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                    {asset.size && (
                       <Chip 
-                        label={collections.find(c => c.category === asset.category)?.title || asset.category}
+                        label={asset.size}
                         size="small"
-                        color="primary"
                         variant="outlined"
                       />
-                      {asset.size && (
-                        <Chip 
-                          label={asset.size}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                  </CardContent>
-                </ImageCard>
-              )}
+                    )}
+                  </Box>
+                </CardContent>
+              </ImageCard>
             </Box>
           ))}
         </Box>
