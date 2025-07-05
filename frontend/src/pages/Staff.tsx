@@ -52,6 +52,7 @@ const staffData = {
       email: 'principal@holycrossbrooklyn.edu',
       phone: '(021) 511 4337',
       bio: 'Leading our school with dedication and vision.',
+      image: '/Principal.png',
     }
   ],
   teaching: [
@@ -442,6 +443,7 @@ const Staff: React.FC = () => {
             <LeadershipCard key={index}>
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
                 <Avatar
+                  src={staff.image}
                   sx={{
                     width: 100,
                     height: 100,
