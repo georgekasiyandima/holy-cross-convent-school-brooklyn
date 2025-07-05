@@ -14,6 +14,11 @@ export interface Asset {
   description?: string;
   size?: string;
   dimensions?: string;
+  // Facebook integration
+  facebookUrl?: string;
+  facebookPostId?: string;
+  isFacebookPost?: boolean;
+  fallbackImage?: string;
 }
 
 export type AssetCategory = 
@@ -802,6 +807,65 @@ export const systemAssets: Asset[] = [
 ];
 
 /**
+ * Facebook post assets - for embedding social media content
+ * These posts provide rich context and engagement from the school's Facebook page
+ */
+export const facebookPostAssets: Asset[] = [
+  {
+    id: 'fb-cardinal-visit-2023',
+    filename: 'Cardinal Visit 2023',
+    path: '/Cardinal Visit 2023 WEB 01.jpg',
+    alt: 'Cardinal Visit 2023',
+    category: 'events',
+    description: 'Cardinal visit to Holy Cross Convent School Brooklyn',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/holycrossbrooklyn/posts/123456789', // Replace with actual URL
+    facebookPostId: '123456789',
+    fallbackImage: '/Cardinal Visit 2023 WEB 01.jpg'
+  },
+  {
+    id: 'fb-cardinal-visit-2023-2',
+    filename: 'Cardinal Visit 2023 - Group Photo',
+    path: '/Cardinal Visit 2023 WEB 05.jpg',
+    alt: 'Cardinal Visit 2023 Group Photo',
+    category: 'events',
+    description: 'Group photo with Cardinal during visit',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/holycrossbrooklyn/posts/123456790', // Replace with actual URL
+    facebookPostId: '123456790',
+    fallbackImage: '/Cardinal Visit 2023 WEB 05.jpg'
+  },
+  {
+    id: 'fb-cardinal-visit-2023-3',
+    filename: 'Cardinal Visit 2023 - Ceremony',
+    path: '/Cardinal Visit 2023 WEB 07.jpg',
+    alt: 'Cardinal Visit 2023 Ceremony',
+    category: 'events',
+    description: 'Ceremony during Cardinal visit',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/holycrossbrooklyn/posts/123456791', // Replace with actual URL
+    facebookPostId: '123456791',
+    fallbackImage: '/Cardinal Visit 2023 WEB 07.jpg'
+  },
+  {
+    id: 'fb-cardinal-visit-2023-4',
+    filename: 'Cardinal Visit 2023 - Celebration',
+    path: '/Cardinal Visit 2023 WEB 08.jpg',
+    alt: 'Cardinal Visit 2023 Celebration',
+    category: 'events',
+    description: 'Celebration during Cardinal visit',
+    size: 'High Quality',
+    isFacebookPost: true,
+    facebookUrl: 'https://www.facebook.com/holycrossbrooklyn/posts/123456792', // Replace with actual URL
+    facebookPostId: '123456792',
+    fallbackImage: '/Cardinal Visit 2023 WEB 08.jpg'
+  }
+];
+
+/**
  * All assets organized by collection
  */
 export const assetCollections: AssetCollection[] = [
@@ -913,7 +977,8 @@ export const assetManager = {
       ...eventAssets,
       ...spiritualAssets,
       ...facilityAssets,
-      ...systemAssets
+      ...systemAssets,
+      ...facebookPostAssets
     ];
   },
 

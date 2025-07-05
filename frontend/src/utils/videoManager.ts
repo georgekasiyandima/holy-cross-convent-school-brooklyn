@@ -27,6 +27,8 @@ export type VideoCategory =
   | 'academic'
   | 'sports'
   | 'spiritual'
+  | 'students'
+  | 'professional-development'
   | 'general';
 
 export interface VideoCollection {
@@ -47,6 +49,33 @@ export const schoolVideos: SchoolVideo[] = [
     facebookUrl: 'https://www.facebook.com/61553924237049/videos/1803835803880820/',
     embedCode: '<iframe src="https://www.facebook.com/plugins/video.php?height=420&href=https%3A%2F%2Fwww.facebook.com%2F61553924237049%2Fvideos%2F1803835803880820%2F&show_text=false&width=560&t=0" width="560" height="420" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>',
     category: 'choir',
+    date: '2025'
+  },
+  {
+    id: 'spiritual-event-1',
+    title: 'Spiritual Event at Holy Cross Brooklyn',
+    description: 'A beautiful spiritual moment captured at Holy Cross Convent School Brooklyn, showcasing our faith-based community.',
+    facebookUrl: 'https://www.facebook.com/61553924237049/videos/703365349046285/',
+    embedCode: '<iframe src="https://www.facebook.com/plugins/video.php?height=315&href=https%3A%2F%2Fwww.facebook.com%2F61553924237049%2Fvideos%2F703365349046285%2F&show_text=true&width=560&t=0" width="560" height="430" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>',
+    category: 'spiritual',
+    date: '2025'
+  },
+  {
+    id: 'grade7-class-2025',
+    title: 'Grade 7 Class of 2025',
+    description: 'Celebrating the achievements and memories of our Grade 7 Class of 2025 at Holy Cross Convent School Brooklyn.',
+    facebookUrl: 'https://www.facebook.com/61553924237049/videos/1566630487341154/',
+    embedCode: '<iframe src="https://www.facebook.com/plugins/video.php?height=222&href=https%3A%2F%2Fwww.facebook.com%2F61553924237049%2Fvideos%2F1566630487341154%2F&show_text=true&width=560&t=0" width="560" height="337" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>',
+    category: 'students',
+    date: '2025'
+  },
+  {
+    id: 'ict-learning-educators',
+    title: 'ICT Learning for Educators',
+    description: 'Professional development session on Information and Communication Technology for educators at Holy Cross Convent School Brooklyn.',
+    facebookUrl: 'https://www.facebook.com/61553924237049/videos/585715967154161/',
+    embedCode: '<iframe src="https://www.facebook.com/plugins/video.php?height=315&href=https%3A%2F%2Fwww.facebook.com%2F61553924237049%2Fvideos%2F585715967154161%2F&show_text=true&width=560&t=0" width="560" height="430" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>',
+    category: 'professional-development',
     date: '2025'
   }
 ];
@@ -96,6 +125,18 @@ export const videoCollections: VideoCollection[] = [
     title: 'Spiritual Events',
     description: 'Videos from spiritual and religious events',
     videos: schoolVideos.filter(video => video.category === 'spiritual')
+  },
+  {
+    category: 'students',
+    title: 'Student Achievements',
+    description: 'Videos showcasing student achievements and class highlights',
+    videos: schoolVideos.filter(video => video.category === 'students')
+  },
+  {
+    category: 'professional-development',
+    title: 'Professional Development',
+    description: 'Videos from staff training and professional development sessions',
+    videos: schoolVideos.filter(video => video.category === 'professional-development')
   },
   {
     category: 'general',
@@ -189,6 +230,8 @@ export const videoManager = {
       academic: 0,
       sports: 0,
       spiritual: 0,
+      students: 0,
+      'professional-development': 0,
       general: 0
     };
 

@@ -91,30 +91,8 @@ const VideoThumbnail = styled(Box)(({ theme }) => ({
   }
 }));
 
-// Video data structure
-interface SchoolVideo {
-  id: string;
-  title: string;
-  description: string;
-  facebookUrl: string;
-  embedCode: string;
-  thumbnail?: string;
-  category: 'choir' | 'performance' | 'event' | 'general';
-  date?: string;
-}
-
-// School videos from Facebook
-const schoolVideos: SchoolVideo[] = [
-  {
-    id: 'choir-performance-1',
-    title: 'Holy Cross Brooklyn Senior Choir Performance',
-    description: 'Beautiful performance by our Senior Choir showcasing the musical talent at Holy Cross Convent School Brooklyn.',
-    facebookUrl: 'https://www.facebook.com/61553924237049/videos/1803835803880820/',
-    embedCode: '<iframe src="https://www.facebook.com/plugins/video.php?height=420&href=https%3A%2F%2Fwww.facebook.com%2F61553924237049%2Fvideos%2F1803835803880820%2F&show_text=false&width=560&t=0" width="560" height="420" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>',
-    category: 'choir',
-    date: '2025'
-  }
-];
+// Get videos from video manager
+const schoolVideos = videoManager.getVideosByCategory('choir');
 
 const downloads = [
   {
@@ -253,9 +231,13 @@ const Music: React.FC = () => {
             More Videos
           </Typography>
           
-          <Grid container spacing={3}>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 3 
+          }}>
             {schoolVideos.map((video) => (
-              <Grid item xs={12} sm={6} md={4} key={video.id}>
+              <Box key={video.id}>
                 <VideoCard onClick={() => handleVideoClick(video)}>
                   <CardContent>
                     <VideoThumbnail>
@@ -286,9 +268,9 @@ const Music: React.FC = () => {
                     </Stack>
                   </CardContent>
                 </VideoCard>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Box>
       )}
 

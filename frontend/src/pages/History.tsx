@@ -243,10 +243,9 @@ const History: React.FC = () => {
           <HistoricalCard>
             <CardMedia
               component="img"
-              height="400"
+              sx={{ objectFit: 'cover', height: 400 }}
               image="/Philomena.jpg"
               alt="Sister Philomena Burgess"
-              sx={{ objectFit: 'cover' }}
             />
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>

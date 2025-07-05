@@ -1,37 +1,35 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Box,
   Container,
   Typography,
-  Grid,
+  Box,
   Card,
   CardContent,
   Chip,
+  TextField,
+  InputAdornment,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  TextField,
-  InputAdornment,
-  Button,
   Dialog,
-  DialogTitle,
   DialogContent,
+  DialogTitle,
   DialogActions,
+  Button,
   IconButton,
   useTheme,
-  useMediaQuery,
-  styled
+  useMediaQuery
 } from '@mui/material';
+
 import {
   Search as SearchIcon,
-  Event as EventIcon,
-  School as SchoolIcon,
-  Celebration as CelebrationIcon,
-  Sports as SportsIcon,
   Close as CloseIcon,
+  Event as EventIcon,
+  CalendarToday as CalendarIcon,
   Facebook as FacebookIcon
 } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { calendarManager, CalendarEvent, EventCategory } from '../utils/calendarManager';
 
 // Styled components
@@ -127,13 +125,13 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
   const getCategoryIcon = (category: EventCategory) => {
     switch (category) {
       case 'academic':
-        return <SchoolIcon />;
+        return <CalendarIcon />;
       case 'spiritual':
         return <EventIcon />;
       case 'celebration':
-        return <CelebrationIcon />;
+        return <CalendarIcon />;
       case 'sports':
-        return <SportsIcon />;
+        return <CalendarIcon />;
       default:
         return <EventIcon />;
     }
@@ -229,9 +227,13 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
         </SearchContainer>
 
         {/* Events Grid */}
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 3 
+        }}>
           {filteredEvents.map((event) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
+            <Box key={event.id}>
               <EventCard onClick={() => handleEventClick(event)}>
                 <CardContent>
                   <EventIconContainer>
@@ -274,9 +276,9 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
                   </Box>
                 </CardContent>
               </EventCard>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         {/* No Results */}
         {filteredEvents.length === 0 && (

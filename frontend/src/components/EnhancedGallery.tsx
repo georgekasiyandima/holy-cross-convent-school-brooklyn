@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Box,
   Container,
   Typography,
-  Grid,
+  Box,
   Card,
-  CardMedia,
   CardContent,
+  CardMedia,
   Chip,
   TextField,
   InputAdornment,
@@ -14,22 +13,21 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
   Dialog,
   DialogContent,
   IconButton,
   useTheme,
-  useMediaQuery,
-  styled
+  useMediaQuery
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Close as CloseIcon,
   NavigateBefore as NavigateBeforeIcon,
-  NavigateNext as NavigateNextIcon,
-  FilterList as FilterListIcon
+  NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { assetManager, Asset, AssetCategory } from '../utils/assetManager';
+import FacebookEmbed from './FacebookEmbed';
 
 // Styled components
 const GalleryContainer = styled(Box)(({ theme }) => ({
@@ -59,13 +57,6 @@ const ImageCard = styled(Card)(({ theme }) => ({
     boxShadow: theme.shadows[8]
   }
 }));
-
-const ImageCardMedia = styled(CardMedia)({
-  height: 200,
-  objectFit: 'cover',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center'
-});
 
 const LightboxDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
@@ -225,40 +216,66 @@ const EnhancedGallery: React.FC<EnhancedGalleryProps> = ({
         </SearchContainer>
 
         {/* Gallery Grid */}
-        <Grid container spacing={3}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 3 
+        }}>
           {filteredAssets.map((asset) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={asset.id}>
-              <ImageCard onClick={() => handleImageClick(asset)}>
-                <ImageCardMedia
-                  component="img"
-                  image={asset.path}
-                  alt={asset.alt}
-                  title={asset.description}
+            <Box key={asset.id}>
+              {asset.isFacebookPost ? (
+                // Facebook Post Embed
+                <FacebookEmbed
+                  facebookUrl={asset.facebookUrl!}
+                  fallbackImage={asset.fallbackImage}
+                  fallbackAlt={asset.alt}
+                  title={asset.description || asset.alt}
+                  description={asset.description}
+                  category={collections.find(c => c.category === asset.category)?.title || asset.category}
+                  date={asset.size}
+                  onError={() => {
+                    console.warn(`Failed to load Facebook post: ${asset.facebookUrl}`);
+                  }}
                 />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" component="h3" gutterBottom noWrap>
-                    {asset.description || asset.alt}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip 
-                      label={collections.find(c => c.category === asset.category)?.title || asset.category}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    {asset.size && (
+              ) : (
+                // Static Image Card
+                <ImageCard onClick={() => handleImageClick(asset)}>
+                  <CardMedia
+                    component="img"
+                    image={asset.path}
+                    alt={asset.alt}
+                    sx={{
+                      height: 200,
+                      objectFit: 'cover',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" component="h3" gutterBottom noWrap>
+                      {asset.description || asset.alt}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip 
-                        label={asset.size}
+                        label={collections.find(c => c.category === asset.category)?.title || asset.category}
                         size="small"
+                        color="primary"
                         variant="outlined"
                       />
-                    )}
-                  </Box>
-                </CardContent>
-              </ImageCard>
-            </Grid>
+                      {asset.size && (
+                        <Chip 
+                          label={asset.size}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </CardContent>
+                </ImageCard>
+              )}
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         {/* No Results */}
         {filteredAssets.length === 0 && (
