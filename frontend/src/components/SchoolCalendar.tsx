@@ -35,7 +35,9 @@ import { calendarManager, CalendarEvent, EventCategory } from '../utils/calendar
 // Styled components
 const CalendarContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4, 0),
-  backgroundColor: '#f8f9fa'
+  backgroundColor: '#f8f9fa',
+  minHeight: '100vh',
+  overflow: 'hidden'
 }));
 
 const EventCard = styled(Card)(({ theme }) => ({
@@ -44,6 +46,7 @@ const EventCard = styled(Card)(({ theme }) => ({
   flexDirection: 'column',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   cursor: 'pointer',
+  overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-4px)',
     boxShadow: theme.shadows[8]
@@ -52,9 +55,10 @@ const EventCard = styled(Card)(({ theme }) => ({
 
 const EventIconContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   gap: theme.spacing(1),
-  marginBottom: theme.spacing(1)
+  marginBottom: theme.spacing(1),
+  minWidth: 0
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
@@ -67,6 +71,7 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
+  width: '100%',
   [theme.breakpoints.up('md')]: {
     flexDirection: 'row',
     alignItems: 'center'
@@ -174,13 +179,29 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
 
   return (
     <CalendarContainer>
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              color: '#1a237e', 
+              fontWeight: 700,
+              fontSize: { xs: '1.75rem', sm: '2.125rem', md: '3rem' }
+            }}
+          >
             {title}
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: '1rem', sm: '1.25rem' }
+            }}
+          >
             {subtitle}
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -203,10 +224,10 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
                 </InputAdornment>
               )
             }}
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, minWidth: 0 }}
           />
           
-          <FormControl sx={{ minWidth: 200 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', md: 200 } }}>
             <InputLabel>Category</InputLabel>
             <Select
               value={selectedCategory}
@@ -229,16 +250,33 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
         {/* Events Grid */}
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
-          gap: 3 
+          gridTemplateColumns: { 
+            xs: '1fr', 
+            sm: 'repeat(2, 1fr)', 
+            md: 'repeat(2, 1fr)', 
+            lg: 'repeat(3, 1fr)', 
+            xl: 'repeat(4, 1fr)' 
+          },
+          gap: { xs: 2, sm: 3 },
+          width: '100%',
+          overflow: 'hidden'
         }}>
           {filteredEvents.map((event) => (
-            <Box key={event.id}>
+            <Box key={event.id} sx={{ minWidth: 0 }}>
               <EventCard onClick={() => handleEventClick(event)}>
-                <CardContent>
+                <CardContent sx={{ p: 2 }}>
                   <EventIconContainer>
                     {getCategoryIcon(event.category)}
-                    <Typography variant="h6" component="h3" noWrap>
+                    <Typography 
+                      variant="h6" 
+                      component="h3" 
+                      sx={{ 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        flex: 1
+                      }}
+                    >
                       {event.title}
                     </Typography>
                   </EventIconContainer>
@@ -248,7 +286,17 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
                   </Typography>
                   
                   {event.description && (
-                    <Typography variant="body2" sx={{ mb: 2 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mb: 2,
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.4
+                      }}
+                    >
                       {event.description}
                     </Typography>
                   )}

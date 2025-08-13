@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Divider, IconButton, Link } from '@mui/material';
+import BackToTop from './BackToTop';
 import { 
   Facebook, 
   Twitter, 
@@ -228,7 +229,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
             gap: 2
           }}>
             <Typography variant="body2" sx={{ opacity: 0.8 }}>
-              © 2024 Holy Cross Convent School Brooklyn. All rights reserved.
+              © 2025 Holy Cross Convent School Brooklyn. All rights reserved.
             </Typography>
             <Box sx={{ display: 'flex', gap: 3 }}>
               <Link href="#" sx={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', '&:hover': { color: '#ffd700' } }}>
@@ -237,13 +238,16 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
               <Link href="#" sx={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', '&:hover': { color: '#ffd700' } }}>
                 Terms of Use
               </Link>
-              <Link href="#" sx={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', '&:hover': { color: '#ffd700' } }}>
+              <Link href="/sitemap" sx={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', '&:hover': { color: '#ffd700' } }}>
                 Sitemap
               </Link>
             </Box>
           </Box>
         </Container>
       </Paper>
+      
+      {/* Back to Top and Home Buttons */}
+      <BackToTop />
     </Box>
   );
 };

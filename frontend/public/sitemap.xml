@@ -1,51 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/about</loc>
-    <lastmod>2024-07-05</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>http://localhost:3000/photos</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/academics</loc>
-    <lastmod>2024-07-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://holycrossbrooklyn.edu.za/staff</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/history</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/gallery</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/news</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/contact</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/spiritual</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/admissions</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/info</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://holycrossbrooklyn.edu.za/events</loc>
-    <lastmod>2024-07-05</lastmod>
+    <loc>http://localhost:3000/events</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/school-board</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/staff</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/links</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/forms</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/extra-mural</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/music</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/contact</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset> 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Container,
@@ -150,6 +151,7 @@ const TestimonialCard = styled(Card)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedVideo, setSelectedVideo] = useState<SchoolVideo | null>(null);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
@@ -165,6 +167,10 @@ const Home: React.FC = () => {
   const handleCloseVideo = () => {
     setVideoDialogOpen(false);
     setSelectedVideo(null);
+  };
+
+  const handleContactClick = () => {
+    navigate('/contact');
   };
 
   // Trigger stats animation when component mounts
@@ -245,6 +251,7 @@ const Home: React.FC = () => {
                 <Button
                   variant="outlined"
                   size="large"
+                  onClick={handleContactClick}
                   sx={{
                     borderColor: 'white',
                     color: 'white',
@@ -521,10 +528,10 @@ const Home: React.FC = () => {
       {/* Contact Information Section */}
       <Box sx={{ py: 8, background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)', color: 'white' }}>
         <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ fontWeight: 700, mb: 6 }}>
+          <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ fontWeight: 700, mb: 6, color: '#ffd700' }}>
             Get in Touch
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4, justifyContent: 'center' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4, justifyContent: 'center', mb: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <LocationOn sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -555,6 +562,29 @@ const Home: React.FC = () => {
                 admissions@holycrossbrooklyn.co.za
               </Typography>
             </Box>
+          </Box>
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleContactClick}
+              sx={{
+                backgroundColor: '#ffd700',
+                color: '#1a237e',
+                px: 6,
+                py: 2,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: '#e6c200',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)'
+                },
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Send Us a Message
+            </Button>
           </Box>
         </Container>
       </Box>

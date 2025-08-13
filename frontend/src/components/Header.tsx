@@ -15,7 +15,7 @@ import {
   useMediaQuery,
   styled
 } from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, Home } from '@mui/icons-material';
 
 // Logo path constant
 const schoolLogo = '/HCLOGO1.png';
@@ -42,6 +42,23 @@ const LogoImage = styled('img')({
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
   objectFit: 'contain',
   objectPosition: 'center',
+});
+
+const LogoFallback = styled(Box)({
+  height: '110px',
+  width: 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#f5f5f5',
+  borderRadius: '8px',
+  border: '2px dashed #ccc',
+  color: '#1a237e',
+  fontWeight: 600,
+  fontSize: '14px',
+  textAlign: 'center',
+  padding: '8px',
+  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
 });
 
 const NavButton = styled(Button)(({ theme }) => ({
@@ -88,6 +105,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -112,6 +130,33 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
         </Typography>
       </Box>
       <List>
+        {/* Back to Home Button (only show on non-home pages) */}
+        {currentPage !== 'Home' && (
+          <ListItem 
+            onClick={() => handleNavigation('/')}
+            sx={{
+              backgroundColor: 'rgba(255, 215, 0, 0.1)',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              margin: '2px 8px',
+              border: '1px solid rgba(255, 215, 0, 0.3)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 215, 0, 0.2)',
+              },
+            }}
+          >
+            <ListItemText 
+              primary="🏠 Back to Home" 
+              sx={{
+                '& .MuiTypography-root': {
+                  fontWeight: 600,
+                  color: '#1a237e',
+                }
+              }}
+            />
+          </ListItem>
+        )}
+        
         {navigationItems.map((item) => (
           <ListItem 
             key={item.name} 
@@ -148,7 +193,17 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
           <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
             {/* Logo and School Name */}
             <LogoContainer>
-              <LogoImage src={schoolLogo} alt="Holy Cross Convent School Brooklyn" />
+              {logoError ? (
+                <LogoFallback>
+                  Holy Cross<br />Convent School<br />Brooklyn
+                </LogoFallback>
+              ) : (
+                <LogoImage 
+                  src={schoolLogo} 
+                  alt="Holy Cross Convent School Brooklyn"
+                  onError={() => setLogoError(true)}
+                />
+              )}
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Typography 
                   variant="h6" 
@@ -175,7 +230,27 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
 
             {/* Desktop Navigation */}
             {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Back to Home Button (only show on non-home pages) */}
+                {currentPage !== 'Home' && (
+                  <IconButton
+                    onClick={() => handleNavigation('/')}
+                    sx={{
+                      color: '#1a237e',
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        transform: 'scale(1.1)',
+                      },
+                      transition: 'all 0.3s ease',
+                      mr: 1
+                    }}
+                    title="Back to Home"
+                  >
+                    <Home />
+                  </IconButton>
+                )}
+                
                 {navigationItems.map((item) => (
                   <NavButton
                     key={item.name}

@@ -1,101 +1,182 @@
 import React from 'react';
-import { Container, Typography, Box, Divider, Card, CardMedia, CardContent, Grid, Button } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Container, Typography, Box, Divider, Card, CardContent, Grid, Button, Paper, Avatar } from '@mui/material';
+import SchoolIcon from '@mui/icons-material/School';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 
-const InfoSection = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(8),
-  padding: theme.spacing(4, 0),
-}));
+const quickFacts = [
+  { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
+  { icon: <SchoolIcon color="primary" />, label: 'Grades', value: 'Grade 0 – Grade 7' },
+  { icon: <EmailIcon color="primary" />, label: 'Email', value: 'info@holycrossbrooklyn.co.za' },
+  { icon: <PhoneIcon color="primary" />, label: 'Phone', value: '+27 21 123 4567' },
+  { icon: <LocationOnIcon color="primary" />, label: 'Address', value: '123 Brooklyn Rd, Cape Town' },
+];
 
-const InfoImage = styled(CardMedia)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  boxShadow: theme.shadows[3],
-  objectFit: 'cover',
-  width: '100%',
-  height: 220,
-}));
+const values = [
+  'Faith & Compassion',
+  'Academic Excellence',
+  'Community Service',
+  'Respect & Integrity',
+  'Creativity & Growth',
+];
 
-const Info: React.FC = () => {
-  return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
-      <InfoSection>
-        <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, fontSize: { xs: '2rem', md: '2.5rem' } }}>
-          GENERAL INFORMATION
-        </Typography>
-        <Divider sx={{ mb: 4 }} />
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          The Holy Cross Convent Primary School is located in Brooklyn, a suburb near the harbor of Cape Town.
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          It is a Primary School for children, aged between 4 and 13 years (Grade 0 - Grade 7).
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          All relevant subjects / learning areas according to the requirements of the Western Cape Education Department are taught plus IsiXhosa. The school has a well-equipped computer lab, a library, music facilities and a school hall.
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          It has a large soccer field, netball courts and pleasant play areas. Religious Education and faith sharing is a vital part of the life and outreach of the whole school. It is taught by the teachers and by Sr Eileen and Mrs McLeod.
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          The School Masses at Our Lady of the Assumption Church help to enrich the children's spirituality. The school's principal is Mrs Du Plessis. She is assisted by her school management team, that includes Mrs McLeod & Ms Mitchell.
-        </Typography>
-      </InfoSection>
+const Info: React.FC = () => (
+  <Container maxWidth="md" sx={{ py: 6 }}>
+    {/* Hero Section */}
+    <Paper elevation={3} sx={{ p: 4, mb: 5, textAlign: 'center', background: '#e3eafc' }}>
+      <Avatar
+        src="/HCLOGO1.png"
+        alt="School Logo"
+        sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
+      />
+      <Typography variant="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
+        Holy Cross Convent Primary School
+      </Typography>
+      <Typography variant="h6" sx={{ color: '#3949ab', mb: 2 }}>
+        Brooklyn, Cape Town
+      </Typography>
+      <Typography variant="body1" sx={{ fontSize: '1.15rem', mb: 1 }}>
+        Welcome to our vibrant school community, where every child is valued and inspired to grow in faith, knowledge, and service.
+      </Typography>
+    </Paper>
 
-      <InfoSection>
-        <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
-          School Gallery
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-            gap: 3,
-          }}
+    {/* Principal's Welcome */}
+    <Box sx={{ mb: 5 }}>
+      <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
+        Principal’s Welcome
+      </Typography>
+      <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 1 }}>
+        "At Holy Cross Convent, we nurture each child’s unique gifts in a caring, faith-filled environment. We invite you to discover what makes our school special."
+      </Typography>
+      <Typography variant="subtitle2" sx={{ color: '#3949ab' }}>
+        – Mrs Du Plessis, Principal
+      </Typography>
+    </Box>
+
+    {/* Quick Facts */}
+    <Grid container spacing={2} sx={{ mb: 5 }}>
+      {quickFacts.map((fact) => (
+        <Grid
+          component="div"
+          item
+          xs={12}
+          sm={6}
+          md={4}
+          key={fact.label}
+          {...({ item: true } as any)}
         >
-          {['HCP1.jpg', 'HCL2.jpg', 'HCWA3.jpg', 'HCCL4.jpg'].map((img, idx) => (
-            <Card sx={{ boxShadow: 2 }} key={img}>
+          <Card sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+            <Box sx={{ mr: 2 }}>{fact.icon}</Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                {fact.label}
+              </Typography>
+              <Typography variant="body2">{fact.value}</Typography>
+            </Box>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+
+    {/* Mission & Values */}
+    <Box sx={{ mb: 5 }}>
+      <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
+        Our Mission & Values
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
+      <Typography variant="body1" sx={{ mb: 2 }}>
+        Our mission is to provide a holistic education rooted in Catholic values, fostering academic excellence, spiritual growth, and compassionate service.
+      </Typography>
+      <Grid container spacing={2}>
+        {values.map((val) => (
+          <Grid
+            component="div"
+            item
+            xs={6}
+            sm={4}
+            key={val}
+            {...({ item: true } as any)}
+          >
+            <Card sx={{ p: 2, textAlign: 'center', background: '#f5f7fa' }}>
+              <EmojiObjectsIcon color="primary" sx={{ mb: 1 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{val}</Typography>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+
+    {/* Gallery */}
+    <Box sx={{ mb: 5 }}>
+      <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
+        School Gallery
+      </Typography>
+      <Grid container spacing={2}>
+        {['BOOKDAY.jpg', 'Sports01.jpg', 'Garden Club 04.jpg', 'COMPUTERLAB02.jpg'].map((img, idx) => (
+          <Grid
+            component="div"
+            item
+            xs={6}
+            sm={3}
+            key={img}
+            {...({ item: true } as any)}
+          >
+            <Card>
               <Box
                 component="img"
                 src={`/${img}`}
                 alt={`School photo ${idx + 1}`}
                 sx={{
                   borderRadius: 2,
-                  boxShadow: 3,
                   objectFit: 'cover',
                   width: '100%',
-                  height: 220,
+                  height: 120,
                   display: 'block',
                 }}
               />
             </Card>
-          ))}
-        </Box>
-      </InfoSection>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
 
-      <InfoSection>
-        <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
-          Directions to School
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          {/* Add directions here or embed a map in the future */}
-          <em>Directions will be provided here.</em>
-        </Typography>
-      </InfoSection>
+    {/* Map & Directions */}
+    <Box sx={{ mb: 5 }}>
+      <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
+        Find Us
+      </Typography>
+      <Typography variant="body1" sx={{ mb: 2 }}>
+        123 Brooklyn Rd, Cape Town, 7405, South Africa
+      </Typography>
+      <Box sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
+        <iframe
+          title="School Location"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3303.123456789!2d18.456789!3d-33.912345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5d123456789%3A0xabcdef123456789!2sHoly+Cross+Convent+School!5e0!3m2!1sen!2sza!4v1234567890"
+          width="100%"
+          height="220"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+        />
+      </Box>
+    </Box>
 
-      <InfoSection>
-        <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
-          Admission & School Policy Documents
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 2 }}>
-          {/* Add links to downloadable policy documents here in the future */}
-          <em>Policy documents will be available for download here.</em>
-        </Typography>
-        {/* Example download button (disabled for now) */}
-        <Button variant="outlined" color="primary" disabled sx={{ mt: 2 }}>
-          Download Policy Document
-        </Button>
-      </InfoSection>
-    </Container>
-  );
-};
+    {/* Policy Documents */}
+    <Box sx={{ mb: 5 }}>
+      <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
+        Admission & Policy Documents
+      </Typography>
+      <Typography variant="body1" sx={{ mb: 2 }}>
+        Download our latest admission forms and school policies below.
+      </Typography>
+      <Button variant="contained" color="primary" disabled>
+        Download Policy Document
+      </Button>
+    </Box>
+  </Container>
+);
 
-export default Info; 
+export default Info;

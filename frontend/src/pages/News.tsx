@@ -5,19 +5,19 @@ import { Announcement, Event, School } from '@mui/icons-material';
 const newsItems = [
   {
     title: 'Welcome Back to School!',
-    date: '2024-07-01',
+    date: '2025-07-01',
     summary: 'We are excited to welcome all students and staff to the new academic year. Let’s make it a year of growth, learning, and community spirit!',
     icon: <School sx={{ color: '#1a237e', fontSize: 40 }} />,
   },
   {
     title: 'Cardinal Stephen Brislin Visits Our School',
-    date: '2024-06-15',
+    date: '2025-06-15',
     summary: 'A special thank you to His Eminence Cardinal Stephen Brislin for visiting our school and inspiring our learners and staff.',
     icon: <Event sx={{ color: '#ffd700', fontSize: 40 }} />,
   },
   {
     title: 'New Library Books Arrived',
-    date: '2024-06-10',
+    date: '2025-06-10',
     summary: 'Our library has received a new collection of books for all grades. Encourage your child to explore and read!',
     icon: <Announcement sx={{ color: '#1a237e', fontSize: 40 }} />,
   },

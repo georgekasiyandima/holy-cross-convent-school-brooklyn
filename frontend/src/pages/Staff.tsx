@@ -52,7 +52,7 @@ const staffData = {
       email: 'principal@holycrossbrooklyn.edu',
       phone: '(021) 511 4337',
       bio: 'Leading our school with dedication and vision.',
-      image: '/Principal.png',
+      image: '/Principal1.png',
     }
   ],
   teaching: [
@@ -63,6 +63,7 @@ const staffData = {
       email: 're@holycrossbrooklyn.edu',
       bio: 'Nurturing faith and spiritual development.',
       phone: undefined,
+      image: '/Eileen.png'
     },
     {
       name: 'Mrs Petersen',
@@ -73,12 +74,13 @@ const staffData = {
       phone: undefined,
     },
     {
-      name: 'Mrs Perumal',
+      name: 'Ms Glissen',
       role: 'Grade R',
       icon: <Grade sx={{ color: '#ffd700' }} />,
       email: 'perumal@holycrossbrooklyn.edu',
       bio: 'Preparing students for primary education.',
       phone: undefined,
+      image:'/Glissen.png'
     },
     {
       name: 'Ms Du Preez',
@@ -87,22 +89,25 @@ const staffData = {
       email: 'dupreez@holycrossbrooklyn.edu',
       bio: 'Building strong academic foundations.',
       phone: undefined,
+      image:'/Preez.png'
     },
     {
-      name: 'Ms Daniels',
+      name: 'Mrs D. Lottering',
       role: 'Grade 2',
       icon: <Grade sx={{ color: '#1a237e' }} />,
       email: 'daniels@holycrossbrooklyn.edu',
       bio: 'Developing critical thinking skills.',
       phone: undefined,
+      image:'/Lottering.png'
     },
     {
-      name: 'Mrs Kendall',
+      name: 'Ms Daniels',
       role: 'Grade 3',
       icon: <Grade sx={{ color: '#1a237e' }} />,
       email: 'kendall@holycrossbrooklyn.edu',
       bio: 'Encouraging independent learning.',
       phone: undefined,
+      image: '/Daniels1.png'
     },
     {
       name: 'Mrs Manjengwa',
@@ -111,6 +116,7 @@ const staffData = {
       email: 'manjengwa@holycrossbrooklyn.edu',
       bio: 'Preparing for intermediate phase.',
       phone: undefined,
+      image:'/Majengwa.png'
     },
     {
       name: 'Mr Goldman',
@@ -135,6 +141,7 @@ const staffData = {
       email: 'mcleod@holycrossbrooklyn.edu',
       bio: 'Supporting students\' spiritual and academic growth.',
       phone: undefined,
+      image:'/McLeod.png'
     },
     {
       name: 'Mrs Eriksen',
@@ -159,6 +166,7 @@ const staffData = {
       email: 'malander@holycrossbrooklyn.edu',
       bio: 'Teaching Afrikaans language and culture.',
       phone: undefined,
+      image:'/Malander.png'
     },
     {
       name: 'Mr Thelen',
@@ -167,6 +175,7 @@ const staffData = {
       email: 'thelen@holycrossbrooklyn.edu',
       bio: 'Integrating technology and music education.',
       phone: undefined,
+      image:'/Thelen.png'
     },
     {
       name: 'Mrs De Sousa',
@@ -175,6 +184,7 @@ const staffData = {
       email: 'desousa@holycrossbrooklyn.edu',
       bio: 'Introducing technology to young learners.',
       phone: undefined,
+      image:'/Souza.png' 
     }
   ],
   support: [
@@ -360,18 +370,40 @@ const Staff: React.FC = () => {
       {staffList.map((staff, index) => (
         <StaffCard key={index}>
           <CardContent sx={{ textAlign: 'center', p: 3 }}>
-            <Avatar
-              sx={{
-                width: 80,
-                height: 80,
-                mx: 'auto',
-                mb: 2,
-                bgcolor: '#1a237e',
-                fontSize: '2rem',
-              }}
-            >
-              {staff.icon}
-            </Avatar>
+            {staff.image ? (
+                <img
+                  src={staff.image}
+                  alt={`${staff.name} photo`}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    margin: '0 auto 16px auto',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid #1a237e',
+                    display: 'block',
+                  }}
+                  onError={(e) => {
+                    console.error(`Failed to load image for ${staff.name}:`, staff.image);
+                  }}
+                  onLoad={() => {
+                    console.log(`Successfully loaded image for ${staff.name}:`, staff.image);
+                  }}
+                />
+              ) : (
+                <Avatar
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    mx: 'auto',
+                    mb: 2,
+                    bgcolor: '#1a237e',
+                    fontSize: '2rem',
+                  }}
+                >
+                  {staff.icon}
+                </Avatar>
+              )}
             <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
               {staff.name}
             </Typography>
@@ -418,7 +450,7 @@ const Staff: React.FC = () => {
           building character, and inspiring faith in our students.
         </Typography>
         <Chip 
-          label="2023 Academic Year" 
+          label="2025 Academic Year" 
           color="primary" 
           variant="outlined"
           sx={{ fontWeight: 600, borderColor: '#ffd700' }}
@@ -714,4 +746,4 @@ const Staff: React.FC = () => {
   );
 };
 
-export default Staff; 
+export default Staff;

@@ -13,7 +13,8 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Chip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Send, Phone, Email, LocationOn, School } from '@mui/icons-material';
@@ -106,9 +107,36 @@ const ContactForm: React.FC = () => {
 
   return (
     <Box sx={{ py: 4 }}>
-      <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4, textAlign: 'center' }}>
-        Contact Us
-      </Typography>
+      {/* Enhanced Header */}
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>
+          Get in Touch
+        </Typography>
+        <Typography variant="h6" sx={{ color: '#555', maxWidth: 800, mx: 'auto', mb: 4 }}>
+          We'd love to hear from you! Whether you have questions about enrollment, want to schedule a visit, 
+          or need information about our programs, our team is here to help.
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Chip 
+            label="Quick Response" 
+            color="primary" 
+            variant="outlined"
+            sx={{ borderColor: '#ffd700', color: '#1a237e' }}
+          />
+          <Chip 
+            label="Professional Staff" 
+            color="primary" 
+            variant="outlined"
+            sx={{ borderColor: '#ffd700', color: '#1a237e' }}
+          />
+          <Chip 
+            label="24/7 Support" 
+            color="primary" 
+            variant="outlined"
+            sx={{ borderColor: '#ffd700', color: '#1a237e' }}
+          />
+        </Box>
+      </Box>
       
       <Box sx={{ 
         display: 'grid', 
@@ -119,15 +147,15 @@ const ContactForm: React.FC = () => {
         <Box>
           <ContactCard>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
-                Get in Touch
+              <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, textAlign: 'center' }}>
+                Contact Information
               </Typography>
               
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <School sx={{ color: '#ffd700', mr: 2 }} />
+              <Box sx={{ mb: 4, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, justifyContent: 'center' }}>
+                  <School sx={{ color: '#ffd700', mr: 2, fontSize: 40 }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e' }}>
                       Holy Cross Convent School
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>
@@ -135,46 +163,59 @@ const ContactForm: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
+                <Typography variant="body2" sx={{ color: '#666', fontStyle: 'italic' }}>
+                  Excellence in Catholic Education since 1960
+                </Typography>
               </Box>
 
               <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Phone sx={{ color: '#ffd700', mr: 2 }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 2, backgroundColor: 'rgba(255, 215, 0, 0.1)' }}>
+                  <Phone sx={{ color: '#ffd700', mr: 2, fontSize: 30 }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1a237e' }}>
                       Phone
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>
                       (021) 511 4337
                     </Typography>
+                    <Typography variant="caption" sx={{ color: '#888', fontStyle: 'italic' }}>
+                      Office Hours: Mon-Fri 7:30 AM - 4:00 PM
+                    </Typography>
                   </Box>
                 </Box>
               </Box>
 
               <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Email sx={{ color: '#ffd700', mr: 2 }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 2, backgroundColor: 'rgba(255, 215, 0, 0.1)' }}>
+                  <Email sx={{ color: '#ffd700', mr: 2, fontSize: 30 }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1a237e' }}>
                       Email
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>
                       info@holycrossbrooklyn.edu.za
                     </Typography>
+                    <Typography variant="caption" sx={{ color: '#888', fontStyle: 'italic' }}>
+                      admissions@holycrossbrooklyn.edu.za
+                    </Typography>
                   </Box>
                 </Box>
               </Box>
 
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocationOn sx={{ color: '#ffd700', mr: 2 }} />
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 2, backgroundColor: 'rgba(255, 215, 0, 0.1)' }}>
+                  <LocationOn sx={{ color: '#ffd700', mr: 2, fontSize: 30 }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1a237e' }}>
                       Address
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>
+                      162 Koeberg Road<br />
                       Brooklyn, Cape Town<br />
                       Western Cape, South Africa
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#888', fontStyle: 'italic' }}>
+                      Easily accessible from major routes
                     </Typography>
                   </Box>
                 </Box>
@@ -187,8 +228,12 @@ const ContactForm: React.FC = () => {
         <Box>
           <ContactCard>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
+              <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, textAlign: 'center' }}>
                 Send us a Message
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#666', mb: 4, textAlign: 'center' }}>
+                Fill out the form below and we'll get back to you within 24 hours. 
+                All fields marked with * are required.
               </Typography>
 
               <form onSubmit={handleSubmit}>
@@ -277,12 +322,25 @@ const ContactForm: React.FC = () => {
                       startIcon={loading ? <CircularProgress size={20} /> : <Send />}
                       sx={{
                         backgroundColor: '#1a237e',
+                        color: 'white',
+                        py: 2,
+                        px: 4,
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        borderRadius: 2,
                         '&:hover': {
-                          backgroundColor: '#0d47a1'
-                        }
+                          backgroundColor: '#0d47a1',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(26, 35, 126, 0.3)'
+                        },
+                        '&:disabled': {
+                          backgroundColor: '#ccc',
+                          color: '#666'
+                        },
+                        transition: 'all 0.3s ease'
                       }}
                     >
-                      {loading ? 'Sending...' : 'Send Message'}
+                      {loading ? 'Sending Message...' : 'Send Message'}
                     </Button>
                   </Box>
                 </Box>
@@ -297,8 +355,13 @@ const ContactForm: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setSuccess(false)}
       >
-        <Alert onClose={() => setSuccess(false)} severity="success">
-          Message sent successfully! We'll get back to you soon.
+        <Alert onClose={() => setSuccess(false)} severity="success" sx={{ backgroundColor: '#4caf50', color: 'white' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Message Sent Successfully! 🎉
+          </Typography>
+          <Typography variant="body2">
+            Thank you for contacting us. We'll get back to you within 24 hours.
+          </Typography>
         </Alert>
       </Snackbar>
 
@@ -307,8 +370,13 @@ const ContactForm: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setError('')}
       >
-        <Alert onClose={() => setError('')} severity="error">
-          {error}
+        <Alert onClose={() => setError('')} severity="error" sx={{ backgroundColor: '#f44336', color: 'white' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Oops! Something went wrong
+          </Typography>
+          <Typography variant="body2">
+            {error}
+          </Typography>
         </Alert>
       </Snackbar>
     </Box>
