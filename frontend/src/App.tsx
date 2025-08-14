@@ -21,6 +21,8 @@ import Music from './pages/Music';
 import FacebookDemo from './pages/FacebookDemo';
 import ContactForm from './components/ContactForm';
 import Sitemap from './pages/Sitemap';
+import Projects from './pages/Projects';
+import Donate from './pages/Donate';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -58,8 +60,8 @@ const NavigationWrapper: React.FC = () => {
     switch (path) {
       case '/':
         return 'Home';
-      case '/photos':
-        return 'Photos';
+      case '/gallery':
+        return 'Gallery';
       case '/history':
         return 'History';
       case '/news':
@@ -71,7 +73,7 @@ const NavigationWrapper: React.FC = () => {
       case '/info':
         return 'Info';
       case '/forms':
-        return 'Forms';
+        return 'Forms & Fees';
       case '/links':
         return 'Links';
       case '/music':
@@ -80,6 +82,12 @@ const NavigationWrapper: React.FC = () => {
         return 'Extra Mural';
       case '/spiritual':
         return 'Spiritual';
+      case '/events':
+        return 'Events';
+      case '/projects':
+        return 'Projects';
+      case '/donate':
+        return 'Donate';
       case '/facebook-demo':
         return 'Facebook Demo';
       case '/contact':
@@ -99,7 +107,7 @@ const NavigationWrapper: React.FC = () => {
     <Layout currentPage={getCurrentPage()} onNavigate={handleNavigation}>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/photos" element={<Gallery />} />
+        <Route path="/gallery" element={<Gallery />} />
         <Route path="/history" element={<History />} />
         <Route path="/news" element={<News />} />
         <Route path="/spiritual" element={<Spiritual />} />
@@ -111,6 +119,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/forms" element={<FormsFees />} />
         <Route path="/extra-mural" element={<ExtraMural />} />
         <Route path="/music" element={<Music />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/donate" element={<Donate />} />
         <Route path="/facebook-demo" element={<FacebookDemo />} />
         <Route path="/contact" element={<ContactForm />} />
         <Route path="/sitemap" element={<Sitemap />} />

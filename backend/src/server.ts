@@ -1,117 +1,104 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
+import { PrismaClient } from '@prisma/client';
+
+// Import routes
+import authRoutes from './routes/auth';
+import newsRoutes from './routes/news';
+import eventsRoutes from './routes/events';
+import newslettersRoutes from './routes/newsletters';
+import reportsRoutes from './routes/reports';
+import contactRoutes from './routes/contact';
+import galleryRoutes from './routes/gallery';
+import staffRoutes from './routes/staff';
+import uploadRoutes from './routes/upload';
+import adminRoutes from './routes/admin';
+
+// Import middleware
+import { errorHandler } from './middleware/errorHandler';
+import { authMiddleware } from './middleware/auth';
 
 const app = express();
+const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3002',
+  credentials: true
+}));
+app.use(morgan('combined'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Basic route
-app.get('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'Welcome to Holy Cross Convent School Brooklyn API',
-    version: '1.0.0',
-    status: 'running'
-  });
-});
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// School information route
-app.get('/api/school', (req: Request, res: Response) => {
-  res.json({
-    name: 'Holy Cross Convent School Brooklyn',
-    address: '123 School Street, Brooklyn, NY 11201',
-    phone: '(555) 123-4567',
-    email: 'info@holycrossbrooklyn.edu',
-    founded: '1950',
-    mission: 'Nurturing Excellence, Building Character, Inspiring Faith',
-    grades: 'K-12',
-    type: 'Private Catholic School'
-  });
-});
-
-// Programs route
-app.get('/api/programs', (req: Request, res: Response) => {
-  res.json([
-    {
-      id: 1,
-      name: 'Elementary School',
-      grades: 'K-5',
-      description: 'Foundation years focusing on core academics and character development'
-    },
-    {
-      id: 2,
-      name: 'Middle School',
-      grades: '6-8',
-      description: 'Transitional years with expanded curriculum and extracurricular activities'
-    },
-    {
-      id: 3,
-      name: 'High School',
-      grades: '9-12',
-      description: 'College preparatory program with advanced placement courses'
-    }
-  ]);
-});
-
-// Events route
-app.get('/api/events', (req: Request, res: Response) => {
-  res.json([
-    {
-      id: 1,
-      title: 'Open House',
-      date: '2024-03-15',
-      time: '10:00 AM',
-      description: 'Come visit our campus and meet our faculty'
-    },
-    {
-      id: 2,
-      title: 'Spring Concert',
-      date: '2024-04-20',
-      time: '7:00 PM',
-      description: 'Annual student music performance'
-    },
-    {
-      id: 3,
-      title: 'Graduation Ceremony',
-      date: '2024-06-15',
-      time: '2:00 PM',
-      description: 'Class of 2024 graduation celebration'
-    }
-  ]);
-});
-
-// Health check route
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({
-    status: 'healthy',
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    database: 'connected'
   });
 });
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: Function) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: 'Something went wrong!',
-    message: err.message
-  });
-});
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/events', eventsRoutes);
+app.use('/api/newsletters', newslettersRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/upload', authMiddleware, uploadRoutes);
+app.use('/api/admin', authMiddleware, adminRoutes);
+
+// Error handling
+app.use(errorHandler);
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
-  res.status(404).json({
+app.use('*', (req, res) => {
+  res.status(404).json({ 
     error: 'Route not found',
-    path: req.originalUrl
+    path: req.originalUrl 
   });
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📚 Holy Cross Convent School Brooklyn API`);
-  console.log(`🌐 http://localhost:${PORT}`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
-}); 
+async function startServer() {
+  try {
+    // Test database connection
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+startServer(); 

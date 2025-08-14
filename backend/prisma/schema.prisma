@@ -1,0 +1,231 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  newsArticles    NewsArticle[]
+  events          Event[]
+  newsletters     Newsletter[]
+  reports         Report[]
+  contactMessages ContactMessage[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// News and Announcements
+model NewsArticle {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags     Tag[]
+
+  @@map("news_articles")
+}
+
+// Events Management
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+// Newsletter Management
+model Newsletter {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("newsletters")
+}
+
+// Reports Management
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        ReportType
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+enum ReportType {
+  ACADEMIC
+  FINANCIAL
+  ADMINISTRATIVE
+  SPORTS
+  CULTURAL
+  OTHER
+}
+
+// Contact Form Submissions
+model ContactMessage {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  inquiryType String
+  isRead    Boolean  @default(false)
+  isReplied Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  @@map("contact_messages")
+}
+
+// Gallery Management
+model GalleryImage {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  thumbnailUrl String?
+  category    String
+  tags        String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery_images")
+}
+
+// Staff Management
+model StaffMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  email       String?
+  phone       String?
+  bio         String?
+  imageUrl    String?
+  grade       String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("staff_members")
+}
+
+// Tags for categorization
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  color String @default("#1a237e")
+
+  // Relations
+  newsArticles NewsArticle[]
+
+  @@map("tags")
+}
+
+// Settings and Configuration
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string") // string, number, boolean, json
+
+  @@map("settings")
+}
+
+// Email Subscribers for Newsletters
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_subscribers")
+}
+
+// File Uploads
+model FileUpload {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  url         String
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@map("file_uploads")
+}

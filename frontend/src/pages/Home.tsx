@@ -41,6 +41,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
+import LiveFeed from '../components/LiveFeed';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -273,6 +274,13 @@ const Home: React.FC = () => {
           </Fade>
         </Container>
       </HeroSection>
+
+      {/* Live Feed Section */}
+      <Box sx={{ py: 6, background: 'white' }}>
+        <Container maxWidth="xl">
+          <LiveFeed />
+        </Container>
+      </Box>
 
       {/* Statistics Section */}
       <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>

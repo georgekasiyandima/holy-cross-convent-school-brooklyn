@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -13,20 +13,66 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
-  styled
+  styled,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Fade,
+  Slide
 } from '@mui/material';
-import { Menu as MenuIcon, Home } from '@mui/icons-material';
+import { 
+  Menu as MenuIcon, 
+  Home, 
+  School, 
+  Info, 
+  Folder, 
+  Construction,
+  Favorite,
+  ExpandMore,
+  Event,
+  Newspaper,
+  PhotoLibrary,
+  MusicNote,
+  SportsSoccer,
+  SelfImprovement,
+  People,
+  Description,
+  Link,
+  Favorite as Donate
+} from '@mui/icons-material';
+
+// TypeScript interfaces for type safety
+interface NavigationItem {
+  name: string;
+  path?: string;
+  icon: React.ReactNode;
+  type: 'single' | 'dropdown';
+  items?: NavigationSubItem[];
+}
+
+interface NavigationSubItem {
+  name: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+interface HeaderProps {
+  currentPage?: string;
+  onNavigate?: (path: string) => void;
+}
 
 // Logo path constant
 const schoolLogo = '/HCLOGO1.png';
 
 // Styled components for custom styling
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #87CEEB 0%, #FF6B6B 50%, #FFD700 100%)',
+  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 50%, #f3e5f5 100%)', // School-friendly gradient
   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.drawer + 1,
+  backdropFilter: 'blur(10px)',
+  borderBottom: '1px solid rgba(255,255,255,0.2)',
 }));
 
 const LogoContainer = styled(Box)({
@@ -42,6 +88,10 @@ const LogoImage = styled('img')({
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
   objectFit: 'contain',
   objectPosition: 'center',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
 });
 
 const LogoFallback = styled(Box)({
@@ -50,9 +100,9 @@ const LogoFallback = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: '#f5f5f5',
+  backgroundColor: 'rgba(255, 193, 7, 0.1)',
   borderRadius: '8px',
-  border: '2px dashed #ccc',
+  border: '2px dashed rgba(255, 193, 7, 0.3)',
   color: '#1a237e',
   fontWeight: 600,
   fontSize: '14px',
@@ -70,6 +120,8 @@ const NavButton = styled(Button)(({ theme }) => ({
   margin: '0 4px',
   borderRadius: '20px',
   transition: 'all 0.3s ease',
+  position: 'relative',
+  overflow: 'hidden',
   '&:hover': {
     backgroundColor: 'rgba(255,255,255,0.2)',
     transform: 'translateY(-2px)',
@@ -79,33 +131,292 @@ const NavButton = styled(Button)(({ theme }) => ({
     backgroundColor: 'rgba(255,255,255,0.3)',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
   },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'left 0.5s',
+  },
+  '&:hover::before': {
+    left: '100%',
+  },
 }));
 
-// Navigation items based on your requirements
-const navigationItems = [
-  { name: 'Home', path: '/' },
-  { name: 'History', path: '/history' },
-  { name: 'Events', path: '/events' },
-  { name: 'News', path: '/news' },
-  { name: 'School Board', path: '/school-board' },
-  { name: 'Staff', path: '/staff' },
-  { name: 'Info', path: '/info' },
-  { name: 'Forms & Fees', path: '/forms' },
-  { name: 'Photos', path: '/photos' },
-  { name: 'Links', path: '/links' },
-  { name: 'Music', path: '/music' },
-  { name: 'Extra Mural', path: '/extra-mural' },
-  { name: 'Spiritual', path: '/spiritual' },
+// Restructured navigation items with dropdowns
+const navigationItems: NavigationItem[] = [
+  { 
+    name: 'Home', 
+    path: '/',
+    icon: <Home />,
+    type: 'single'
+  },
+  { 
+    name: 'History', 
+    path: '/history',
+    icon: <Info />,
+    type: 'single'
+  },
+  {
+    name: 'School Life',
+    icon: <School />,
+    type: 'dropdown',
+    items: [
+      { name: 'Events', path: '/events', icon: <Event /> },
+      { name: 'News', path: '/news', icon: <Newspaper /> },
+      { name: 'Gallery', path: '/gallery', icon: <PhotoLibrary /> },
+      { name: 'Music', path: '/music', icon: <MusicNote /> },
+      { name: 'Extra Mural', path: '/extra-mural', icon: <SportsSoccer /> },
+      { name: 'Spiritual', path: '/spiritual', icon: <SelfImprovement /> }
+    ]
+  },
+  {
+    name: 'About Us',
+    icon: <People />,
+    type: 'dropdown',
+    items: [
+      { name: 'School Board', path: '/school-board', icon: <People /> },
+      { name: 'Staff', path: '/staff', icon: <People /> }
+    ]
+  },
+  {
+    name: 'Resources',
+    icon: <Folder />,
+    type: 'dropdown',
+    items: [
+      { name: 'Forms & Fees', path: '/forms', icon: <Description /> },
+      { name: 'Info', path: '/info', icon: <Info /> },
+      { name: 'Links', path: '/links', icon: <Link /> }
+    ]
+  },
+  {
+    name: 'Projects',
+    path: '/projects',
+    icon: <Construction />,
+    type: 'single'
+  },
+  {
+    name: 'Donate',
+    path: '/donate',
+    icon: <Donate />,
+    type: 'single'
+  }
 ];
 
-interface HeaderProps {
-  currentPage?: string;
-  onNavigate?: (path: string) => void;
-}
+// Memoized subcomponents
+const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
+  <LogoContainer>
+    {logoError ? (
+      <LogoFallback>
+        Holy Cross<br />Convent School<br />Brooklyn
+      </LogoFallback>
+    ) : (
+      <LogoImage 
+        src={schoolLogo} 
+        alt="Holy Cross Convent School Brooklyn"
+        onError={() => console.log('Logo failed to load')}
+      />
+    )}
+    <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          color: '#1a237e', 
+          fontWeight: 700,
+          fontSize: { xs: '1rem', md: '1.25rem' }
+        }}
+      >
+        Holy Cross Convent School
+      </Typography>
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          color: '#1a237e', 
+          fontWeight: 500,
+          fontSize: { xs: '0.7rem', md: '0.8rem' }
+        }}
+      >
+        Brooklyn
+      </Typography>
+    </Box>
+  </LogoContainer>
+));
+
+const MobileDrawer = memo(({ 
+  currentPage, 
+  handleNavigation, 
+  mobileOpen, 
+  handleDrawerToggle 
+}: {
+  currentPage: string;
+  handleNavigation: (path: string) => void;
+  mobileOpen: boolean;
+  handleDrawerToggle: () => void;
+}) => (
+  <Drawer
+    variant="temporary"
+    anchor="right"
+    open={mobileOpen}
+    onClose={handleDrawerToggle}
+    ModalProps={{
+      keepMounted: true, // Better open performance on mobile.
+    }}
+    sx={{
+      display: { xs: 'block', md: 'none' },
+      '& .MuiDrawer-paper': { 
+        boxSizing: 'border-box', 
+        width: 250,
+        background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
+        backdropFilter: 'blur(10px)',
+        borderLeft: '1px solid rgba(255,255,255,0.2)',
+      },
+    }}
+  >
+    <Box sx={{ width: 250, pt: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 2 }}>
+        <LogoImage src={schoolLogo} alt="Holy Cross Convent School" />
+        <Typography variant="h6" sx={{ ml: 1, color: '#1a237e', fontWeight: 600 }}>
+          Holy Cross
+        </Typography>
+      </Box>
+      <List>
+        {/* Back to Home Button (only show on non-home pages) */}
+        {currentPage !== 'Home' && (
+          <Slide direction="left" in={currentPage !== 'Home'} timeout={300}>
+            <ListItem 
+              onClick={() => handleNavigation('/')}
+              sx={{
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                margin: '2px 8px',
+                border: '1px solid rgba(255, 193, 7, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                  transform: 'translateX(4px)',
+                },
+              }}
+              aria-label="Back to home page"
+            >
+              <ListItemText 
+                primary="🏠 Back to Home" 
+                sx={{
+                  '& .MuiTypography-root': {
+                    fontWeight: 600,
+                    color: '#1a237e',
+                  }
+                }}
+              />
+            </ListItem>
+          </Slide>
+        )}
+        
+        {navigationItems.map((item, index) => (
+          <Fade in timeout={300 + index * 100} key={item.name}>
+            <React.Fragment>
+              {item.type === 'single' ? (
+                <ListItem 
+                  onClick={() => handleNavigation(item.path!)}
+                  sx={{
+                    backgroundColor: currentPage === item.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    margin: '2px 8px',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                      transform: 'translateX(4px)',
+                    },
+                  }}
+                  aria-label={`Navigate to ${item.name}`}
+                >
+                  <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.name} 
+                    sx={{
+                      '& .MuiTypography-root': {
+                        fontWeight: currentPage === item.name ? 600 : 400,
+                        color: '#1a237e',
+                      }
+                    }}
+                  />
+                </ListItem>
+              ) : (
+                <>
+                  <ListItem 
+                    sx={{
+                      backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                      borderRadius: '8px',
+                      margin: '2px 8px',
+                      border: '1px solid rgba(255, 193, 7, 0.3)',
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.name} 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontWeight: 600,
+                          color: '#1a237e',
+                        }
+                      }}
+                    />
+                  </ListItem>
+                  {item.items?.map((subItem, subIndex) => (
+                    <ListItem 
+                      key={subItem.name}
+                      onClick={() => handleNavigation(subItem.path)}
+                      sx={{
+                        backgroundColor: currentPage === subItem.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        margin: '2px 8px 2px 32px',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                          transform: 'translateX(4px)',
+                        },
+                      }}
+                      aria-label={`Navigate to ${subItem.name}`}
+                    >
+                      <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                        {subItem.icon}
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={subItem.name} 
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontWeight: currentPage === subItem.name ? 600 : 400,
+                            color: '#1a237e',
+                            fontSize: '0.9rem',
+                          }
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </>
+              )}
+            </React.Fragment>
+          </Fade>
+        ))}
+      </List>
+    </Box>
+  </Drawer>
+));
 
 const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -118,159 +429,156 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
       onNavigate(path);
     }
     setMobileOpen(false);
+    setAnchorEl(null);
+    setActiveDropdown(null);
   };
 
-  // Mobile drawer content
-  const drawer = (
-    <Box sx={{ width: 250, pt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 2 }}>
-        <LogoImage src={schoolLogo} alt="Holy Cross Convent School" />
-        <Typography variant="h6" sx={{ ml: 1, color: '#1a237e', fontWeight: 600 }}>
-          Holy Cross
-        </Typography>
-      </Box>
-      <List>
-        {/* Back to Home Button (only show on non-home pages) */}
-        {currentPage !== 'Home' && (
-          <ListItem 
-            onClick={() => handleNavigation('/')}
-            sx={{
-              backgroundColor: 'rgba(255, 215, 0, 0.1)',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              margin: '2px 8px',
-              border: '1px solid rgba(255, 215, 0, 0.3)',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 215, 0, 0.2)',
-              },
-            }}
-          >
-            <ListItemText 
-              primary="🏠 Back to Home" 
-              sx={{
-                '& .MuiTypography-root': {
-                  fontWeight: 600,
-                  color: '#1a237e',
-                }
-              }}
-            />
-          </ListItem>
-        )}
-        
-        {navigationItems.map((item) => (
-          <ListItem 
-            key={item.name} 
-            onClick={() => handleNavigation(item.path)}
-            sx={{
-              backgroundColor: currentPage === item.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              margin: '2px 8px',
-              '&:hover': {
-                backgroundColor: 'rgba(135, 206, 235, 0.2)',
-              },
-            }}
-          >
-            <ListItemText 
-              primary={item.name} 
-              sx={{
-                '& .MuiTypography-root': {
-                  fontWeight: currentPage === item.name ? 600 : 400,
-                  color: '#1a237e',
-                }
-              }}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+  const handleDropdownClick = (event: React.MouseEvent<HTMLElement>, dropdownName: string) => {
+    setAnchorEl(event.currentTarget);
+    setActiveDropdown(dropdownName);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+    setActiveDropdown(null);
+  };
 
   return (
     <>
-      <StyledAppBar>
+      <StyledAppBar role="banner" aria-label="School navigation">
         <Container maxWidth="xl">
           <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
             {/* Logo and School Name */}
-            <LogoContainer>
-              {logoError ? (
-                <LogoFallback>
-                  Holy Cross<br />Convent School<br />Brooklyn
-                </LogoFallback>
-              ) : (
-                <LogoImage 
-                  src={schoolLogo} 
-                  alt="Holy Cross Convent School Brooklyn"
-                  onError={() => setLogoError(true)}
-                />
-              )}
-              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: '#1a237e', 
-                    fontWeight: 700,
-                    fontSize: { xs: '1rem', md: '1.25rem' }
-                  }}
-                >
-                  Holy Cross Convent School
-                </Typography>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    color: '#1a237e', 
-                    fontWeight: 500,
-                    fontSize: { xs: '0.7rem', md: '0.8rem' }
-                  }}
-                >
-                  Brooklyn
-                </Typography>
-              </Box>
-            </LogoContainer>
+            <LogoComponent logoError={logoError} />
 
             {/* Desktop Navigation */}
             {!isMobile && (
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                 {/* Back to Home Button (only show on non-home pages) */}
                 {currentPage !== 'Home' && (
-                  <IconButton
-                    onClick={() => handleNavigation('/')}
-                    sx={{
-                      color: '#1a237e',
-                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                        transform: 'scale(1.1)',
-                      },
-                      transition: 'all 0.3s ease',
-                      mr: 1
-                    }}
-                    title="Back to Home"
-                  >
-                    <Home />
-                  </IconButton>
+                  <Fade in timeout={300}>
+                    <IconButton
+                      onClick={() => handleNavigation('/')}
+                      sx={{
+                        color: '#1a237e',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                          transform: 'scale(1.1) rotate(360deg)',
+                        },
+                        mr: 1
+                      }}
+                      title="Back to Home"
+                      aria-label="Back to home page"
+                    >
+                      <Home />
+                    </IconButton>
+                  </Fade>
                 )}
                 
-                {navigationItems.map((item) => (
-                  <NavButton
-                    key={item.name}
-                    onClick={() => handleNavigation(item.path)}
-                    className={currentPage === item.name ? 'active' : ''}
-                  >
-                    {item.name}
-                  </NavButton>
+                {navigationItems.map((item, index) => (
+                  <Fade in timeout={300 + index * 100} key={item.name}>
+                    <React.Fragment>
+                      {item.type === 'single' ? (
+                        <NavButton
+                          onClick={() => handleNavigation(item.path!)}
+                          className={currentPage === item.name ? 'active' : ''}
+                          startIcon={item.icon}
+                          aria-label={`Navigate to ${item.name}`}
+                        >
+                          {item.name}
+                        </NavButton>
+                      ) : (
+                        <NavButton
+                          onClick={(e) => handleDropdownClick(e, item.name)}
+                          className={activeDropdown === item.name ? 'active' : ''}
+                          startIcon={item.icon}
+                          endIcon={<ExpandMore />}
+                          aria-label={`Open ${item.name} menu`}
+                          aria-expanded={activeDropdown === item.name}
+                          aria-haspopup="true"
+                        >
+                          {item.name}
+                        </NavButton>
+                      )}
+                    </React.Fragment>
+                  </Fade>
                 ))}
               </Box>
             )}
+
+            {/* Dropdown Menus */}
+            {navigationItems.map((item) => (
+              item.type === 'dropdown' && (
+                <Menu
+                  key={item.name}
+                  anchorEl={anchorEl}
+                  open={activeDropdown === item.name}
+                  onClose={handleDropdownClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }}
+                  PaperProps={{
+                    sx: {
+                      background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(135, 206, 235, 0.3)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                      mt: 1,
+                    }
+                  }}
+                  TransitionComponent={Fade}
+                  transitionDuration={200}
+                >
+                  {item.items?.map((subItem, index) => (
+                    <MenuItem
+                      key={subItem.name}
+                      onClick={() => handleNavigation(subItem.path)}
+                      sx={{
+                        minWidth: 200,
+                        py: 1.5,
+                        px: 2,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(135, 206, 235, 0.1)',
+                          transform: 'translateX(4px)',
+                        },
+                      }}
+                      aria-label={`Navigate to ${subItem.name}`}
+                    >
+                      <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                        {subItem.icon}
+                      </ListItemIcon>
+                      <Typography sx={{ color: '#1a237e', fontWeight: 500 }}>
+                        {subItem.name}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Menu>
+              )
+            ))}
 
             {/* Mobile Menu Button */}
             {isMobile && (
               <IconButton
                 color="inherit"
-                aria-label="open drawer"
+                aria-label="open navigation menu"
                 edge="end"
                 onClick={handleDrawerToggle}
-                sx={{ color: '#1a237e' }}
+                sx={{ 
+                  color: '#1a237e',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'rotate(90deg)',
+                  },
+                }}
               >
                 <MenuIcon />
               </IconButton>
@@ -280,28 +588,14 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
       </StyledAppBar>
 
       {/* Mobile Navigation Drawer */}
-      <Drawer
-        variant="temporary"
-        anchor="right"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: 250,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
+      <MobileDrawer 
+        currentPage={currentPage}
+        handleNavigation={handleNavigation}
+        mobileOpen={mobileOpen}
+        handleDrawerToggle={handleDrawerToggle}
+      />
     </>
   );
 };
 
-export default Header; 
+export default memo(Header); 
