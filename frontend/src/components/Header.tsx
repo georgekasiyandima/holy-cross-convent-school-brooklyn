@@ -286,53 +286,78 @@ const MobileDrawer = memo(({
         {/* Back to Home Button (only show on non-home pages) */}
         {currentPage !== 'Home' && (
           <Slide direction="left" in={currentPage !== 'Home'} timeout={300}>
-            <ListItem 
-              onClick={() => handleNavigation('/')}
-              sx={{
-                backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                margin: '2px 8px',
-                border: '1px solid rgba(255, 193, 7, 0.3)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                  transform: 'translateX(4px)',
-                },
-              }}
-              aria-label="Back to home page"
-            >
-              <ListItemText 
-                primary="🏠 Back to Home" 
+            <span>
+              <ListItem 
+                onClick={() => handleNavigation('/')}
                 sx={{
-                  '& .MuiTypography-root': {
-                    fontWeight: 600,
-                    color: '#1a237e',
-                  }
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  margin: '2px 8px',
+                    border: '1px solid rgba(255, 193, 7, 0.3)',
+                    transition: 'all 0.3s ease',
+                  '&:hover': {
+                      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                      transform: 'translateX(4px)',
+                  },
                 }}
-              />
-            </ListItem>
+                  aria-label="Back to home page"
+              >
+                <ListItemText 
+                  primary="🏠 Back to Home" 
+                  sx={{
+                    '& .MuiTypography-root': {
+                      fontWeight: 600,
+                      color: '#1a237e',
+                    }
+                  }}
+                />
+              </ListItem>
+            </span>
           </Slide>
         )}
         
         {navigationItems.map((item, index) => (
           <Fade in timeout={300 + index * 100} key={item.name}>
-            <React.Fragment>
-              {item.type === 'single' ? (
-                <ListItem 
-                  onClick={() => handleNavigation(item.path!)}
+            <span>
+            {item.type === 'single' ? (
+              <ListItem 
+                onClick={() => handleNavigation(item.path!)}
+                sx={{
+                  backgroundColor: currentPage === item.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  margin: '2px 8px',
+                    transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                      transform: 'translateX(4px)',
+                  },
+                }}
+                  aria-label={`Navigate to ${item.name}`}
+              >
+                <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.name} 
                   sx={{
-                    backgroundColor: currentPage === item.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
-                    cursor: 'pointer',
+                    '& .MuiTypography-root': {
+                      fontWeight: currentPage === item.name ? 600 : 400,
+                      color: '#1a237e',
+                    }
+                  }}
+                />
+              </ListItem>
+            ) : (
+              <>
+                <ListItem 
+                  sx={{
+                      backgroundColor: 'rgba(255, 193, 7, 0.1)',
                     borderRadius: '8px',
                     margin: '2px 8px',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(135, 206, 235, 0.2)',
-                      transform: 'translateX(4px)',
-                    },
+                      border: '1px solid rgba(255, 193, 7, 0.3)',
                   }}
-                  aria-label={`Navigate to ${item.name}`}
                 >
                   <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
                     {item.icon}
@@ -341,70 +366,47 @@ const MobileDrawer = memo(({
                     primary={item.name} 
                     sx={{
                       '& .MuiTypography-root': {
-                        fontWeight: currentPage === item.name ? 600 : 400,
+                        fontWeight: 600,
                         color: '#1a237e',
                       }
                     }}
                   />
                 </ListItem>
-              ) : (
-                <>
+                  {item.items?.map((subItem, subIndex) => (
                   <ListItem 
+                    key={subItem.name}
+                    onClick={() => handleNavigation(subItem.path)}
                     sx={{
-                      backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                      backgroundColor: currentPage === subItem.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                      cursor: 'pointer',
                       borderRadius: '8px',
-                      margin: '2px 8px',
-                      border: '1px solid rgba(255, 193, 7, 0.3)',
+                      margin: '2px 8px 2px 32px',
+                        transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                          transform: 'translateX(4px)',
+                      },
                     }}
+                      aria-label={`Navigate to ${subItem.name}`}
                   >
                     <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
-                      {item.icon}
+                      {subItem.icon}
                     </ListItemIcon>
                     <ListItemText 
-                      primary={item.name} 
+                      primary={subItem.name} 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontWeight: 600,
+                          fontWeight: currentPage === subItem.name ? 600 : 400,
                           color: '#1a237e',
+                          fontSize: '0.9rem',
                         }
                       }}
                     />
                   </ListItem>
-                  {item.items?.map((subItem, subIndex) => (
-                    <ListItem 
-                      key={subItem.name}
-                      onClick={() => handleNavigation(subItem.path)}
-                      sx={{
-                        backgroundColor: currentPage === subItem.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
-                        cursor: 'pointer',
-                        borderRadius: '8px',
-                        margin: '2px 8px 2px 32px',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: 'rgba(135, 206, 235, 0.2)',
-                          transform: 'translateX(4px)',
-                        },
-                      }}
-                      aria-label={`Navigate to ${subItem.name}`}
-                    >
-                      <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
-                        {subItem.icon}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={subItem.name} 
-                        sx={{
-                          '& .MuiTypography-root': {
-                            fontWeight: currentPage === subItem.name ? 600 : 400,
-                            color: '#1a237e',
-                            fontSize: '0.9rem',
-                          }
-                        }}
-                      />
-                    </ListItem>
-                  ))}
-                </>
-              )}
-            </React.Fragment>
+                ))}
+              </>
+            )}
+          </span>
           </Fade>
         ))}
       </List>
@@ -457,52 +459,54 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                 {/* Back to Home Button (only show on non-home pages) */}
                 {currentPage !== 'Home' && (
                   <Fade in timeout={300}>
-                    <IconButton
-                      onClick={() => handleNavigation('/')}
-                      sx={{
-                        color: '#1a237e',
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          transform: 'scale(1.1) rotate(360deg)',
-                        },
-                        mr: 1
-                      }}
-                      title="Back to Home"
-                      aria-label="Back to home page"
-                    >
-                      <Home />
-                    </IconButton>
+                    <span>
+                      <IconButton
+                        onClick={() => handleNavigation('/')}
+                        sx={{
+                          color: '#1a237e',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            transition: 'all 0.3s ease',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                              transform: 'scale(1.1) rotate(360deg)',
+                          },
+                          mr: 1
+                        }}
+                        title="Back to Home"
+                          aria-label="Back to home page"
+                      >
+                        <Home />
+                      </IconButton>
+                    </span>
                   </Fade>
                 )}
                 
                 {navigationItems.map((item, index) => (
                   <Fade in timeout={300 + index * 100} key={item.name}>
-                    <React.Fragment>
-                      {item.type === 'single' ? (
-                        <NavButton
-                          onClick={() => handleNavigation(item.path!)}
-                          className={currentPage === item.name ? 'active' : ''}
-                          startIcon={item.icon}
+                    <span>
+                    {item.type === 'single' ? (
+                      <NavButton
+                        onClick={() => handleNavigation(item.path!)}
+                        className={currentPage === item.name ? 'active' : ''}
+                        startIcon={item.icon}
                           aria-label={`Navigate to ${item.name}`}
-                        >
-                          {item.name}
-                        </NavButton>
-                      ) : (
-                        <NavButton
-                          onClick={(e) => handleDropdownClick(e, item.name)}
-                          className={activeDropdown === item.name ? 'active' : ''}
-                          startIcon={item.icon}
-                          endIcon={<ExpandMore />}
+                      >
+                        {item.name}
+                      </NavButton>
+                    ) : (
+                      <NavButton
+                        onClick={(e) => handleDropdownClick(e, item.name)}
+                        className={activeDropdown === item.name ? 'active' : ''}
+                        startIcon={item.icon}
+                        endIcon={<ExpandMore />}
                           aria-label={`Open ${item.name} menu`}
                           aria-expanded={activeDropdown === item.name}
                           aria-haspopup="true"
-                        >
-                          {item.name}
-                        </NavButton>
-                      )}
-                    </React.Fragment>
+                      >
+                        {item.name}
+                      </NavButton>
+                    )}
+                  </span>
                   </Fade>
                 ))}
               </Box>

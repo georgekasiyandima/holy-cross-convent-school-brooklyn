@@ -95,41 +95,36 @@ const ButtonContainer = styled(Box)(({ theme }) => ({
 }));
 
 // Memoized subcomponents
-const ActionButton = memo(({ 
-  icon, 
-  onClick, 
-  tooltip, 
-  fabComponent: FabComponent,
-  size,
-  delay = 0 
-}: {
+const ActionButton = React.memo(React.forwardRef<HTMLButtonElement, {
   icon: React.ReactNode;
   onClick: () => void;
   tooltip: string;
   fabComponent: typeof StyledFab;
   size: 'small' | 'medium' | 'large';
-  delay?: number;
-}) => (
-  <Slide direction="up" in timeout={300 + delay}>
-    <Zoom in timeout={400 + delay}>
-      <Tooltip 
-        title={tooltip} 
-        placement="left"
-        arrow
-        enterDelay={500}
-        leaveDelay={0}
-      >
-        <FabComponent
-          size={size}
-          onClick={onClick}
-          aria-label={tooltip}
-        >
-          {icon}
-        </FabComponent>
-      </Tooltip>
-    </Zoom>
-  </Slide>
-));
+}>(({
+  icon,
+  onClick,
+  tooltip,
+  fabComponent: FabComponent,
+  size,
+}, ref) => (
+  <Tooltip
+    title={tooltip}
+    placement="left"
+    arrow
+    enterDelay={500}
+    leaveDelay={0}
+  >
+    <FabComponent
+      ref={ref}
+      size={size}
+      onClick={onClick}
+      aria-label={tooltip}
+    >
+      {icon}
+    </FabComponent>
+  </Tooltip>
+)));
 
 const BackToTop: React.FC<BackToTopProps> = ({ 
   showHomeButton = true,
@@ -195,38 +190,45 @@ const BackToTop: React.FC<BackToTopProps> = ({
     <ButtonContainer role="navigation" aria-label="Page navigation buttons">
       {/* School Information Button */}
       {shouldShowSchoolButton && (
-        <ActionButton
-          icon={<School />}
-          onClick={goToSchoolInfo}
-          tooltip={schoolButtonTooltip}
-          fabComponent={SchoolFab}
-          size={isMobile ? "medium" : "large"}
-          delay={0}
-        />
+        <Slide direction="up" in={isVisible} timeout={300}>
+          <span>
+            <ActionButton
+              icon={<School />}
+              onClick={goToSchoolInfo}
+              tooltip={schoolButtonTooltip}
+              fabComponent={SchoolFab}
+              size={isMobile ? "medium" : "large"}
+            />
+          </span>
+        </Slide>
       )}
 
       {/* Back to Home Button */}
       {shouldShowHomeButton && (
-        <ActionButton
-          icon={<Home />}
-          onClick={goToHome}
-          tooltip={homeButtonTooltip}
-          fabComponent={HomeFab}
-          size={isMobile ? "medium" : "large"}
-          delay={100}
-        />
+        <Slide direction="up" in={isVisible} timeout={400}>
+          <span>
+            <ActionButton
+              icon={<Home />}
+              onClick={goToHome}
+              tooltip={homeButtonTooltip}
+              fabComponent={HomeFab}
+              size={isMobile ? "medium" : "large"}
+            />
+          </span>
+        </Slide>
       )}
 
       {/* Back to Top Button */}
       <Fade in={isVisible} timeout={300}>
-        <ActionButton
-          icon={<KeyboardArrowUp />}
-          onClick={scrollToTop}
-          tooltip={`${topButtonTooltip} (${Math.round(scrollProgress)}% scrolled)`}
-          fabComponent={TopFab}
-          size={isMobile ? "medium" : "large"}
-          delay={200}
-        />
+        <span>
+          <ActionButton
+            icon={<KeyboardArrowUp />}
+            onClick={scrollToTop}
+            tooltip={`${topButtonTooltip} (${Math.round(scrollProgress)}% scrolled)`}
+            fabComponent={TopFab}
+            size={isMobile ? "medium" : "large"}
+          />
+        </span>
       </Fade>
     </ButtonContainer>
   );
