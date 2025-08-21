@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -36,7 +36,9 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
-// Interfaces for type safety
+//---------------------------------------------------------
+// TYPES & INTERFACES
+//---------------------------------------------------------
 interface Event {
   id: number;
   title: string;
@@ -64,7 +66,59 @@ interface Countdown {
   seconds: number;
 }
 
-// Styled components
+//---------------------------------------------------------
+// TASK SCHEDULER TYPES
+//---------------------------------------------------------
+type Job = {
+  id: string;        // unique identifier for the job
+  interval: number;  // how often to run (in seconds)
+  task: () => void;  // the function to run
+};
+
+//---------------------------------------------------------
+// TASK SCHEDULER HOOK
+//---------------------------------------------------------
+/**
+ * Custom hook that provides a centralized task scheduler
+ * This pattern helps manage multiple intervals efficiently and prevents
+ * memory leaks by using a single master interval instead of multiple setInterval calls
+ */
+export const useTaskScheduler = () => {
+  const tickRef = useRef(0);      // keeps track of elapsed seconds
+  const jobsRef = useRef<Job[]>([]); // active jobs list
+
+  // Register a new job to be executed at specified intervals
+  const addJob = useCallback((job: Job) => {
+    jobsRef.current.push(job);
+  }, []);
+
+  // Remove a job by ID to stop its execution
+  const removeJob = useCallback((jobId: string) => {
+    jobsRef.current = jobsRef.current.filter((job) => job.id !== jobId);
+  }, []);
+
+  // Central interval (runs every second) - this is the "master clock"
+  useEffect(() => {
+    const interval = setInterval(() => {
+      tickRef.current += 1;
+
+      // Check each job to see if it should run at this tick
+      jobsRef.current.forEach(({ interval, task }) => {
+        if (tickRef.current % interval === 0) {
+          task();
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(interval); // cleanup master clock
+  }, []);
+
+  return { addJob, removeJob };
+};
+
+//---------------------------------------------------------
+// STYLED COMPONENTS
+//---------------------------------------------------------
 const LiveFeedContainer = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)', // School-friendly gradient
   borderRadius: theme.spacing(2),
@@ -131,7 +185,9 @@ const TickerText = styled(Typography)(({ theme }) => ({
   },
 }));
 
-// Sample data
+//---------------------------------------------------------
+// SAMPLE DATA
+//---------------------------------------------------------
 const upcomingEvents: Event[] = [
   {
     id: 1,
@@ -208,19 +264,30 @@ const weatherData = {
   windSpeed: 12,
 };
 
-// Helper function for countdown
-const parseEventDateTime = (dateStr: string, timeStr: string) => {
+//---------------------------------------------------------
+// UTILITY FUNCTIONS
+//---------------------------------------------------------
+/**
+ * Helper to parse a date + time string into a timestamp.
+ * Assumes "YYYY-MM-DD" and "HH:mm AM/PM" formats.
+ * This function converts the date and time strings to a JavaScript timestamp
+ * that can be used for countdown calculations.
+ */
+function parseEventDateTime(dateStr: string, timeStr: string): number {
   const [time, period] = timeStr.split(' ');
   let [hours, minutes] = time.split(':').map(Number);
 
+  // Convert 12-hour format to 24-hour format
   if (period === 'PM' && hours !== 12) hours += 12;
   if (period === 'AM' && hours === 12) hours = 0;
 
   const isoDate = `${dateStr}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
   return new Date(isoDate).getTime();
-};
+}
 
-// Subcomponents
+//---------------------------------------------------------
+// SUBCOMPONENTS
+//---------------------------------------------------------
 const EventCard = memo(({ event, index, total }: { event: Event; index: number; total: number }) => {
   const theme = useTheme();
   const formatDate = (dateString: string) => {
@@ -232,53 +299,53 @@ const EventCard = memo(({ event, index, total }: { event: Event; index: number; 
   };
 
   return (
-    <FeedCard>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <FeedCard>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Event sx={{ color: '#1a237e', mr: 1 }} aria-hidden="true" />
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
-            Upcoming Events
-          </Typography>
-        </Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  Upcoming Events
+                </Typography>
+              </Box>
         <Fade in key={index} timeout={500}>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Avatar sx={{ bgcolor: event.color, width: 32, height: 32, mr: 1 }}>
                 {event.icon}
-              </Avatar>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    </Avatar>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 {event.title}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <AccessTime sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} aria-hidden="true" />
-              <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary">
                 {formatDate(event.date)} at {event.time}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <LocationOn sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} aria-hidden="true" />
-              <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary">
                 {event.location}
-              </Typography>
-            </Box>
-            <Chip
+                    </Typography>
+                  </Box>
+                  <Chip 
               label={event.category}
-              size="small"
+                    size="small" 
               sx={{ backgroundColor: event.color, color: 'white', fontWeight: 500 }}
-            />
-          </Box>
-        </Fade>
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="caption" color="text.secondary">
+                  />
+                </Box>
+              </Fade>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
             {index + 1} of {total}
-          </Typography>
+                </Typography>
           <IconButton size="small" sx={{ color: '#1a237e' }} aria-label="Next event">
-            <ArrowForward />
-          </IconButton>
-        </Box>
-      </CardContent>
-    </FeedCard>
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </FeedCard>
   );
 });
 
@@ -305,72 +372,72 @@ const NewsCard = memo(({ news, index, total }: { news: News; index: number; tota
   };
 
   return (
-    <FeedCard>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <FeedCard>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Notifications sx={{ color: '#1a237e', mr: 1 }} aria-hidden="true" />
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
-            Latest News
-          </Typography>
-        </Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  Latest News
+                </Typography>
+              </Box>
         <Fade in key={index} timeout={500}>
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
               {news.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {news.summary}
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Chip
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Chip 
                 label={news.category}
-                size="small"
-                sx={{
+                      size="small" 
+                      sx={{ 
                   backgroundColor: getPriorityColor(news.priority),
-                  color: 'white',
+                        color: 'white',
                   fontWeight: 500,
-                }}
-              />
-              <Typography variant="caption" color="text.secondary">
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary">
                 {formatDate(news.date)}
-              </Typography>
-            </Box>
-          </Box>
-        </Fade>
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="caption" color="text.secondary">
+                    </Typography>
+                  </Box>
+                </Box>
+              </Fade>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
             {index + 1} of {total}
-          </Typography>
+                </Typography>
           <IconButton size="small" sx={{ color: '#1a237e' }} aria-label="Next news">
-            <ArrowForward />
-          </IconButton>
-        </Box>
-      </CardContent>
-    </FeedCard>
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </FeedCard>
   );
 });
 
 const WeatherCard = memo(() => (
   <WeatherCardStyled>
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-      {weatherData.icon}
-    </Box>
-    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-      {weatherData.temperature}°C
-    </Typography>
-    <Typography variant="body1" sx={{ mb: 2 }}>
-      {weatherData.condition}
-    </Typography>
-    <Box sx={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.875rem' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  {weatherData.icon}
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                  {weatherData.temperature}°C
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {weatherData.condition}
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.875rem' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Opacity sx={{ fontSize: 16, mr: 0.5 }} aria-hidden="true" />
-        {weatherData.humidity}%
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {weatherData.humidity}%
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Cloud sx={{ fontSize: 16, mr: 0.5 }} aria-hidden="true" />
-        {weatherData.windSpeed} km/h
-      </Box>
-    </Box>
+                    {weatherData.windSpeed} km/h
+                  </Box>
+                </Box>
   </WeatherCardStyled>
 ));
 
@@ -449,47 +516,105 @@ const CountdownCardComponent = memo(({ event, countdown }: { event: Event; count
   );
 });
 
-// Main component
+//---------------------------------------------------------
+// MAIN LIVE FEED COMPONENT
+//---------------------------------------------------------
 const LiveFeed: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  //-----------------------------------------------------
+  // STATE MANAGEMENT
+  //-----------------------------------------------------
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
-  const [countdown, setCountdown] = useState<Countdown>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [countdown, setCountdown] = useState<Countdown>({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0 
+  });
 
-  useEffect(() => {
-    const eventInterval = setInterval(() => {
-      setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
-    }, 5000);
+  //-----------------------------------------------------
+  // TASK SCHEDULER HOOK
+  //-----------------------------------------------------
+  const { addJob, removeJob } = useTaskScheduler();
 
-    const newsInterval = setInterval(() => {
-      setCurrentNewsIndex((prev) => (prev + 1) % latestNews.length);
-    }, 4000);
+  //-----------------------------------------------------
+  // COUNTDOWN UPDATER FUNCTION
+  //-----------------------------------------------------
+  /**
+   * Updates the countdown timer for the next upcoming event
+   * This function calculates the time remaining until the next event
+   * and updates the countdown state accordingly
+   */
+  const updateCountdown = useCallback(() => {
+    const now = new Date().getTime();
+    const nextEventTime = parseEventDateTime(
+      upcomingEvents[0].date,
+      upcomingEvents[0].time
+    );
+    const distance = nextEventTime - now;
 
-    const countdownInterval = setInterval(() => {
-      const now = new Date().getTime();
-      const nextEventTime = parseEventDateTime(upcomingEvents[0].date, upcomingEvents[0].time);
-      const distance = nextEventTime - now;
-
-      if (distance > 0) {
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        setCountdown({ days, hours, minutes, seconds });
-      } else {
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(eventInterval);
-      clearInterval(newsInterval);
-      clearInterval(countdownInterval);
-    };
+    if (distance > 0) {
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor(
+        (distance % (1000 * 60 * 60)) / (1000 * 60)
+      );
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      setCountdown({ days, hours, minutes, seconds });
+    } else {
+      // if event is past due → reset
+      setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    }
   }, []);
 
+  //-----------------------------------------------------
+  // REGISTER JOBS WHEN COMPONENT MOUNTS
+  //-----------------------------------------------------
+  /**
+   * This useEffect registers all the scheduled tasks with the task scheduler
+   * Each job has a unique ID, interval (in seconds), and task function
+   * The cleanup function removes all jobs when the component unmounts
+   */
+  useEffect(() => {
+    // Job 1: Update countdown every second
+    addJob({ 
+      id: "countdown", 
+      interval: 1, 
+      task: updateCountdown 
+    });
+    
+    // Job 2: Rotate news items every 4 seconds
+    addJob({
+      id: "news",
+      interval: 4,
+      task: () =>
+        setCurrentNewsIndex((prev) => (prev + 1) % latestNews.length),
+    });
+    
+    // Job 3: Rotate event items every 5 seconds
+    addJob({
+      id: "events",
+      interval: 5,
+      task: () =>
+        setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length),
+    });
+
+    // Cleanup jobs when component unmounts
+    return () => {
+      removeJob("countdown");
+      removeJob("news");
+      removeJob("events");
+    };
+  }, [addJob, removeJob, updateCountdown]);
+
+  //-----------------------------------------------------
+  // RENDER
+  //-----------------------------------------------------
   return (
     <LiveFeedContainer role="region" aria-label="School Live Feed">
       <Typography
@@ -524,36 +649,36 @@ const LiveFeed: React.FC = () => {
         <WeatherCard />
         <EventCard event={upcomingEvents[currentEventIndex]} index={currentEventIndex} total={upcomingEvents.length} />
         <NewsCard news={latestNews[currentNewsIndex]} index={currentNewsIndex} total={latestNews.length} />
-      </Box>
+            </Box>
 
-      <FeedCard>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <FeedCard>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <School sx={{ color: '#1a237e', mr: 1 }} aria-hidden="true" />
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
-              School Announcements
-            </Typography>
-          </Box>
-          <TickerContainer>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                      School Announcements
+                    </Typography>
+                  </Box>
+                  <TickerContainer>
             <TickerText variant="body2" className="ticker">
-              {announcements.join(' • ')}
-            </TickerText>
-          </TickerContainer>
-          <List dense sx={{ mt: 2 }}>
-            {announcements.slice(0, 3).map((announcement, index) => (
-              <ListItem key={index} sx={{ px: 0 }}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
+                      {announcements.join(' • ')}
+                    </TickerText>
+                  </TickerContainer>
+                  <List dense sx={{ mt: 2 }}>
+                    {announcements.slice(0, 3).map((announcement, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
                   <Celebration sx={{ fontSize: 16, color: '#ffca28' }} aria-hidden="true" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={announcement}
-                  primaryTypographyProps={{ variant: 'body2' }}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </CardContent>
-      </FeedCard>
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary={announcement}
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </FeedCard>
     </LiveFeedContainer>
   );
 };

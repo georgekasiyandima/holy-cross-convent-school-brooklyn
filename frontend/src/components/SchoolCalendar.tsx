@@ -23,15 +23,12 @@ import {
   Fade,
   Slide,
   Zoom,
-  Alert,
-  Skeleton
+  Alert
 } from '@mui/material';
 
 import {
   Search as SearchIcon,
   Close as CloseIcon,
-  Event as EventIcon,
-  CalendarToday as CalendarIcon,
   Facebook as FacebookIcon,
   School as SchoolIcon,
   Celebration as CelebrationIcon,
@@ -45,7 +42,9 @@ import {
 import { styled } from '@mui/material/styles';
 import { calendarManager, CalendarEvent, EventCategory } from '../utils/calendarManager';
 
-// TypeScript interfaces for type safety
+// =============================
+// TypeScript interfaces
+// =============================
 interface SchoolCalendarProps {
   title?: string;
   subtitle?: string;
@@ -62,10 +61,12 @@ interface EventDialogProps {
   onClose: () => void;
 }
 
-// Styled components
+// =============================
+// Styled components (theme aware)
+// =============================
 const CalendarContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4, 0),
-  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)', // School-friendly gradient
+  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
   minHeight: '100vh',
   overflow: 'hidden'
 }));
@@ -100,7 +101,7 @@ const CategoryChip = styled(Chip)(({ theme }) => ({
   marginBottom: theme.spacing(1),
   transition: 'all 0.3s ease',
   '&:hover': {
-    transform: 'scale(1.05)',
+    transform: 'scale(1.05)'
   }
 }));
 
@@ -121,11 +122,13 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
     backdropFilter: 'blur(10px)',
     borderRadius: theme.spacing(2),
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
   }
 }));
 
-// Category icon mapping
+// =============================
+// Category mapping (icons + colors)
+// =============================
 const categoryIcons: Record<EventCategory, React.ReactNode> = {
   academic: <SchoolIcon />,
   spiritual: <SpiritualIcon />,
@@ -137,7 +140,6 @@ const categoryIcons: Record<EventCategory, React.ReactNode> = {
   holiday: <HolidayIcon />
 };
 
-// Category color mapping
 const categoryColors: Record<EventCategory, 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error' | 'default'> = {
   academic: 'primary',
   spiritual: 'secondary',
@@ -149,8 +151,11 @@ const categoryColors: Record<EventCategory, 'primary' | 'secondary' | 'success' 
   holiday: 'default'
 };
 
-// Memoized subcomponents
+// =============================
+// Event Card Component
+// =============================
 const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
+  // Format date for readability
   const formatEventDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -169,6 +174,7 @@ const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
           role="button"
           tabIndex={0}
           aria-label={`View details for ${event.title}`}
+          // Keyboard accessibility: Enter/Space triggers click
           onKeyPress={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -177,6 +183,7 @@ const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
           }}
         >
           <CardContent sx={{ p: 2 }}>
+            {/* Title + Icon */}
             <EventIconContainer>
               {categoryIcons[event.category]}
               <Typography 
@@ -194,11 +201,13 @@ const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
                 {event.title}
               </Typography>
             </EventIconContainer>
-            
+
+            {/* Date */}
             <Typography variant="body2" color="text.secondary" gutterBottom>
               {formatEventDate(event.date)}
             </Typography>
-            
+
+            {/* Optional description */}
             {event.description && (
               <Typography 
                 variant="body2" 
@@ -215,7 +224,8 @@ const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
                 {event.description}
               </Typography>
             )}
-            
+
+            {/* Category Chips */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               <CategoryChip
                 label={event.category}
@@ -244,6 +254,9 @@ const EventCardComponent = memo(({ event, onClick }: EventCardProps) => {
   );
 });
 
+// =============================
+// Event Dialog (details modal)
+// =============================
 const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) => {
   const formatEventDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
@@ -270,12 +283,15 @@ const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) =
     >
       <DialogTitle id="event-dialog-title">
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Title + Icon */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {categoryIcons[event.category]}
             <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>
               {event.title}
             </Typography>
           </Box>
+
+          {/* Close Button */}
           <IconButton
             onClick={onClose}
             aria-label="Close dialog"
@@ -285,48 +301,43 @@ const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) =
           </IconButton>
         </Box>
       </DialogTitle>
+
       <DialogContent id="event-dialog-description">
+        {/* Date */}
         <Typography variant="h6" color="primary" gutterBottom>
           {formatEventDate(event.date)}
         </Typography>
-        
+
+        {/* Description */}
         {event.description && (
           <Typography variant="body1" paragraph sx={{ color: '#666' }}>
             {event.description}
           </Typography>
         )}
-        
+
+        {/* Chips */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-          <CategoryChip
-            label={event.category}
-            color={categoryColors[event.category]}
-          />
-          {event.isPublicHoliday && (
-            <CategoryChip
-              label="Public Holiday"
-              color="error"
-            />
-          )}
+          <CategoryChip label={event.category} color={categoryColors[event.category]} />
+          {event.isPublicHoliday && <CategoryChip label="Public Holiday" color="error" />}
           {event.gradeLevel && (
-            <CategoryChip
-              label={event.gradeLevel}
-              variant="outlined"
-            />
+            <CategoryChip label={event.gradeLevel} variant="outlined" />
           )}
         </Box>
-        
+
+        {/* Optional fields */}
         {event.location && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             <strong>Location:</strong> {event.location}
           </Typography>
         )}
-        
+
         {event.time && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             <strong>Time:</strong> {event.time}
           </Typography>
         )}
-        
+
+        {/* External Link */}
         {event.facebookLink && (
           <Button
             startIcon={<FacebookIcon />}
@@ -334,7 +345,7 @@ const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) =
             target="_blank"
             rel="noopener noreferrer"
             variant="outlined"
-            sx={{ 
+            sx={{
               mt: 2,
               borderColor: '#1877f2',
               color: '#1877f2',
@@ -348,14 +359,12 @@ const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) =
           </Button>
         )}
       </DialogContent>
+
       <DialogActions>
         <Button 
           onClick={onClose}
           variant="contained"
-          sx={{ 
-            backgroundColor: '#1a237e',
-            '&:hover': { backgroundColor: '#0d47a1' }
-          }}
+          sx={{ backgroundColor: '#1a237e', '&:hover': { backgroundColor: '#0d47a1' } }}
         >
           Close
         </Button>
@@ -364,32 +373,37 @@ const EventDialogComponent = memo(({ event, open, onClose }: EventDialogProps) =
   );
 });
 
+// =============================
+// Main Calendar Component
+// =============================
 const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
   title = "School Calendar",
   subtitle = "Term 3 2025 Important Dates"
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // State management
+
+  // -----------------
+  // State Management
+  // -----------------
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'all'>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Get all events
+  // -----------------
+  // Event Data
+  // -----------------
   const allEvents = calendarManager.getUpcomingEvents();
 
-  // Filter events based on search and category
+  // Memoized filtering (performance optimization)
   const filteredEvents = useMemo(() => {
     let filtered = allEvents;
 
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(event => event.category === selectedCategory);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -401,22 +415,26 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
     return filtered;
   }, [allEvents, selectedCategory, searchQuery]);
 
-  // Handle event click
+  // -----------------
+  // Handlers
+  // -----------------
   const handleEventClick = useCallback((event: CalendarEvent) => {
     setSelectedEvent(event);
     setDialogOpen(true);
   }, []);
 
-  // Handle dialog close
   const handleDialogClose = useCallback(() => {
     setDialogOpen(false);
     setSelectedEvent(null);
   }, []);
 
+  // -----------------
+  // Render
+  // -----------------
   return (
     <CalendarContainer role="main" aria-label="School calendar">
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-        {/* Header */}
+        {/* Header Section */}
         <Fade in timeout={500}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography 
@@ -424,7 +442,7 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
               component="h1" 
               gutterBottom 
               sx={{ 
-                color: '#1a237e', 
+                color: '#1a237e',
                 fontWeight: 700,
                 fontSize: { xs: '1.75rem', sm: '2.125rem', md: '3rem' }
               }}
@@ -434,10 +452,7 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
             <Typography 
               variant="h6" 
               color="text.secondary" 
-              sx={{ 
-                mb: 2,
-                fontSize: { xs: '1rem', sm: '1.25rem' }
-              }}
+              sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
             >
               {subtitle}
             </Typography>
@@ -447,7 +462,7 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
           </Box>
         </Fade>
 
-        {/* Search and Filter Controls */}
+        {/* Search + Filter Controls */}
         <Slide direction="up" in timeout={600}>
           <SearchContainer>
             <TextField
@@ -463,17 +478,17 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
                   </InputAdornment>
                 )
               }}
-              sx={{ 
-                flexGrow: 1, 
+              sx={{
+                flexGrow: 1,
                 minWidth: 0,
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
+                  backdropFilter: 'blur(10px)'
                 }
               }}
               aria-label="Search events"
             />
-            
+
             <FormControl sx={{ minWidth: { xs: '100%', md: 200 } }}>
               <InputLabel>Category</InputLabel>
               <Select
@@ -482,7 +497,7 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
                 onChange={(e) => setSelectedCategory(e.target.value as EventCategory | 'all')}
                 sx={{
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)',
+                  backdropFilter: 'blur(10px)'
                 }}
                 aria-label="Filter by category"
               >
@@ -500,47 +515,55 @@ const SchoolCalendar: React.FC<SchoolCalendarProps> = ({
           </SearchContainer>
         </Slide>
 
-        {/* Events Grid */}
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { 
-            xs: '1fr', 
-            sm: 'repeat(2, 1fr)', 
-            md: 'repeat(2, 1fr)', 
-            lg: 'repeat(3, 1fr)', 
-            xl: 'repeat(4, 1fr)' 
-          },
-          gap: { xs: 2, sm: 3 },
-          width: '100%',
-          overflow: 'hidden'
-        }}>
-          {filteredEvents.map((event, index) => (
-            <EventCardComponent 
-              key={event.id} 
-              event={event} 
-              onClick={handleEventClick}
-            />
-          ))}
-        </Box>
+        {/* Results Section */}
+        <Slide direction="up" in timeout={700}>
+          <Box>
+            {/* No Results Alert */}
+            {filteredEvents.length === 0 && (
+              <Fade in timeout={800}>
+                <Alert 
+                  severity="info" 
+                  sx={{ 
+                    mb: 3,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  No events found matching your search criteria. Try adjusting your filters.
+                </Alert>
+              </Fade>
+            )}
 
-        {/* No Results */}
-        {filteredEvents.length === 0 && (
-          <Fade in timeout={500}>
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Alert severity="info" sx={{ maxWidth: 400, mx: 'auto' }}>
-                <Typography variant="h6" gutterBottom>
-                  No events found
-                </Typography>
-                <Typography variant="body2">
-                  Try adjusting your search or filter criteria
-                </Typography>
-              </Alert>
+            {/* Events Grid */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(auto-fill, minmax(300px, 1fr))',
+                  md: 'repeat(auto-fill, minmax(350px, 1fr))',
+                  lg: 'repeat(auto-fill, minmax(400px, 1fr))'
+                },
+                gap: 3,
+                justifyContent: 'center'
+              }}
+            >
+              {filteredEvents.map((event, index) => (
+                <Fade in timeout={800 + index * 100} key={event.id}>
+                  <Box>
+                    <EventCardComponent 
+                      event={event} 
+                      onClick={handleEventClick}
+                    />
+                  </Box>
+                </Fade>
+              ))}
             </Box>
-          </Fade>
-        )}
+          </Box>
+        </Slide>
 
-        {/* Event Details Dialog */}
-        <EventDialogComponent 
+        {/* Event Dialog */}
+        <EventDialogComponent
           event={selectedEvent}
           open={dialogOpen}
           onClose={handleDialogClose}

@@ -66,13 +66,13 @@ const schoolLogo = '/HCLOGO1.png';
 
 // Styled components for custom styling
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 50%, #f3e5f5 100%)', // School-friendly gradient
-  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+  background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 20%, #ffca28 40%, #ffb74d 50%, #90caf9 70%, #64b5f6 85%, #42a5f5 100%)', // Blended red-gold-blue gradient
+  boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.drawer + 1,
   backdropFilter: 'blur(10px)',
-  borderBottom: '1px solid rgba(255,255,255,0.2)',
+  borderBottom: '2px solid rgba(255, 193, 7, 0.5)', // Enhanced gold accent border
 }));
 
 const LogoContainer = styled(Box)({
@@ -112,8 +112,8 @@ const LogoFallback = styled(Box)({
 });
 
 const NavButton = styled(Button)(({ theme }) => ({
-  color: '#1a237e',
-  fontWeight: 600,
+  color: '#1a1a1a',
+  fontWeight: 700,
   fontSize: '0.9rem',
   textTransform: 'none',
   padding: '8px 16px',
@@ -123,13 +123,13 @@ const NavButton = styled(Button)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
   },
   '&.active': {
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
   },
   '&::before': {
     content: '""',
@@ -138,7 +138,7 @@ const NavButton = styled(Button)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
     transition: 'left 0.5s',
   },
   '&:hover::before': {
@@ -224,9 +224,10 @@ const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
       <Typography 
         variant="h6" 
         sx={{ 
-          color: '#1a237e', 
+          color: '#1a1a1a', 
           fontWeight: 700,
-          fontSize: { xs: '1rem', md: '1.25rem' }
+          fontSize: { xs: '1rem', md: '1.25rem' },
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
         }}
       >
         Holy Cross Convent School
@@ -234,9 +235,10 @@ const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
       <Typography 
         variant="caption" 
         sx={{ 
-          color: '#1a237e', 
-          fontWeight: 500,
-          fontSize: { xs: '0.7rem', md: '0.8rem' }
+          color: '#8b0000', 
+          fontWeight: 600,
+          fontSize: { xs: '0.7rem', md: '0.8rem' },
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
         }}
       >
         Brooklyn
@@ -269,16 +271,16 @@ const MobileDrawer = memo(({
       '& .MuiDrawer-paper': { 
         boxSizing: 'border-box', 
         width: 250,
-        background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
+        background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 25%, #ffca28 45%, #ffb74d 55%, #90caf9 75%, #64b5f6 100%)',
         backdropFilter: 'blur(10px)',
-        borderLeft: '1px solid rgba(255,255,255,0.2)',
+        borderLeft: '2px solid rgba(255, 193, 7, 0.5)',
       },
     }}
   >
     <Box sx={{ width: 250, pt: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 2 }}>
         <LogoImage src={schoolLogo} alt="Holy Cross Convent School" />
-        <Typography variant="h6" sx={{ ml: 1, color: '#1a237e', fontWeight: 600 }}>
+        <Typography variant="h6" sx={{ ml: 1, color: '#1a1a1a', fontWeight: 600, textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
           Holy Cross
         </Typography>
       </Box>
@@ -463,11 +465,11 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                       <IconButton
                         onClick={() => handleNavigation('/')}
                         sx={{
-                          color: '#1a237e',
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          color: '#1a1a1a',
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
                             transition: 'all 0.3s ease',
                           '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
                               transform: 'scale(1.1) rotate(360deg)',
                           },
                           mr: 1
@@ -530,11 +532,11 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                   }}
                   PaperProps={{
                     sx: {
-                      background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
+                      background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 25%, #ffca28 45%, #ffb74d 55%, #90caf9 75%, #64b5f6 100%)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(135, 206, 235, 0.3)',
+                      border: '2px solid rgba(255, 193, 7, 0.5)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                      boxShadow: '0 8px 32px rgba(211, 47, 47, 0.3)',
                       mt: 1,
                     }
                   }}
@@ -551,16 +553,16 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                         px: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          backgroundColor: 'rgba(135, 206, 235, 0.1)',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
                           transform: 'translateX(4px)',
                         },
                       }}
                       aria-label={`Navigate to ${subItem.name}`}
                     >
-                      <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                      <ListItemIcon sx={{ color: '#8b0000', minWidth: 40 }}>
                         {subItem.icon}
                       </ListItemIcon>
-                      <Typography sx={{ color: '#1a237e', fontWeight: 500 }}>
+                      <Typography sx={{ color: '#1a1a1a', fontWeight: 600, textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
                         {subItem.name}
                       </Typography>
                     </MenuItem>
@@ -577,10 +579,11 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                 edge="end"
                 onClick={handleDrawerToggle}
                 sx={{ 
-                  color: '#1a237e',
+                  color: '#1a1a1a',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'rotate(90deg)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
                   },
                 }}
               >
