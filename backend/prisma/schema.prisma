@@ -1,0 +1,444 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  avatar    String?
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  newsArticles    NewsArticle[]
+  events          Event[]
+  newsletters     Newsletter[]
+  reports         Report[]
+  contactMessages ContactMessage[]
+  policies        Policy[]
+  announcements   Announcement[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// News and Announcements
+model NewsArticle {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  priority    Priority @default(MEDIUM)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags     Tag[]
+
+  @@map("news_articles")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Events Management
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  imageUrl    String?
+  category    EventCategory @default(ACADEMIC)
+  isPublished Boolean  @default(false)
+  isRecurring Boolean  @default(false)
+  recurrence  String? // JSON string for recurrence rules
+  maxAttendees Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+enum EventCategory {
+  ACADEMIC
+  SPIRITUAL
+  CELEBRATION
+  SPORTS
+  CULTURAL
+  COMMUNITY
+  EXTRA_MURAL
+  HOLIDAY
+}
+
+// Newsletter Management
+model Newsletter {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("newsletters")
+}
+
+// Reports Management
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        ReportType
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+enum ReportType {
+  ACADEMIC
+  FINANCIAL
+  ADMINISTRATIVE
+  SPORTS
+  CULTURAL
+  OTHER
+}
+
+// Contact Form Submissions
+model ContactMessage {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  inquiryType String
+  isRead    Boolean  @default(false)
+  isReplied Boolean  @default(false)
+  replyMessage String?
+  repliedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  @@map("contact_messages")
+}
+
+// Gallery Management
+model GalleryImage {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  thumbnailUrl String?
+  category    String
+  tags        String?
+  isPublished Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery_images")
+}
+
+// Staff Management
+model StaffMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  email       String?
+  phone       String?
+  bio         String?
+  imageUrl    String?
+  grade       String?
+  subjects    String? // JSON array of subjects taught
+  qualifications String?
+  experience  String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  category    StaffCategory @default(TEACHING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("staff_members")
+}
+
+enum StaffCategory {
+  LEADERSHIP
+  TEACHING
+  SUPPORT
+}
+
+// Policy Documents Management
+model Policy {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  content     String
+  category    PolicyCategory
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  version     String   @default("1.0")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("policies")
+}
+
+enum PolicyCategory {
+  ACADEMIC
+  DISCIPLINARY
+  SAFETY
+  FINANCIAL
+  ADMINISTRATIVE
+  TECHNOLOGY
+  HEALTH
+  OTHER
+}
+
+// School Information Management
+model SchoolInfo {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  type        String   @default("text") // text, number, boolean, json, html
+  category    String   @default("general")
+  isPublic    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("school_info")
+}
+
+
+// Announcements Management
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  isActive    Boolean  @default(true)
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  priority    Priority @default(MEDIUM)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("announcements")
+}
+
+// Academic Calendar
+model AcademicCalendar {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  type        CalendarEventType
+  isHoliday   Boolean  @default(false)
+  isExam      Boolean  @default(false)
+  grade       String? // Specific grade or "all"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("academic_calendar")
+}
+
+enum CalendarEventType {
+  TERM_START
+  TERM_END
+  HOLIDAY
+  EXAM
+  SPORTS_DAY
+  CULTURAL_DAY
+  PARENT_MEETING
+  OTHER
+}
+
+// Fee Structure Management
+model FeeStructure {
+  id          String   @id @default(cuid())
+  grade       String
+  feeType     FeeType
+  amount      Float
+  currency    String   @default("ZAR")
+  description String?
+  isActive    Boolean  @default(true)
+  academicYear String
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("fee_structures")
+}
+
+enum FeeType {
+  TUITION
+  TRANSPORT
+  MEALS
+  UNIFORM
+  ACTIVITIES
+  OTHER
+}
+
+// Forms Management
+model Form {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    FormCategory
+  pdfUrl      String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("forms")
+}
+
+enum FormCategory {
+  ADMISSION
+  MEDICAL
+  CONSENT
+  TRANSPORT
+  UNIFORM
+  OTHER
+}
+
+// Tags for categorization
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  color String @default("#1a237e")
+
+  // Relations
+  newsArticles NewsArticle[]
+
+  @@map("tags")
+}
+
+// Settings and Configuration
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string") // string, number, boolean, json
+  category String @default("general")
+
+  @@map("settings")
+}
+
+// Email Subscribers for Newsletters
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_subscribers")
+}
+
+// File Uploads
+model FileUpload {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  url         String
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@map("file_uploads")
+}
+
+// Analytics and Statistics
+model Analytics {
+  id          String   @id @default(cuid())
+  page        String
+  action      String
+  userId      String?
+  userAgent   String?
+  ipAddress   String?
+  timestamp   DateTime @default(now())
+  metadata    String? // JSON string for additional data
+
+  @@map("analytics")
+}
+
+// Backup and Maintenance Logs
+model MaintenanceLog {
+  id          String   @id @default(cuid())
+  type        String // backup, update, maintenance
+  description String
+  status      String // success, failed, in_progress
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  metadata    String? // JSON string for additional data
+
+  @@map("maintenance_logs")
+}

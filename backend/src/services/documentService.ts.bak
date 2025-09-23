@@ -1,0 +1,449 @@
+import { PrismaClient } from '@prisma/client';
+import { Request, Response } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import sharp from 'sharp';
+
+const prisma = new PrismaClient();
+
+export interface DocumentUploadRequest extends Request {
+  file?: Express.Multer.File;
+  files?: Express.Multer.File[];
+}
+
+export class DocumentService {
+  private static instance: DocumentService;
+  private uploadPath: string;
+
+  constructor() {
+    this.uploadPath = path.join(process.cwd(), 'uploads');
+    this.ensureUploadDirectories();
+  }
+
+  public static getInstance(): DocumentService {
+    if (!DocumentService.instance) {
+      DocumentService.instance = new DocumentService();
+    }
+    return DocumentService.instance;
+  }
+
+  private ensureUploadDirectories(): void {
+    const directories = [
+      'documents',
+      'policies',
+      'forms',
+      'reports',
+      'newsletters',
+      'events',
+      'gallery',
+      'staff',
+      'thumbnails'
+    ];
+
+    directories.forEach(dir => {
+      const dirPath = path.join(this.uploadPath, dir);
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
+    });
+  }
+
+  public configureMulter(category: string) {
+    return multer({
+      storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+          const uploadDir = path.join(this.uploadPath, category);
+          cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          const ext = path.extname(file.originalname);
+          const name = path.basename(file.originalname, ext);
+          cb(null, `${name}-${uniqueSuffix}${ext}`);
+        }
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = this.getAllowedFileTypes(category);
+        if (allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error(`File type ${file.mimetype} not allowed for ${category}`));
+        }
+      },
+      limits: {
+        fileSize: this.getMaxFileSize(category)
+      }
+    });
+  }
+
+  private getAllowedFileTypes(category: string): string[] {
+    const typeMap: { [key: string]: string[] } = {
+      documents: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      policies: ['application/pdf'],
+      forms: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      reports: ['application/pdf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+      newsletters: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      events: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'],
+      gallery: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      staff: ['image/jpeg', 'image/png', 'image/gif']
+    };
+
+    return typeMap[category] || ['application/pdf'];
+  }
+
+  private getMaxFileSize(category: string): number {
+    const sizeMap: { [key: string]: number } = {
+      documents: 10 * 1024 * 1024, // 10MB
+      policies: 5 * 1024 * 1024,   // 5MB
+      forms: 5 * 1024 * 1024,      // 5MB
+      reports: 10 * 1024 * 1024,   // 10MB
+      newsletters: 5 * 1024 * 1024, // 5MB
+      events: 5 * 1024 * 1024,     // 5MB
+      gallery: 10 * 1024 * 1024,   // 10MB
+      staff: 5 * 1024 * 1024       // 5MB
+    };
+
+    return sizeMap[category] || 5 * 1024 * 1024;
+  }
+
+  public async processImageUpload(file: Express.Multer.File, category: string): Promise<{ url: string; thumbnailUrl: string }> {
+    const filename = file.filename;
+    const filePath = file.path;
+    const thumbnailPath = path.join(this.uploadPath, 'thumbnails', `thumb_${filename}`);
+
+    try {
+      // Generate thumbnail
+      await sharp(filePath)
+        .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toFile(thumbnailPath);
+
+      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+      const url = `${baseUrl}/uploads/${category}/${filename}`;
+      const thumbnailUrl = `${baseUrl}/uploads/thumbnails/thumb_${filename}`;
+
+      return { url, thumbnailUrl };
+    } catch (error) {
+      console.error('Error processing image:', error);
+      throw new Error('Failed to process image');
+    }
+  }
+
+  public async saveDocumentRecord(
+    file: Express.Multer.File,
+    category: string,
+    metadata: {
+      title: string;
+      description?: string;
+      authorId: string;
+      isPublished?: boolean;
+      tags?: string[];
+    }
+  ) {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const url = `${baseUrl}/uploads/${category}/${file.filename}`;
+
+    // Save file upload record
+    const fileUpload = await prisma.fileUpload.create({
+      data: {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        url: url
+      }
+    });
+
+    // Save category-specific record
+    let record;
+    switch (category) {
+      case 'policies':
+        record = await prisma.policy.create({
+          data: {
+            title: metadata.title,
+            description: metadata.description,
+            content: '',
+            category: 'ADMINISTRATIVE',
+            pdfUrl: url,
+            isPublished: metadata.isPublished || false,
+            authorId: metadata.authorId
+          }
+        });
+        break;
+
+      case 'forms':
+        record = await prisma.form.create({
+          data: {
+            title: metadata.title,
+            description: metadata.description,
+            category: 'ADMISSION',
+            pdfUrl: url,
+            isActive: metadata.isPublished || true
+          }
+        });
+        break;
+
+      case 'reports':
+        record = await prisma.report.create({
+          data: {
+            title: metadata.title,
+            description: metadata.description,
+            type: 'ACADEMIC',
+            pdfUrl: url,
+            isPublished: metadata.isPublished || false,
+            authorId: metadata.authorId
+          }
+        });
+        break;
+
+      case 'newsletters':
+        record = await prisma.newsletter.create({
+          data: {
+            title: metadata.title,
+            content: metadata.description || '',
+            pdfUrl: url,
+            isPublished: metadata.isPublished || false,
+            authorId: metadata.authorId
+          }
+        });
+        break;
+
+      case 'gallery':
+        const { url: imageUrl, thumbnailUrl } = await this.processImageUpload(file, category);
+        record = await prisma.galleryImage.create({
+          data: {
+            title: metadata.title,
+            description: metadata.description,
+            imageUrl: imageUrl,
+            thumbnailUrl: thumbnailUrl,
+            category: 'general',
+            tags: metadata.tags?.join(',') || '',
+            isPublished: metadata.isPublished !== false
+          }
+        });
+        break;
+
+      default:
+        throw new Error(`Unsupported category: ${category}`);
+    }
+
+    return { fileUpload, record };
+  }
+
+  public async getDocumentsByCategory(category: string, isPublished: boolean = true) {
+    switch (category) {
+      case 'policies':
+        return await prisma.policy.findMany({
+          where: { isPublished },
+          include: { author: { select: { name: true, email: true } } },
+          orderBy: { createdAt: 'desc' }
+        });
+
+      case 'forms':
+        return await prisma.form.findMany({
+          where: { isActive: isPublished },
+          orderBy: { order: 'asc' }
+        });
+
+      case 'reports':
+        return await prisma.report.findMany({
+          where: { isPublished },
+          include: { author: { select: { name: true, email: true } } },
+          orderBy: { createdAt: 'desc' }
+        });
+
+      case 'newsletters':
+        return await prisma.newsletter.findMany({
+          where: { isPublished },
+          include: { author: { select: { name: true, email: true } } },
+          orderBy: { createdAt: 'desc' }
+        });
+
+      case 'gallery':
+        return await prisma.galleryImage.findMany({
+          where: { isPublished },
+          orderBy: { order: 'asc' }
+        });
+
+      default:
+        throw new Error(`Unsupported category: ${category}`);
+    }
+  }
+
+  public async downloadDocument(id: string, category: string, res: Response): Promise<void> {
+    try {
+      let record;
+      let fileUrl: string;
+
+      switch (category) {
+        case 'policies':
+          record = await prisma.policy.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          break;
+
+        case 'forms':
+          record = await prisma.form.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          break;
+
+        case 'reports':
+          record = await prisma.report.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          break;
+
+        case 'newsletters':
+          record = await prisma.newsletter.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          break;
+
+        case 'gallery':
+          record = await prisma.galleryImage.findUnique({ where: { id } });
+          fileUrl = record?.imageUrl || '';
+          break;
+
+        default:
+          throw new Error(`Unsupported category: ${category}`);
+      }
+
+      if (!record || !fileUrl) {
+        res.status(404).json({ error: 'Document not found' });
+        return;
+      }
+
+      // Extract filename from URL
+      const filename = path.basename(fileUrl);
+      const filePath = path.join(this.uploadPath, category, filename);
+
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        res.status(404).json({ error: 'File not found on disk' });
+        return;
+      }
+
+      // Set appropriate headers
+      const mimeType = record.mimeType || this.getMimeTypeFromExtension(filename);
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="${record.title || filename}"`);
+
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+
+      // Log download
+      await prisma.analytics.create({
+        data: {
+          page: `download_${category}`,
+          action: 'download',
+          metadata: JSON.stringify({ documentId: id, filename })
+        }
+      });
+
+    } catch (error) {
+      console.error('Download error:', error);
+      res.status(500).json({ error: 'Failed to download document' });
+    }
+  }
+
+  private getMimeTypeFromExtension(filename: string): string {
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes: { [key: string]: string } = {
+      '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif'
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  }
+
+  public async deleteDocument(id: string, category: string): Promise<void> {
+    try {
+      let record;
+      let fileUrl: string;
+
+      switch (category) {
+        case 'policies':
+          record = await prisma.policy.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          if (record) await prisma.policy.delete({ where: { id } });
+          break;
+
+        case 'forms':
+          record = await prisma.form.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          if (record) await prisma.form.delete({ where: { id } });
+          break;
+
+        case 'reports':
+          record = await prisma.report.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          if (record) await prisma.report.delete({ where: { id } });
+          break;
+
+        case 'newsletters':
+          record = await prisma.newsletter.findUnique({ where: { id } });
+          fileUrl = record?.pdfUrl || '';
+          if (record) await prisma.newsletter.delete({ where: { id } });
+          break;
+
+        case 'gallery':
+          record = await prisma.galleryImage.findUnique({ where: { id } });
+          fileUrl = record?.imageUrl || '';
+          if (record) await prisma.galleryImage.delete({ where: { id } });
+          break;
+
+        default:
+          throw new Error(`Unsupported category: ${category}`);
+      }
+
+      // Delete physical file
+      if (fileUrl) {
+        const filename = path.basename(fileUrl);
+        const filePath = path.join(this.uploadPath, category, filename);
+        
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+
+        // Delete thumbnail if it exists
+        const thumbnailPath = path.join(this.uploadPath, 'thumbnails', `thumb_${filename}`);
+        if (fs.existsSync(thumbnailPath)) {
+          fs.unlinkSync(thumbnailPath);
+        }
+      }
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      throw new Error('Failed to delete document');
+    }
+  }
+
+  public async getDocumentStats(): Promise<{ [key: string]: number }> {
+    const stats = await Promise.all([
+      prisma.policy.count(),
+      prisma.form.count(),
+      prisma.report.count(),
+      prisma.newsletter.count(),
+      prisma.galleryImage.count()
+    ]);
+
+    return {
+      policies: stats[0],
+      forms: stats[1],
+      reports: stats[2],
+      newsletters: stats[3],
+      gallery: stats[4],
+      total: stats.reduce((sum, count) => sum + count, 0)
+    };
+  }
+}
+
+export default DocumentService;
+
+
+
+
+
