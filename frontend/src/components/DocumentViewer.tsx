@@ -33,13 +33,19 @@ interface Document {
   id: string;
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
   fileUrl: string;
   fileName: string;
   fileSize: number;
-  uploadedAt: string;
+  uploadedAt?: string;
+  createdAt?: string;
   category: string;
   tags: string[];
+  isPublished?: boolean;
+  authorId?: string;
+  authorName?: string;
+  updatedAt?: string;
+  mimeType?: string;
 }
 
 interface DocumentViewerProps {

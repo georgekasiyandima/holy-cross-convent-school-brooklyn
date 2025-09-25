@@ -52,8 +52,8 @@ export interface AssetCollection {
 export const logoAssets: Asset[] = [
   {
     id: 'main-logo',
-    filename: 'HCLOGO1.png',
-    path: '/HCLOGO1.png',
+    filename: 'Logo(1).svg',
+    path: '/Logo(1).svg',
     alt: 'Holy Cross Convent School Brooklyn Logo',
     category: 'logo',
     description: 'Main school logo',

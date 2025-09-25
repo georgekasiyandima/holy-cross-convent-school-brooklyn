@@ -6,6 +6,9 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
+import MissionStatement from '../components/MissionStatement';
+import FamilyStatement from '../components/FamilyStatement';
+import LogoSymbolism from '../components/LogoSymbolism';
 
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
@@ -28,7 +31,7 @@ const Info: React.FC = () => (
     {/* Hero Section */}
     <Paper elevation={3} sx={{ p: 4, mb: 5, textAlign: 'center', background: '#e3eafc' }}>
       <Avatar
-        src="/HCLOGO1.png"
+        src="/Logo(1).svg"
         alt="School Logo"
         sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
       />
@@ -175,6 +178,21 @@ const Info: React.FC = () => (
       <Button variant="contained" color="primary" disabled>
         Download Policy Document
       </Button>
+    </Box>
+
+    {/* Mission Statement Section */}
+    <Box sx={{ my: 6 }}>
+      <MissionStatement />
+    </Box>
+
+    {/* Family Statement Section */}
+    <Box sx={{ my: 6 }}>
+      <FamilyStatement />
+    </Box>
+
+    {/* Logo Symbolism Section */}
+    <Box sx={{ my: 6 }}>
+      <LogoSymbolism />
     </Box>
   </Container>
 );

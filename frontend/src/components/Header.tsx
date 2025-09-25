@@ -26,7 +26,6 @@ import {
   School,
   Info,
   Folder,
-  Construction,
   Favorite,
   ExpandMore,
   Event,
@@ -62,11 +61,11 @@ interface HeaderProps {
 }
 
 // Logo path constant
-const schoolLogo = '/HCLOGO1.png';
+const schoolLogo = '/Logo(1).svg';
 
 // Styled components for custom styling
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 20%, #ffca28 40%, #ffb74d 50%, #90caf9 70%, #64b5f6 85%, #42a5f5 100%)', // Blended red-gold-blue gradient
+  background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 20%, #ffca28 40%, #ffb74d 50%, #90caf9 70%, #64b5f6 85%, #1a237e 100%)', // School colors with dark blue on far right
   boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
   position: 'sticky',
   top: 0,
@@ -180,7 +179,8 @@ const navigationItems: NavigationItem[] = [
     items: [
       { name: 'School Info', path: '/info', icon: <Info /> },
       { name: 'School Board', path: '/school-board', icon: <People /> },
-      { name: 'Staff', path: '/staff', icon: <People /> }
+      { name: 'Staff', path: '/staff', icon: <People /> },
+      { name: 'Logo Symbolism', path: '/logo-symbolism', icon: <Info /> }
     ]
   },
   {
@@ -192,12 +192,6 @@ const navigationItems: NavigationItem[] = [
       { name: 'Forms & Fees', path: '/forms', icon: <Description /> },
       { name: 'Links', path: '/links', icon: <Link /> }
     ]
-  },
-  {
-    name: 'Projects',
-    path: '/projects',
-    icon: <Construction />,
-    type: 'single'
   },
   {
     name: 'Donate',
@@ -477,15 +471,15 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                         sx={{
                           color: '#1a1a1a',
                           backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                            transition: 'all 0.3s ease',
+                          transition: 'all 0.3s ease',
                           '&:hover': {
                             backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                              transform: 'scale(1.1) rotate(360deg)',
+                            transform: 'scale(1.1) rotate(360deg)',
                           },
                           mr: 1
                         }}
                         title="Back to Home"
-                          aria-label="Back to home page"
+                        aria-label="Back to home page"
                       >
                         <Home />
                       </IconButton>

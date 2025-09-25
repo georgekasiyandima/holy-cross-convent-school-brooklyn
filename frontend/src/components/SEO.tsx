@@ -44,7 +44,7 @@ const SEO: React.FC<SEOProps> = ({
   title = 'Holy Cross Convent School Brooklyn - Excellence in Catholic Education',
   description = 'Holy Cross Convent School Brooklyn offers quality Catholic education from Pre-Grade R to Grade 7. Nurturing faith, academic excellence, and character development in a caring environment.',
   keywords = 'Catholic school, Brooklyn, Cape Town, primary education, Grade R, Grade 7, religious education, Holy Cross, convent school, South Africa',
-  image = '/HCLOGO1.png',
+  image = '/Logo(1).svg',
   url = 'https://holycrossbrooklyn.edu.za',
   type = 'website',
   author,

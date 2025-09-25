@@ -3,7 +3,9 @@
  * Enhanced with centralized image service integration
  */
 
-import { imageService } from '../services/imageService';
+import ImageService from '../services/imageService';
+
+const imageService = ImageService.getInstance();
 
 // Base URL for static images
 const STATIC_IMAGE_BASE = '/staff-images/';
@@ -141,12 +143,16 @@ export const uploadStaffImage = async (
   staffId: string, 
   onProgress?: (progress: { loaded: number; total: number; percentage: number }) => void
 ) => {
-  return imageService.uploadImage(
-    file, 
-    `/api/staff/${staffId}`, 
-    { category: 'staff' },
-    onProgress
-  );
+  const imageData = {
+    title: `Staff Image for ${staffId}`,
+    description: `Profile image for staff member ${staffId}`,
+    category: 'staff' as const,
+    tags: ['staff', 'profile'],
+    isPublished: true,
+    file: file
+  };
+  
+  return imageService.uploadImage('staff', imageData);
 };
 
 /**

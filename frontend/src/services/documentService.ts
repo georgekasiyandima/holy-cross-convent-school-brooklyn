@@ -131,10 +131,10 @@ class DocumentService {
       formData.append('file', documentData.file);
       formData.append('title', documentData.title);
       formData.append('description', documentData.description);
+      formData.append('category', category);
       formData.append('isPublished', documentData.isPublished.toString());
-      formData.append('tags', JSON.stringify(documentData.tags));
 
-      const response = await api.post(`/api/documents/${category}/upload`, formData, {
+      const response = await api.post('/api/simple-upload/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -150,7 +150,11 @@ class DocumentService {
       return response.data.data;
     } catch (error) {
       console.error('Error uploading document:', error);
-      throw new Error('Failed to upload document');
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Failed to upload document');
+      }
     }
   }
 

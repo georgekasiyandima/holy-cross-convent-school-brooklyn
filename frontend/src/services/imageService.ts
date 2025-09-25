@@ -338,6 +338,97 @@ class ImageService {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
+
+  /**
+   * Get initials from a name string
+   */
+  getInitials(name: string): string {
+    if (!name || typeof name !== 'string') return '?';
+    
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  }
+
+  /**
+   * Load and optimize image with configuration
+   */
+  async loadImage(src: string, config?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'jpeg' | 'png';
+    fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
+  }): Promise<string> {
+    try {
+      // For now, return the original src as we don't have image optimization service
+      // In a production environment, this would call an image optimization service
+      // like Cloudinary, ImageKit, or a custom optimization endpoint
+      
+      if (!src) {
+        throw new Error('No image source provided');
+      }
+
+      // Basic validation
+      if (!src.startsWith('http') && !src.startsWith('/') && !src.startsWith('data:')) {
+        throw new Error('Invalid image source');
+      }
+
+      // Return the original URL for now
+      // TODO: Implement actual image optimization
+      return src;
+    } catch (error) {
+      console.error('Error loading image:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get optimized image URL with configuration
+   */
+  getOptimizedImageUrl(src: string, config?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'jpeg' | 'png';
+    fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
+  }): string {
+    if (!src) return '';
+    
+    // For now, return the original URL
+    // In production, this would generate optimized URLs
+    // TODO: Implement actual image optimization service integration
+    return src;
+  }
+
+  /**
+   * Preload images with configuration
+   */
+  async preloadImages(imageUrls: string[], config?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'jpeg' | 'png';
+  }): Promise<void> {
+    try {
+      const preloadPromises = imageUrls.map(url => {
+        return new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error(`Failed to preload image: ${url}`));
+          img.src = url;
+        });
+      });
+
+      await Promise.all(preloadPromises);
+    } catch (error) {
+      console.error('Error preloading images:', error);
+      throw error;
+    }
+  }
 }
 
 export default ImageService;

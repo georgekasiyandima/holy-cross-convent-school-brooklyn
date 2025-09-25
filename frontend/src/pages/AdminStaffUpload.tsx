@@ -93,10 +93,10 @@ const AdminStaffUpload: React.FC = () => {
         console.log(`Upload progress: ${progress.percentage}%`);
       });
 
-      if (result.success && result.data) {
+      if (result) {
         setMessage({ type: 'success', text: `Image uploaded successfully for ${staffMember.name}` });
         // Update the staff member with new image URL
-        const newImageUrl = result.data.data?.staff?.imageUrl || result.data.imageUrl;
+        const newImageUrl = result.fileUrl;
         setStaff(prev => prev.map(s => 
           s.id === staffMember.id 
             ? { ...s, imageUrl: newImageUrl }
@@ -104,7 +104,7 @@ const AdminStaffUpload: React.FC = () => {
         ));
         setSelectedStaff(prev => prev ? { ...prev, imageUrl: newImageUrl } : null);
       } else {
-        throw new Error(result.error || 'Upload failed');
+        throw new Error('Upload failed');
       }
     } catch (error) {
       setMessage({ 

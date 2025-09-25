@@ -102,14 +102,15 @@ interface Countdown {
 // STYLED COMPONENTS
 //---------------------------------------------------------
 const LiveFeedContainer = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)',
-  borderRadius: theme.spacing(2),
-  padding: theme.spacing(3),
-  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(4),
+  boxShadow: '0 8px 32px rgba(26, 35, 126, 0.1)',
   maxWidth: '1200px',
   margin: '0 auto',
   position: 'relative',
   overflow: 'hidden',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -127,9 +128,12 @@ const FeedCard = styled(Card)(({ theme }) => ({
   cursor: 'pointer',
   position: 'relative',
   overflow: 'hidden',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  borderRadius: theme.spacing(2),
   '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 24px rgba(26, 35, 126, 0.15)',
+    borderColor: 'rgba(26, 35, 126, 0.2)',
   },
   '&::before': {
     content: '""',
@@ -143,7 +147,7 @@ const FeedCard = styled(Card)(({ theme }) => ({
 }));
 
 const CountdownCard = styled(Paper)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #ff7043 0%, #f50057 100%)',
+  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
   color: 'white',
   padding: theme.spacing(3),
   borderRadius: theme.spacing(2),
@@ -154,15 +158,15 @@ const CountdownCard = styled(Paper)(({ theme }) => ({
   justifyContent: 'center',
   position: 'relative',
   overflow: 'hidden',
+  border: '1px solid rgba(255, 193, 7, 0.3)',
   '&::before': {
     content: '""',
     position: 'absolute',
-    top: '-50%',
-    left: '-50%',
-    width: '200%',
-    height: '200%',
-    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-    animation: 'pulse 2s infinite',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
   }
 }));
 
@@ -170,9 +174,12 @@ const NewsCard = styled(Card)(({ theme }) => ({
   height: '100%',
   transition: 'all 0.3s ease',
   cursor: 'pointer',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  borderRadius: theme.spacing(2),
   '&:hover': {
     transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[8],
+    boxShadow: '0 8px 24px rgba(26, 35, 126, 0.15)',
+    borderColor: 'rgba(26, 35, 126, 0.2)',
   }
 }));
 
@@ -180,11 +187,14 @@ const AnnouncementCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: theme.spacing(1),
   marginBottom: theme.spacing(1),
-  borderLeft: '4px solid',
+  borderLeft: '4px solid #1a237e',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
   transition: 'all 0.3s ease',
   '&:hover': {
     transform: 'translateX(4px)',
-    boxShadow: theme.shadows[4],
+    boxShadow: '0 4px 12px rgba(26, 35, 126, 0.1)',
+    borderColor: 'rgba(26, 35, 126, 0.2)',
   }
 }));
 
@@ -192,9 +202,9 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: theme.spacing(2),
-  paddingBottom: theme.spacing(1),
-  borderBottom: '2px solid #e0e0e0',
+  marginBottom: theme.spacing(3),
+  paddingBottom: theme.spacing(2),
+  borderBottom: '2px solid rgba(26, 35, 126, 0.1)',
 }));
 
 //---------------------------------------------------------
@@ -542,9 +552,9 @@ const EnhancedLiveFeed: React.FC = memo(() => {
         </Box>
       </SectionHeader>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
         {/* Upcoming Events */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Box sx={{ mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               Upcoming Events
@@ -556,10 +566,10 @@ const EnhancedLiveFeed: React.FC = memo(() => {
           <Stack spacing={2}>
             {upcomingEvents.map(renderEventCard)}
           </Stack>
-        </Grid>
+        </Box>
 
         {/* Latest News */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Box sx={{ mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               Latest News
@@ -571,11 +581,11 @@ const EnhancedLiveFeed: React.FC = memo(() => {
           <Stack spacing={2}>
             {latestNews.map(renderNewsCard)}
           </Stack>
-        </Grid>
+        </Box>
 
         {/* Countdown to Next Event */}
         {nextEvent && (
-          <Grid item xs={12} md={6}>
+          <Box sx={{ flex: 1 }}>
             <Box sx={{ mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
                 Countdown to {nextEvent.title}
@@ -611,12 +621,12 @@ const EnhancedLiveFeed: React.FC = memo(() => {
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
                 {nextEvent.date} at {nextEvent.time}
               </Typography>
-            </CountdownCard>
-          </Grid>
+          </CountdownCard>
+        </Box>
         )}
 
         {/* Announcements */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Box sx={{ mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               Announcements
@@ -628,8 +638,8 @@ const EnhancedLiveFeed: React.FC = memo(() => {
           <Box>
             {announcements.map(renderAnnouncement)}
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </LiveFeedContainer>
   );
 });

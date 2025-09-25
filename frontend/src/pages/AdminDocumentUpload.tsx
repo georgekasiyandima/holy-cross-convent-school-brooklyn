@@ -46,20 +46,14 @@ import {
   Edit
 } from '@mui/icons-material';
 import useDocumentManagement from '../hooks/useDocumentManagement';
+import { DocumentUpload } from '../services/documentService';
 
 //---------------------------------------------------------
 // TYPES & INTERFACES
 //---------------------------------------------------------
-interface DocumentUpload {
-  id: string;
-  title: string;
-  description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'other';
-  category: string;
-  tags: string[];
-  file: File | null;
-  uploadProgress: number;
-  status: 'pending' | 'uploading' | 'success' | 'error';
+interface LocalDocumentUpload extends DocumentUpload {
+  uploadProgress?: number;
+  status?: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
 }
 
@@ -81,14 +75,10 @@ const documentTypes = [
 ];
 
 const categories = [
-  'Governance',
-  'Academic',
-  'Administrative',
-  'Student Life',
-  'Safety',
-  'Technology',
-  'Financial',
-  'General'
+  'policy',
+  'form', 
+  'report',
+  'newsletter'
 ];
 
 const uploadSteps: UploadStep[] = [
@@ -127,11 +117,11 @@ const AdminDocumentUpload: React.FC = () => {
     resetUploadProgress
   } = useDocumentManagement();
 
-  const [currentDocument, setCurrentDocument] = useState<DocumentUpload>({
+  const [currentDocument, setCurrentDocument] = useState<LocalDocumentUpload>({
     title: '',
     description: '',
     type: 'policy',
-    category: 'policies',
+    category: 'policy',
     tags: [],
     isPublished: false,
     file: null as any
@@ -230,27 +220,73 @@ const AdminDocumentUpload: React.FC = () => {
     try {
       setMessage(null);
       clearError();
+      
+      // Set uploading state
+      setCurrentDocument(prev => ({
+        ...prev,
+        status: 'uploading',
+        uploadProgress: 0
+      }));
+
+      // Check if file is selected
+      if (!currentDocument.file) {
+        setMessage({ type: 'error', text: 'Please select a file to upload' });
+        return;
+      }
 
       // Upload document using unified service
-      await uploadDocument(currentDocument.category, currentDocument);
+      const documentData: DocumentUpload = {
+        title: currentDocument.title,
+        description: currentDocument.description,
+        type: currentDocument.type,
+        category: currentDocument.category,
+        tags: currentDocument.tags,
+        isPublished: currentDocument.isPublished,
+        file: currentDocument.file as File
+      };
+      const uploadedDocument = await uploadDocument(currentDocument.category, documentData);
       
-      setMessage({ type: 'success', text: 'Document uploaded successfully!' });
-      
-      // Reset form
-      setCurrentDocument({
-        title: '',
-        description: '',
-        type: 'policy',
-        category: 'policies',
-        tags: [],
-        isPublished: false,
-        file: null as any
+      // Enhanced success message with document details
+      setMessage({ 
+        type: 'success', 
+        text: `Document "${uploadedDocument.title}" uploaded successfully! File: ${uploadedDocument.fileName}` 
       });
-      setActiveStep(0);
-      resetUploadProgress();
+      
+      // Update document status to success
+      setCurrentDocument(prev => ({
+        ...prev,
+        status: 'success',
+        uploadProgress: 100
+      }));
+      
+      // Reset form after a short delay to show success state
+      setTimeout(() => {
+        setCurrentDocument({
+          title: '',
+          description: '',
+          type: 'policy',
+          category: 'policy',
+          tags: [],
+          isPublished: false,
+          file: null as any
+        });
+        setActiveStep(0);
+        resetUploadProgress();
+        setMessage(null);
+      }, 3000);
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
+      let errorMessage = 'Upload failed. Please try again.';
+      try {
+        if (error && typeof error === 'object' && 'message' in error) {
+          errorMessage = (error as Error).message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+      } catch (e) {
+        console.error('Error processing error message:', e);
+        errorMessage = 'Upload failed. Please try again.';
+      }
       setMessage({ type: 'error', text: errorMessage });
     }
   };
@@ -506,12 +542,44 @@ const AdminDocumentUpload: React.FC = () => {
                     <Button 
                       onClick={handleUpload} 
                       variant="contained"
-                      disabled={uploading || !currentDocument.file}
-                      startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                      disabled={uploading || !currentDocument.file || currentDocument.status === 'uploading'}
+                      startIcon={
+                        currentDocument.status === 'uploading' ? <CircularProgress size={20} /> :
+                        currentDocument.status === 'success' ? <CheckCircle /> :
+                        uploading ? <CircularProgress size={20} /> : <CloudUpload />
+                      }
+                      color={
+                        currentDocument.status === 'success' ? 'success' :
+                        currentDocument.status === 'error' ? 'error' : 'primary'
+                      }
                     >
-                      {uploading ? 'Uploading...' : 'Upload Document'}
+                      {currentDocument.status === 'uploading' ? 'Uploading...' :
+                       currentDocument.status === 'success' ? 'Upload Complete!' :
+                       uploading ? 'Uploading...' : 'Upload Document'}
                     </Button>
                   </Box>
+                  
+                  {/* Upload Progress and Status */}
+                  {currentDocument.status === 'uploading' && (
+                    <Box sx={{ mt: 2 }}>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={currentDocument.uploadProgress || 0} 
+                        sx={{ mb: 1 }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        Uploading... {currentDocument.uploadProgress || 0}%
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {currentDocument.status === 'success' && (
+                    <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
+                      <Typography variant="body2" color="success.dark">
+                        ✅ Document uploaded successfully!
+                      </Typography>
+                    </Box>
+                  )}
                 </StepContent>
               </Step>
             </Stepper>
@@ -534,7 +602,7 @@ const AdminDocumentUpload: React.FC = () => {
                 {documents.map((doc) => (
                   <ListItem key={doc.id} sx={{ border: '1px solid #e0e0e0', borderRadius: 1, mb: 1 }}>
                     <ListItemIcon>
-                      {getStatusIcon(doc.status)}
+                      {getStatusIcon(doc.isPublished ? 'published' : 'draft')}
                     </ListItemIcon>
                     <ListItemText
                       primary={doc.title}
@@ -544,16 +612,16 @@ const AdminDocumentUpload: React.FC = () => {
                             {doc.type.toUpperCase()} • {doc.category}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {doc.file?.name}
+                            {doc.fileName}
                           </Typography>
                         </Box>
                       }
                     />
                     <Chip
-                      label={doc.status.toUpperCase()}
+                      label={doc.isPublished ? 'PUBLISHED' : 'DRAFT'}
                       size="small"
                       sx={{ 
-                        backgroundColor: getStatusColor(doc.status),
+                        backgroundColor: getStatusColor(doc.isPublished ? 'published' : 'draft'),
                         color: 'white',
                         fontWeight: 600
                       }}

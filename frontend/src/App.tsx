@@ -19,11 +19,11 @@ import FormsFees from './pages/FormsFees';
 import News from './pages/News';
 import Music from './pages/Music';
 import ContactForm from './components/ContactForm';
-import Projects from './pages/Projects';
 import Donate from './pages/Donate';
 import AdminStaffUpload from './pages/AdminStaffUpload';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
 import SchoolDocuments from './pages/SchoolDocuments';
+import LogoSymbolismPage from './pages/LogoSymbolism';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -85,8 +85,6 @@ const NavigationWrapper: React.FC = () => {
         return 'Spiritual';
       case '/events':
         return 'Events';
-      case '/projects':
-        return 'Projects';
       case '/donate':
         return 'Donate';
       case '/contact':
@@ -97,6 +95,8 @@ const NavigationWrapper: React.FC = () => {
         return 'Staff Upload';
       case '/admin/document-upload':
         return 'Document Upload';
+      case '/logo-symbolism':
+        return 'Logo Symbolism';
       default:
         return 'Home';
     }
@@ -122,12 +122,12 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/forms" element={<FormsFees />} />
         <Route path="/extra-mural" element={<ExtraMural />} />
         <Route path="/music" element={<Music />} />
-        <Route path="/projects" element={<Projects />} />
         <Route path="/donate" element={<Donate />} />
         <Route path="/contact" element={<ContactForm />} />
         <Route path="/admin/staff-upload" element={<AdminStaffUpload />} />
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
         <Route path="/documents" element={<SchoolDocuments />} />
+        <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>

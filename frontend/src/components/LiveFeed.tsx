@@ -13,8 +13,6 @@ import {
   ListItemIcon,
   Paper,
   Fade,
-  useTheme,
-  useMediaQuery,
   LinearProgress
 } from '@mui/material';
 import {
@@ -117,48 +115,76 @@ export const useTaskScheduler = () => {
 // STYLED COMPONENTS
 //---------------------------------------------------------
 const LiveFeedContainer = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #fff3e0 0%, #e0f7fa 100%)', // School-friendly gradient
-  borderRadius: theme.spacing(2),
-  padding: theme.spacing(3),
-  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(4),
+  boxShadow: '0 8px 32px rgba(26, 35, 126, 0.1)',
   maxWidth: '1200px',
-  margin: '0 auto', // Center the container
+  margin: '0 auto',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #1a237e 100%)',
+  }
 }));
 
 const FeedCard = styled(Card)(({ theme }) => ({
   height: '100%',
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  transition: 'all 0.3s ease',
   cursor: 'pointer',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  borderRadius: theme.spacing(2),
   '&:hover': {
     transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[8],
+    boxShadow: '0 8px 24px rgba(26, 35, 126, 0.15)',
+    borderColor: 'rgba(26, 35, 126, 0.2)',
   },
 }));
 
 
 const CountdownCardStyled = styled(Paper)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #ff7043 0%, #f50057 100%)', // Vibrant red-orange
+  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
   color: 'white',
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   borderRadius: theme.spacing(2),
   textAlign: 'center',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
+  border: '1px solid rgba(255, 193, 7, 0.3)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
+  }
 }));
 
 const TickerContainer = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   whiteSpace: 'nowrap',
-  background: 'rgba(255, 193, 7, 0.1)', // Yellowish tint
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1),
-  border: '1px solid rgba(255, 193, 7, 0.2)',
+  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.05) 0%, rgba(255, 193, 7, 0.05) 100%)',
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(2),
+  border: '1px solid rgba(26, 35, 126, 0.1)',
   '&:hover': {
     '& .ticker': {
-      animationPlayState: 'paused', // Pause on hover
+      animationPlayState: 'paused',
     },
+    borderColor: 'rgba(26, 35, 126, 0.2)',
   },
 }));
 
@@ -496,8 +522,6 @@ const CountdownCardComponent = memo(({ event, countdown }: { event: Event; count
 // MAIN LIVE FEED COMPONENT
 //---------------------------------------------------------
 const LiveFeed: React.FC = () => {
-  const theme = useTheme();
-  
   //-----------------------------------------------------
   // STATE MANAGEMENT
   //-----------------------------------------------------

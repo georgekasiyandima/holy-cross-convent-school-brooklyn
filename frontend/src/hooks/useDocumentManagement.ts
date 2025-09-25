@@ -79,7 +79,12 @@ export const useDocumentManagement = (): UseDocumentManagementReturn => {
       
       return uploadedDoc;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to upload document';
+      let errorMessage = 'Failed to upload document';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
       setError(errorMessage);
       console.error('Error uploading document:', err);
       throw err;

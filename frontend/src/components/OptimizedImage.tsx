@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Skeleton, Avatar, IconButton, Tooltip } from '@mui/material';
 import { Person, Refresh } from '@mui/icons-material';
-import { imageService, ImageConfig } from '../services/imageService';
+import ImageService from '../services/imageService';
+
+const imageService = ImageService.getInstance();
 
 // =============================
 // TYPES & INTERFACES
@@ -14,7 +16,13 @@ interface OptimizedImageProps {
   height?: number;
   variant?: 'avatar' | 'image' | 'thumbnail';
   fallbackText?: string;
-  config?: ImageConfig;
+  config?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'jpeg' | 'png';
+    fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
+  };
   onLoad?: () => void;
   onError?: () => void;
   showRetry?: boolean;
@@ -59,11 +67,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    loadImage();
-  }, [src, retryCount]);
-
-  const loadImage = async () => {
+  const loadImage = useCallback(async () => {
     if (!src) {
       setLoading(false);
       setError(true);
@@ -90,7 +94,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onError?.();
       }
     }
-  };
+  }, [src, config, onLoad, onError]);
+
+  useEffect(() => {
+    loadImage();
+  }, [loadImage, retryCount]);
 
   const handleRetry = () => {
     if (retryCount < maxRetries) {
