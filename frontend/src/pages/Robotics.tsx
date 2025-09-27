@@ -5,39 +5,46 @@ import {
   Box,
   Card,
   CardContent,
-  GridLegacy as Grid,
-  Chip,
-  Stack,
-  Button,
+  Grid,
   Paper,
+  Chip,
   Avatar,
-  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Button,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import {
-  Science,
+  Psychology,
   Computer,
-  Code,
   Build,
+  Science,
   School,
+  Code,
+  SmartToy,
+  Memory,
+  Speed,
+  Lightbulb,
   TrendingUp,
-  EmojiPeople,
-  Star,
-  Launch,
-  CalendarToday,
+  Group,
+  Timeline,
+  EmojiEvents,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
 
-// Styled components
-const HeroCard = styled(Card)(({ theme }) => ({
+// Styled components for enhanced visual appeal
+const HeroSection = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
   color: 'white',
-  borderRadius: '20px',
-  overflow: 'hidden',
+  padding: theme.spacing(8, 0),
+  textAlign: 'center',
   position: 'relative',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -45,36 +52,25 @@ const HeroCard = styled(Card)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-    opacity: 0.3,
+    background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
   },
 }));
 
 const FeatureCard = styled(Card)(({ theme }) => ({
   height: '100%',
-  borderRadius: '16px',
-  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-  border: '1px solid rgba(26, 35, 126, 0.1)',
   transition: 'all 0.3s ease',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-    borderColor: 'rgba(26, 35, 126, 0.2)',
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(26, 35, 126, 0.2)',
   },
 }));
 
-const LaunchChip = styled(Chip)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #ff6b35 0%, #ffd700 100%)',
-  color: 'white',
-  fontWeight: 700,
-  fontSize: '0.9rem',
-  height: '32px',
-  animation: 'pulse 2s infinite',
-  '@keyframes pulse': {
-    '0%': { transform: 'scale(1)' },
-    '50%': { transform: 'scale(1.05)' },
-    '100%': { transform: 'scale(1)' },
-  },
+const StatsCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  textAlign: 'center',
+  background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+  color: '#1a237e',
+  fontWeight: 600,
 }));
 
 const Robotics: React.FC = () => {
@@ -83,244 +79,415 @@ const Robotics: React.FC = () => {
 
   const features = [
     {
-      icon: <Computer sx={{ fontSize: 40, color: '#1a237e' }} />,
-      title: 'Computer Lab',
-      description: 'State-of-the-art computer laboratory with the latest technology for hands-on learning experiences.',
-      features: ['25 Workstations', 'High-Speed Internet', 'Interactive Whiteboards'],
+      icon: <SmartToy sx={{ fontSize: '3rem', color: '#1a237e' }} />,
+      title: 'Hands-On Learning',
+      description: 'Students build and program robots from scratch, developing critical thinking and problem-solving skills.',
     },
     {
-      icon: <Build sx={{ fontSize: 40, color: '#ff6b35' }} />,
-      title: 'Robotics Kit',
-      description: 'Advanced robotics kits and components for building and programming robots from scratch.',
-      features: ['LEGO Mindstorms', 'Arduino Boards', '3D Printing'],
+      icon: <Code sx={{ fontSize: '3rem', color: '#ffd700' }} />,
+      title: 'Programming Skills',
+      description: 'Learn coding languages like Python, Scratch, and Arduino to control robotic systems.',
     },
     {
-      icon: <Code sx={{ fontSize: 40, color: '#2e7d32' }} />,
+      icon: <Science sx={{ fontSize: '3rem', color: '#1a237e' }} />,
+      title: 'STEM Integration',
+      description: 'Combines Science, Technology, Engineering, and Mathematics in practical applications.',
+    },
+    {
+      icon: <Group sx={{ fontSize: '3rem', color: '#ffd700' }} />,
+      title: 'Team Collaboration',
+      description: 'Work in teams to solve complex challenges and develop leadership skills.',
+    },
+  ];
+
+  const programAreas = [
+    {
+      icon: <Build />,
+      title: 'Robot Construction',
+      description: 'Building robots using LEGO Mindstorms, Arduino, and other platforms',
+    },
+    {
+      icon: <Computer />,
       title: 'Programming',
-      description: 'Learn coding languages and computational thinking through fun, interactive projects.',
-      features: ['Scratch', 'Python', 'Block Programming'],
+      description: 'Coding robots to perform tasks and solve problems autonomously',
     },
     {
-      icon: <EmojiPeople sx={{ fontSize: 40, color: '#d32f2f' }} />,
-      title: 'Team Projects',
-      description: 'Collaborative learning environment where students work together on exciting challenges.',
-      features: ['Group Competitions', 'Peer Learning', 'Mentorship'],
+      icon: <Memory />,
+      title: 'Artificial Intelligence',
+      description: 'Introduction to AI concepts and machine learning applications',
+    },
+    {
+      icon: <Science />,
+      title: 'Sensor Technology',
+      description: 'Understanding and implementing various sensors and actuators',
+    },
+    {
+      icon: <Speed />,
+      title: 'Competition Prep',
+      description: 'Preparing for robotics competitions and challenges',
+    },
+    {
+      icon: <Lightbulb />,
+      title: 'Innovation Projects',
+      description: 'Designing solutions for real-world problems using robotics',
     },
   ];
 
   const benefits = [
-    {
-      title: 'Critical Thinking',
-      description: 'Develop problem-solving skills through hands-on robotics challenges.',
-      icon: <Science sx={{ color: '#1a237e' }} />,
-    },
-    {
-      title: 'STEM Education',
-      description: 'Integrate Science, Technology, Engineering, and Mathematics in practical applications.',
-      icon: <School sx={{ color: '#ff6b35' }} />,
-    },
-    {
-      title: 'Future Ready',
-      description: 'Prepare students for the digital age with essential 21st-century skills.',
-      icon: <TrendingUp sx={{ color: '#2e7d32' }} />,
-    },
-    {
-      title: 'Creativity',
-      description: 'Foster innovation and creative thinking through open-ended projects.',
-      icon: <Star sx={{ color: '#d32f2f' }} />,
-    },
+    'Enhanced problem-solving and critical thinking skills',
+    'Improved mathematical and scientific understanding',
+    'Development of programming and coding abilities',
+    'Increased creativity and innovation mindset',
+    'Better teamwork and communication skills',
+    'Preparation for future STEM careers',
+    'Hands-on experience with cutting-edge technology',
+    'Confidence building through project completion',
   ];
 
   return (
     <>
       <SEO
-        title="Robotics & Computer Room - Holy Cross Convent School"
-        description="Explore our state-of-the-art Robotics and Computer Room launching September 25th. Hands-on STEM education with cutting-edge technology."
-        keywords="robotics, computer lab, STEM education, programming, technology, Holy Cross Convent School"
+        title="Robotics Program - Holy Cross Convent School Brooklyn"
+        description="Discover our cutting-edge robotics program that combines hands-on learning with STEM education. Students build, program, and innovate with the latest technology."
+        keywords="robotics, STEM, programming, technology, innovation, education, Cape Town, Holy Cross"
       />
-      
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <ReturnToHome />
-        
+
+      <Container maxWidth="xl" sx={{ py: 0 }}>
         {/* Hero Section */}
-        <HeroCard sx={{ mb: 6 }}>
-          <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Avatar
-                sx={{
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                  mr: 2,
-                  width: 60,
-                  height: 60,
+        <HeroSection>
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography
+              variant={isMobile ? 'h3' : 'h2'}
+              component="h1"
+              gutterBottom
+              sx={{ fontWeight: 700, mb: 3 }}
+            >
+              🤖 Robotics & Innovation Hub
+                </Typography>
+            <Typography
+              variant={isMobile ? 'h6' : 'h5'}
+              sx={{ mb: 4, opacity: 0.9, maxWidth: '800px', mx: 'auto' }}
+            >
+              Empowering the next generation of innovators through hands-on robotics education
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Chip
+                icon={<TrendingUp />}
+                label="Newly Launched"
+                sx={{ 
+                  bgcolor: '#ffd700', 
+                  color: '#1a237e', 
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  px: 2,
+                  py: 1,
+                }}
+              />
+              <Chip
+                icon={<EmojiEvents />}
+                label="Competition Ready"
+                sx={{ 
+                  bgcolor: 'rgba(255, 255, 255, 0.2)', 
+                  color: 'white', 
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  px: 2,
+                  py: 1,
+                }}
+              />
+            </Box>
+          </Container>
+        </HeroSection>
+
+        <Container maxWidth="lg" sx={{ py: 6 }}>
+          {/* Return to Home */}
+          <ReturnToHome />
+
+          {/* Program Overview */}
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h3"
+              component="h2"
+              sx={{ 
+                color: '#1a237e', 
+                fontWeight: 700, 
+                mb: 4, 
+                textAlign: 'center' 
+              }}
+            >
+              Our Robotics Journey
+            </Typography>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 4,
+                background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)',
+                borderRadius: 3,
+                mb: 6,
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ 
+                  color: '#1a237e', 
+                  fontWeight: 600, 
+                  mb: 3,
+                  fontSize: '1.3rem'
                 }}
               >
-                <Science sx={{ fontSize: 30 }} />
-              </Avatar>
-              <Box>
-                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  Robotics & Computer Room
-                </Typography>
-                <LaunchChip
-                  icon={<Launch />}
-                  label="Launching September 25th"
-                  sx={{ mb: 2 }}
-                />
-              </Box>
-            </Box>
-            
-            <Typography variant="h6" sx={{ opacity: 0.9, mb: 3, maxWidth: '80%' }}>
-              Step into the future of education with our cutting-edge Robotics and Computer Room. 
-              Students will explore the exciting world of technology, programming, and engineering 
-              through hands-on learning experiences.
-            </Typography>
-            
-            <Stack direction="row" spacing={2} flexWrap="wrap">
-              <Chip
-                icon={<CalendarToday />}
-                label="Opening: September 25, 2025"
-                sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
-              />
-              <Chip
-                icon={<EmojiPeople />}
-                label="Ages 6-13"
-                sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
-              />
-              <Chip
-                icon={<School />}
-                label="Grade 1-7"
-                sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
-              />
-            </Stack>
-          </CardContent>
-        </HeroCard>
-
-        {/* Features Grid */}
-        <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4, textAlign: 'center' }}>
-          What We Offer
+                🚀 Launching Innovation at Holy Cross
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ 
+                  color: '#333', 
+                  lineHeight: 1.8, 
+                  fontSize: '1.1rem',
+                  mb: 3
+                }}
+              >
+                We are thrilled to announce the launch of our comprehensive Robotics Program, 
+                designed to prepare our students for the digital future. This cutting-edge initiative 
+                combines hands-on learning with advanced technology, fostering creativity, 
+                critical thinking, and innovation.
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ 
+                  color: '#333', 
+                  lineHeight: 1.8, 
+                  fontSize: '1.1rem'
+                }}
+              >
+                Our robotics program is more than just building robots - it's about empowering 
+                students to become problem-solvers, innovators, and future leaders in technology. 
+                Through project-based learning and real-world applications, students develop 
+                essential 21st-century skills that will serve them throughout their lives.
         </Typography>
-        
-        <Grid container spacing={3} sx={{ mb: 6 }}>
+            </Paper>
+          </Box>
+
+          {/* Key Features */}
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h4"
+              component="h2"
+              sx={{ 
+                color: '#1a237e', 
+                fontWeight: 700, 
+                mb: 5, 
+                textAlign: 'center' 
+              }}
+            >
+              Program Highlights
+            </Typography>
+            <Grid container spacing={4}>
           {features.map((feature, index) => (
-            <Grid item xs={12} md={6} key={index}>
-              <FeatureCard>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Grid key={index} item xs={12} md={6} {...({ item: true } as any)}>
+                  <FeatureCard elevation={3}>
+                    <CardContent sx={{ textAlign: 'center', p: 4 }}>
+                      <Box sx={{ mb: 2 }}>
                     {feature.icon}
-                    <Typography variant="h5" sx={{ ml: 2, color: '#1a237e', fontWeight: 600 }}>
+                      </Box>
+                      <Typography
+                        variant="h5"
+                        component="h3"
+                        sx={{ 
+                          color: '#1a237e', 
+                          fontWeight: 600, 
+                          mb: 2 
+                        }}
+                      >
                       {feature.title}
                     </Typography>
-                  </Box>
-                  
-                  <Typography variant="body1" sx={{ mb: 3, color: '#555' }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ 
+                          color: '#666', 
+                          lineHeight: 1.6,
+                          fontSize: '1rem'
+                        }}
+                      >
                     {feature.description}
                   </Typography>
-                  
-                  <Stack spacing={1}>
-                    {feature.features.map((item, idx) => (
-                      <Box key={idx} sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Star sx={{ fontSize: 16, color: '#ffd700', mr: 1 }} />
-                        <Typography variant="body2" sx={{ color: '#1a237e', fontWeight: 500 }}>
-                          {item}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
                 </CardContent>
               </FeatureCard>
             </Grid>
           ))}
         </Grid>
+          </Box>
 
-        {/* Benefits Section */}
-        <Paper
-          elevation={3}
+          {/* Program Areas */}
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h4"
+              component="h2"
           sx={{
-            p: 4,
-            borderRadius: '20px',
-            background: 'linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%)',
-            border: '1px solid rgba(26, 35, 126, 0.1)',
-          }}
-        >
-          <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4, textAlign: 'center' }}>
-            Learning Benefits
+                color: '#1a237e', 
+                fontWeight: 700, 
+                mb: 5, 
+                textAlign: 'center' 
+              }}
+            >
+              What Students Learn
           </Typography>
-          
           <Grid container spacing={3}>
-            {benefits.map((benefit, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Avatar
+              {programAreas.map((area, index) => (
+                <Grid key={index} item xs={12} sm={6} md={4} {...({ item: true } as any)}>
+                  <Paper
+                    elevation={2}
                     sx={{
-                      bgcolor: 'rgba(26, 35, 126, 0.1)',
-                      width: 60,
-                      height: 60,
-                      mx: 'auto',
-                      mb: 2,
+                      p: 3,
+                      height: '100%',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(26, 35, 126, 0.15)',
+                      },
                     }}
                   >
-                    {benefit.icon}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: '#1a237e',
+                          mr: 2,
+                          width: 40,
+                          height: 40,
+                        }}
+                      >
+                        {area.icon}
+                      </Avatar>
+                      <Typography
+                        variant="h6"
+                        sx={{ 
+                          color: '#1a237e', 
+                          fontWeight: 600,
+                          fontSize: '1.1rem'
+                        }}
+                      >
+                        {area.title}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{ 
+                        color: '#666', 
+                        lineHeight: 1.5,
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      {area.description}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          {/* Benefits Section */}
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h4"
+              component="h2"
+              sx={{ 
+                color: '#1a237e', 
+                fontWeight: 700, 
+                mb: 4, 
+                textAlign: 'center' 
+              }}
+            >
+              Student Benefits
+            </Typography>
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={8} {...({ item: true } as any)}>
+                <List>
+                  {benefits.map((benefit, index) => (
+                    <ListItem key={index} sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <Avatar
+                          sx={{
+                            bgcolor: '#ffd700',
+                            width: 32,
+                            height: 32,
+                          }}
+                        >
+                          <Timeline sx={{ color: '#1a237e', fontSize: '1.2rem' }} />
                   </Avatar>
-                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
-                    {benefit.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#555' }}>
-                    {benefit.description}
-                  </Typography>
-                </Box>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={benefit}
+                        sx={{
+                          '& .MuiTypography-root': {
+                            color: '#333',
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                          },
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
               </Grid>
-            ))}
+              <Grid item xs={12} md={4} {...({ item: true } as any)}>
+                <StatsCard elevation={3}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    100%
+                  </Typography>
+                  <Typography variant="h6" sx={{ mb: 2 }}>
+                    Hands-On Learning
+                  </Typography>
+                  <Typography variant="body2">
+                    Every student gets to build, program, and test their own robots
+                  </Typography>
+                </StatsCard>
+              </Grid>
           </Grid>
-        </Paper>
+          </Box>
 
         {/* Call to Action */}
-        <Box sx={{ textAlign: 'center', mt: 6 }}>
-          <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
-            Ready to Join the Future of Learning?
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#555', mb: 4, maxWidth: '600px', mx: 'auto' }}>
-            Contact us to learn more about our Robotics and Computer Room program. 
-            Limited spots available for the launch!
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-            <Button
-              variant="contained"
-              size="large"
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Paper
+              elevation={3}
               sx={{
-                bgcolor: '#1a237e',
-                borderRadius: '25px',
-                px: 4,
-                py: 1.5,
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': {
-                  bgcolor: '#0d47a1',
-                  transform: 'translateY(-2px)',
-                },
+                p: 6,
+                background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+                color: 'white',
+                borderRadius: 3,
               }}
             >
-              Learn More
-            </Button>
+              <Typography
+                variant="h4"
+                component="h2"
+                sx={{ fontWeight: 700, mb: 3 }}
+              >
+                Ready to Start Your Robotics Journey?
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{ mb: 4, opacity: 0.9 }}
+              >
+                Join our innovative robotics program and become part of the future of technology
+              </Typography>
             <Button
-              variant="outlined"
+                variant="contained"
               size="large"
               sx={{
-                borderColor: '#1a237e',
+                  bgcolor: '#ffd700',
                 color: '#1a237e',
-                borderRadius: '25px',
+                  fontWeight: 600,
                 px: 4,
                 py: 1.5,
-                textTransform: 'none',
-                fontWeight: 600,
+                  fontSize: '1.1rem',
                 '&:hover': {
-                  borderColor: '#0d47a1',
-                  bgcolor: 'rgba(26, 35, 126, 0.1)',
+                    bgcolor: '#ffed4e',
                 },
               }}
             >
-              Contact Us
+                Learn More About Our Programs
             </Button>
-          </Stack>
+            </Paper>
         </Box>
+        </Container>
       </Container>
     </>
   );

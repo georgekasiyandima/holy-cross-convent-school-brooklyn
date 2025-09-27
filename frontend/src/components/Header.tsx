@@ -44,7 +44,8 @@ import {
   Receipt,
   ContactMail,
   VolunteerActivism,
-  AccessTime
+  AccessTime,
+  Computer
 } from '@mui/icons-material';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
@@ -213,16 +214,17 @@ const navigationItems: NavigationItem[] = [
       { name: 'Extra Murals', path: '/extra-mural', icon: <SportsSoccer /> }
     ]
   },
-  {
-    name: 'Programs',
-    icon: <Book />,
-    type: 'dropdown',
-    items: [
-      { name: 'Academics', path: '/academics', icon: <Book /> },
-      { name: 'Robotics', path: '/robotics', icon: <Psychology /> },
-      { name: 'Spiritual', path: '/spiritual', icon: <SelfImprovement /> }
-    ]
-  },
+      {
+        name: 'Programs',
+        icon: <Book />,
+        type: 'dropdown',
+        items: [
+          { name: 'Academics', path: '/academics', icon: <Book /> },
+          { name: 'Robotics', path: '/robotics', icon: <Psychology /> },
+          { name: 'ICT Hub', path: '/ict-hub', icon: <Computer /> },
+          { name: 'Spiritual', path: '/spiritual', icon: <SelfImprovement /> }
+        ]
+      },
   {
     name: 'Resources',
     icon: <Description />,

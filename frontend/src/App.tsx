@@ -27,6 +27,8 @@ import LogoSymbolismPage from './pages/LogoSymbolism';
 import MissionVision from './pages/MissionVision';
 import FamilyStatementPage from './pages/FamilyStatement';
 import Academics from './pages/Academics';
+import Robotics from './pages/Robotics';
+import ICTHub from './pages/ICTHub';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -106,6 +108,10 @@ const NavigationWrapper: React.FC = () => {
         return 'Family Statement';
       case '/academics':
         return 'Academics';
+      case '/robotics':
+        return 'Robotics';
+      case '/ict-hub':
+        return 'ICT Hub';
       default:
         return 'Home';
     }
@@ -140,6 +146,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/mission-vision" element={<MissionVision />} />
         <Route path="/family-statement" element={<FamilyStatementPage />} />
         <Route path="/academics" element={<Academics />} />
+        <Route path="/robotics" element={<Robotics />} />
+        <Route path="/ict-hub" element={<ICTHub />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>
