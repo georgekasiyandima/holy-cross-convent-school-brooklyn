@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Typography, Box, Card, Divider, Link as MuiLink } from '@mui/material';
 import { Language, Church, LocalHospital, Public, Radio, AccountBalance } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 
 const externalLinks = [
   {
@@ -44,6 +45,9 @@ const externalLinks = [
 const Links: React.FC = () => {
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>

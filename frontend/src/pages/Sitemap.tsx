@@ -30,6 +30,7 @@ import {
   ContactSupport,
   Map as SitemapIcon
 } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 
@@ -202,6 +203,9 @@ const Sitemap: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <SEO
         title="Sitemap - Holy Cross Convent School Brooklyn"
         description="Complete sitemap of Holy Cross Convent School Brooklyn website. Find all pages and sections easily."

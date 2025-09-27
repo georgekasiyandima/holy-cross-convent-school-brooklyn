@@ -18,7 +18,6 @@ import {
   MenuItem,
   ListItemIcon,
   Fade,
-  Slide
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -37,8 +36,17 @@ import {
   People,
   Description,
   Link,
-  AdminPanelSettings
+  AdminPanelSettings,
+  History,
+  Image,
+  Book,
+  Psychology,
+  Receipt,
+  ContactMail,
+  VolunteerActivism,
+  AccessTime
 } from '@mui/icons-material';
+// Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
 // TypeScript interfaces for type safety
 interface NavigationItem {
@@ -60,18 +68,28 @@ interface HeaderProps {
   onNavigate?: (path: string) => void;
 }
 
-// Logo path constant
-const schoolLogo = '/Logo(1).svg';
 
-// Styled components for custom styling
+// Logo path constant
+const schoolLogo = '/HCLOGO1.png';
+
+// Modern styled components with improved design
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 20%, #ffca28 40%, #ffb74d 50%, #90caf9 70%, #64b5f6 85%, #1a237e 100%)', // School colors with dark blue on far right
-  boxShadow: '0 4px 20px rgba(211, 47, 47, 0.3)',
+  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
+  boxShadow: '0 8px 32px rgba(26, 35, 126, 0.3)',
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.drawer + 1,
-  backdropFilter: 'blur(10px)',
-  borderBottom: '2px solid rgba(255, 193, 7, 0.5)', // Enhanced gold accent border
+  backdropFilter: 'blur(20px)',
+  borderBottom: '3px solid #ffd700',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, transparent 0%, #ffd700 50%, transparent 100%)',
+  },
 }));
 
 const LogoContainer = styled(Box)({
@@ -82,19 +100,23 @@ const LogoContainer = styled(Box)({
 });
 
 const LogoImage = styled('img')({
-  height: '110px',
+  height: '80px',
   width: 'auto',
-  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
   objectFit: 'contain',
   objectPosition: 'center',
   transition: 'transform 0.3s ease',
+  // Add drop shadow for depth
+  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+  borderRadius: '8px',
+  padding: '5px',
   '&:hover': {
     transform: 'scale(1.05)',
+    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
   },
 });
 
 const LogoFallback = styled(Box)({
-  height: '110px',
+  height: '80px',
   width: 'auto',
   display: 'flex',
   alignItems: 'center',
@@ -104,31 +126,36 @@ const LogoFallback = styled(Box)({
   border: '2px dashed rgba(255, 193, 7, 0.3)',
   color: '#1a237e',
   fontWeight: 600,
-  fontSize: '14px',
+  fontSize: '12px',
   textAlign: 'center',
-  padding: '8px',
+  padding: '6px',
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
 });
 
+
 const NavButton = styled(Button)(({ theme }) => ({
-  color: '#1a1a1a',
-  fontWeight: 700,
-  fontSize: '0.9rem',
+  color: '#ffffff',
+  fontWeight: 600,
+  fontSize: '0.85rem',
   textTransform: 'none',
-  padding: '8px 16px',
-  margin: '0 4px',
+  padding: '8px 12px',
+  margin: '0 1px',
   borderRadius: '20px',
-  transition: 'all 0.3s ease',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
+  minWidth: 'auto',
   '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0 8px 25px rgba(255, 215, 0, 0.4)',
+    color: '#ffd700',
   },
   '&.active': {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+    color: '#ffd700',
+    border: '1px solid rgba(255, 215, 0, 0.5)',
   },
   '&::before': {
     content: '""',
@@ -137,15 +164,25 @@ const NavButton = styled(Button)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-    transition: 'left 0.5s',
+    background: 'linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent)',
+    transition: 'left 0.6s ease',
   },
   '&:hover::before': {
     left: '100%',
   },
+  '& .MuiButton-startIcon': {
+    marginRight: '6px',
+    transition: 'transform 0.3s ease',
+    '& svg': {
+      fontSize: '1.1rem',
+    },
+  },
+  '&:hover .MuiButton-startIcon': {
+    transform: 'scale(1.1)',
+  },
 }));
 
-// Restructured navigation items with dropdowns
+// Streamlined navigation with better organization
 const navigationItems: NavigationItem[] = [
   { 
     name: 'Home', 
@@ -153,60 +190,71 @@ const navigationItems: NavigationItem[] = [
     icon: <Home />,
     type: 'single'
   },
-  { 
-    name: 'History', 
-    path: '/history',
+  {
+    name: 'About Us',
     icon: <Info />,
-    type: 'single'
+    type: 'dropdown',
+    items: [
+      { name: 'History', path: '/history', icon: <History /> },
+      { name: 'Board Members', path: '/school-board', icon: <AdminPanelSettings /> },
+      { name: 'Staff Members', path: '/staff', icon: <People /> },
+      { name: 'Logo Symbolism', path: '/logo-symbolism', icon: <Image /> }
+    ]
   },
   {
-    name: 'School Life',
+    name: 'School Hub',
     icon: <School />,
     type: 'dropdown',
     items: [
       { name: 'Events', path: '/events', icon: <Event /> },
-      { name: 'News', path: '/news', icon: <Newspaper /> },
       { name: 'Gallery', path: '/gallery', icon: <PhotoLibrary /> },
+      { name: 'School Announcements', path: '/news', icon: <Newspaper /> },
       { name: 'Music', path: '/music', icon: <MusicNote /> },
-      { name: 'Extra Mural', path: '/extra-mural', icon: <SportsSoccer /> },
+      { name: 'Extra Murals', path: '/extra-mural', icon: <SportsSoccer /> }
+    ]
+  },
+  {
+    name: 'Programs',
+    icon: <Book />,
+    type: 'dropdown',
+    items: [
+      { name: 'Academics', path: '/academics', icon: <Book /> },
+      { name: 'Robotics', path: '/robotics', icon: <Psychology /> },
       { name: 'Spiritual', path: '/spiritual', icon: <SelfImprovement /> }
     ]
   },
   {
-    name: 'About Us',
-    icon: <People />,
-    type: 'dropdown',
-    items: [
-      { name: 'School Info', path: '/info', icon: <Info /> },
-      { name: 'School Board', path: '/school-board', icon: <People /> },
-      { name: 'Staff', path: '/staff', icon: <People /> },
-      { name: 'Logo Symbolism', path: '/logo-symbolism', icon: <Info /> }
-    ]
-  },
-  {
     name: 'Resources',
-    icon: <Folder />,
+    icon: <Description />,
     type: 'dropdown',
     items: [
       { name: 'Documents', path: '/documents', icon: <Description /> },
-      { name: 'Forms & Fees', path: '/forms', icon: <Description /> },
-      { name: 'Links', path: '/links', icon: <Link /> }
+      { name: 'Forms & Fees', path: '/forms', icon: <Receipt /> },
+      { name: 'School Info', path: '/info', icon: <Info /> },
+      { name: 'Mission & Vision', path: '/mission-vision', icon: <School /> },
+      { name: 'Family Statement', path: '/family-statement', icon: <People /> }
     ]
   },
   {
-    name: 'Donate',
-    path: '/donate',
-    icon: <Favorite />,
-    type: 'single'
-  },
-  {
-    name: 'Admin',
-    icon: <AdminPanelSettings />,
+    name: 'Admissions',
+    icon: <School />,
     type: 'dropdown',
     items: [
-      { name: 'Staff Upload', path: '/admin/staff-upload', icon: <People /> },
-      { name: 'Document Upload', path: '/admin/document-upload', icon: <Description /> }
+      { name: 'Application Process', path: '/admissions', icon: <School /> },
+      { name: 'Afterschool Programs', path: '/afterschool', icon: <AccessTime /> }
     ]
+  },
+  { 
+    name: 'Contact', 
+    path: '/contact',
+    icon: <ContactMail />,
+    type: 'single'
+  },
+  { 
+    name: 'Donate', 
+    path: '/donate',
+    icon: <VolunteerActivism />,
+    type: 'single'
   }
 ];
 
@@ -224,30 +272,6 @@ const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
         onError={() => console.log('Logo failed to load')}
       />
     )}
-    <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          color: '#1a1a1a', 
-          fontWeight: 700,
-          fontSize: { xs: '1rem', md: '1.25rem' },
-          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-        }}
-      >
-        Holy Cross Convent School
-      </Typography>
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          color: '#8b0000', 
-          fontWeight: 600,
-          fontSize: { xs: '0.7rem', md: '0.8rem' },
-          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-        }}
-      >
-        Brooklyn
-      </Typography>
-    </Box>
   </LogoContainer>
 ));
 
@@ -274,55 +298,21 @@ const MobileDrawer = memo(({
       display: { xs: 'block', md: 'none' },
       '& .MuiDrawer-paper': { 
         boxSizing: 'border-box', 
-        width: 250,
-        background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 25%, #ffca28 45%, #ffb74d 55%, #90caf9 75%, #64b5f6 100%)',
-        backdropFilter: 'blur(10px)',
-        borderLeft: '2px solid rgba(255, 193, 7, 0.5)',
+        width: 280,
+        background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
+        backdropFilter: 'blur(20px)',
+        borderLeft: '3px solid #ffd700',
       },
     }}
   >
-    <Box sx={{ width: 250, pt: 2 }}>
+    <Box sx={{ width: 280, pt: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 2 }}>
         <LogoImage src={schoolLogo} alt="Holy Cross Convent School" />
-        <Typography variant="h6" sx={{ ml: 1, color: '#1a1a1a', fontWeight: 600, textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+        <Typography variant="h6" sx={{ ml: 1, color: '#ffffff', fontWeight: 600, textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}>
           Holy Cross
         </Typography>
       </Box>
       <List>
-        {/* Back to Home Button (only show on non-home pages) */}
-        {currentPage !== 'Home' && (
-          <Slide direction="left" in={currentPage !== 'Home'} timeout={300}>
-            <span>
-              <ListItem 
-                onClick={() => handleNavigation('/')}
-                sx={{
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                  cursor: 'pointer',
-                  borderRadius: '8px',
-                  margin: '2px 8px',
-                    border: '1px solid rgba(255, 193, 7, 0.3)',
-                    transition: 'all 0.3s ease',
-                  '&:hover': {
-                      backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                      transform: 'translateX(4px)',
-                  },
-                }}
-                  aria-label="Back to home page"
-              >
-                <ListItemText 
-                  primary="🏠 Back to Home" 
-                  sx={{
-                    '& .MuiTypography-root': {
-                      fontWeight: 600,
-                      color: '#1a237e',
-                    }
-                  }}
-                />
-              </ListItem>
-            </span>
-          </Slide>
-        )}
-        
         {navigationItems.map((item, index) => (
           <Fade in timeout={300 + index * 100} key={item.name}>
             <span>
@@ -330,19 +320,19 @@ const MobileDrawer = memo(({
               <ListItem 
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
-                  backgroundColor: currentPage === item.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                  backgroundColor: currentPage === item.name ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
                   cursor: 'pointer',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   margin: '2px 8px',
                     transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
                       transform: 'translateX(4px)',
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
               >
-                <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
@@ -350,7 +340,7 @@ const MobileDrawer = memo(({
                   sx={{
                     '& .MuiTypography-root': {
                       fontWeight: currentPage === item.name ? 600 : 400,
-                      color: '#1a237e',
+                      color: '#ffffff',
                     }
                   }}
                 />
@@ -359,13 +349,13 @@ const MobileDrawer = memo(({
               <>
                 <ListItem 
                   sx={{
-                      backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                    borderRadius: '8px',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    borderRadius: '12px',
                     margin: '2px 8px',
-                      border: '1px solid rgba(255, 193, 7, 0.3)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
                   }}
                 >
-                  <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                  <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText 
@@ -373,7 +363,7 @@ const MobileDrawer = memo(({
                     sx={{
                       '& .MuiTypography-root': {
                         fontWeight: 600,
-                        color: '#1a237e',
+                        color: '#ffffff',
                       }
                     }}
                   />
@@ -383,19 +373,19 @@ const MobileDrawer = memo(({
                     key={subItem.name}
                     onClick={() => handleNavigation(subItem.path)}
                     sx={{
-                      backgroundColor: currentPage === subItem.name ? 'rgba(135, 206, 235, 0.1)' : 'transparent',
+                      backgroundColor: currentPage === subItem.name ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
                       cursor: 'pointer',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       margin: '2px 8px 2px 32px',
                         transition: 'all 0.3s ease',
                       '&:hover': {
-                        backgroundColor: 'rgba(135, 206, 235, 0.2)',
+                        backgroundColor: 'rgba(255, 215, 0, 0.15)',
                           transform: 'translateX(4px)',
                       },
                     }}
                       aria-label={`Navigate to ${subItem.name}`}
                   >
-                    <ListItemIcon sx={{ color: '#1a237e', minWidth: 40 }}>
+                    <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
                       {subItem.icon}
                     </ListItemIcon>
                     <ListItemText 
@@ -403,7 +393,7 @@ const MobileDrawer = memo(({
                       sx={{
                         '& .MuiTypography-root': {
                           fontWeight: currentPage === subItem.name ? 600 : 400,
-                          color: '#1a237e',
+                          color: '#ffffff',
                           fontSize: '0.9rem',
                         }
                       }}
@@ -455,125 +445,104 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
     <>
       <StyledAppBar role="banner" aria-label="School navigation">
         <Container maxWidth="xl">
-          <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
+          <Toolbar sx={{ px: { xs: 1, sm: 1 }, py: 1 }}>
             {/* Logo and School Name */}
             <LogoComponent logoError={logoError} />
 
             {/* Desktop Navigation */}
             {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                {/* Back to Home Button (only show on non-home pages) */}
-                {currentPage !== 'Home' && (
-                  <Fade in timeout={300}>
-                    <span>
-                      <IconButton
-                        onClick={() => handleNavigation('/')}
-                        sx={{
-                          color: '#1a1a1a',
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                            transform: 'scale(1.1) rotate(360deg)',
-                          },
-                          mr: 1
-                        }}
-                        title="Back to Home"
-                        aria-label="Back to home page"
-                      >
-                        <Home />
-                      </IconButton>
-                    </span>
-                  </Fade>
-                )}
-                
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
                 {navigationItems.map((item, index) => (
-                  <Fade in timeout={300 + index * 100} key={item.name}>
-                    <span>
-                    {item.type === 'single' ? (
-                      <NavButton
-                        onClick={() => handleNavigation(item.path!)}
-                        className={currentPage === item.name ? 'active' : ''}
-                        startIcon={item.icon}
-                          aria-label={`Navigate to ${item.name}`}
+                  <Box key={index} sx={{ position: 'relative' }}>
+                  <NavButton
+                      onClick={(e) => {
+                        if (item.type === 'dropdown') {
+                          handleDropdownClick(e, item.name);
+                        } else if (item.path) {
+                          handleNavigation(item.path);
+                        }
+                      }}
+                    startIcon={item.icon}
+                      endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
+                    sx={{
+                      backgroundColor: currentPage === item.name ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                      color: currentPage === item.name ? '#ffffff' : '#1a1a1a',
+                    }}
+                  >
+                    {item.name}
+                  </NavButton>
+                    
+                    {/* Dropdown Menu */}
+                    {item.type === 'dropdown' && (
+                      <Menu
+                        anchorEl={anchorEl}
+                        open={activeDropdown === item.name}
+                        onClose={handleDropdownClose}
+                        TransitionComponent={Fade}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'left',
+                        }}
+                        sx={{
+                          '& .MuiPaper-root': {
+                            backgroundColor: 'rgba(26, 35, 126, 0.95)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 215, 0, 0.3)',
+                            borderRadius: '16px',
+                            boxShadow: '0 12px 40px rgba(26, 35, 126, 0.3)',
+                            mt: 2,
+                            minWidth: 220,
+                            overflow: 'hidden',
+                          },
+                        }}
                       >
-                        {item.name}
-                      </NavButton>
-                    ) : (
-                      <NavButton
-                        onClick={(e) => handleDropdownClick(e, item.name)}
-                        className={activeDropdown === item.name ? 'active' : ''}
-                        startIcon={item.icon}
-                        endIcon={<ExpandMore />}
-                          aria-label={`Open ${item.name} menu`}
-                          aria-expanded={activeDropdown === item.name}
-                          aria-haspopup="true"
-                      >
-                        {item.name}
-                      </NavButton>
+                        {item.items?.map((subItem, subIndex) => (
+                          <MenuItem
+                            key={subIndex}
+                            onClick={() => handleNavigation(subItem.path)}
+                            sx={{
+                              py: 1.5,
+                              px: 2,
+                              color: '#ffffff',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                                color: '#ffd700',
+                              },
+                              '&:first-of-type': {
+                                borderTopLeftRadius: '16px',
+                                borderTopRightRadius: '16px',
+                              },
+                              '&:last-of-type': {
+                                borderBottomLeftRadius: '16px',
+                                borderBottomRightRadius: '16px',
+                              },
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 32, color: 'inherit', '& svg': { fontSize: '1.1rem' } }}>
+                              {subItem.icon}
+                            </ListItemIcon>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 500,
+                                color: 'inherit',
+                              }}
+                            >
+                              {subItem.name}
+                            </Typography>
+                          </MenuItem>
+                        ))}
+                      </Menu>
                     )}
-                  </span>
-                  </Fade>
+                  </Box>
                 ))}
               </Box>
             )}
 
-            {/* Dropdown Menus */}
-            {navigationItems.map((item) => (
-              item.type === 'dropdown' && (
-                <Menu
-                  key={item.name}
-                  anchorEl={anchorEl}
-                  open={activeDropdown === item.name}
-                  onClose={handleDropdownClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                  }}
-                  PaperProps={{
-                    sx: {
-                      background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 25%, #ffca28 45%, #ffb74d 55%, #90caf9 75%, #64b5f6 100%)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 193, 7, 0.5)',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(211, 47, 47, 0.3)',
-                      mt: 1,
-                    }
-                  }}
-                  TransitionComponent={Fade}
-                  transitionDuration={200}
-                >
-                  {item.items?.map((subItem, index) => (
-                    <MenuItem
-                      key={subItem.name}
-                      onClick={() => handleNavigation(subItem.path)}
-                      sx={{
-                        minWidth: 200,
-                        py: 1.5,
-                        px: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                          transform: 'translateX(4px)',
-                        },
-                      }}
-                      aria-label={`Navigate to ${subItem.name}`}
-                    >
-                      <ListItemIcon sx={{ color: '#8b0000', minWidth: 40 }}>
-                        {subItem.icon}
-                      </ListItemIcon>
-                      <Typography sx={{ color: '#1a1a1a', fontWeight: 600, textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                        {subItem.name}
-                      </Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              )
-            ))}
 
             {/* Mobile Menu Button */}
             {isMobile && (
@@ -583,11 +552,12 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                 edge="end"
                 onClick={handleDrawerToggle}
                 sx={{ 
-                  color: '#1a1a1a',
+                  color: '#ffffff',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'rotate(90deg)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                    color: '#ffd700',
                   },
                 }}
               >

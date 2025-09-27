@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Typography, Box, Card, CardContent, Divider, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import ReturnToHome from '../components/ReturnToHome';
 
 const boardRoles = [
   {
@@ -61,6 +62,9 @@ const SchoolBoard: React.FC = () => {
   const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 1, fontSize: { xs: '2rem', md: '2.5rem' } }}>
           School Board

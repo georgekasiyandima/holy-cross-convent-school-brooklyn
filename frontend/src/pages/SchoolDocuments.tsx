@@ -32,6 +32,7 @@ import {
 import DocumentViewer from '../components/DocumentViewer';
 import useDocumentManagement from '../hooks/useDocumentManagement';
 import SEO from '../components/SEO';
+import ReturnToHome from '../components/ReturnToHome';
 
 //---------------------------------------------------------
 // TYPES & INTERFACES
@@ -40,7 +41,7 @@ interface Document {
   id: string;
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'attendance' | 'language' | 'other';
   fileUrl: string;
   fileName: string;
   fileSize: number;
@@ -145,7 +146,7 @@ const SchoolDocuments: React.FC = () => {
 
   // Load documents on component mount
   useEffect(() => {
-    loadDocuments('policies', true); // Load published policy documents
+    loadDocuments('Policies', true); // Load published policy documents
   }, [loadDocuments]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -184,6 +185,8 @@ const SchoolDocuments: React.FC = () => {
   const missionDocuments = filteredDocuments.filter(doc => doc.type === 'mission');
   const visionDocuments = filteredDocuments.filter(doc => doc.type === 'vision');
   const policyDocuments = filteredDocuments.filter(doc => doc.type === 'policy');
+  const attendanceDocuments = filteredDocuments.filter(doc => doc.type === 'attendance');
+  const languageDocuments = filteredDocuments.filter(doc => doc.type === 'language');
 
   if (loading) {
     return (
@@ -214,6 +217,9 @@ const SchoolDocuments: React.FC = () => {
       />
       
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Return to Home */}
+        <ReturnToHome />
+        
         {/* Header Section */}
         <Box sx={{ mb: 4 }}>
           <Typography 
@@ -266,6 +272,8 @@ const SchoolDocuments: React.FC = () => {
                   <MenuItem value="mission">Mission</MenuItem>
                   <MenuItem value="vision">Vision</MenuItem>
                   <MenuItem value="policy">Policy</MenuItem>
+                  <MenuItem value="attendance">Attendance</MenuItem>
+                  <MenuItem value="language">Language</MenuItem>
                 </Select>
               </FormControl>
 
@@ -311,6 +319,18 @@ const SchoolDocuments: React.FC = () => {
               color="warning" 
               variant="outlined" 
             />
+            <Chip 
+              icon={<School />} 
+              label={`${attendanceDocuments.length} Attendance Documents`} 
+              color="info" 
+              variant="outlined" 
+            />
+            <Chip 
+              icon={<Description />} 
+              label={`${languageDocuments.length} Language Documents`} 
+              color="success" 
+              variant="outlined" 
+            />
           </Stack>
         </Box>
 
@@ -346,6 +366,16 @@ const SchoolDocuments: React.FC = () => {
               <Tab 
                 label={`Policies (${policyDocuments.length})`} 
                 icon={<PictureAsPdf />}
+                iconPosition="start"
+              />
+              <Tab 
+                label={`Attendance (${attendanceDocuments.length})`} 
+                icon={<School />}
+                iconPosition="start"
+              />
+              <Tab 
+                label={`Language (${languageDocuments.length})`} 
+                icon={<Description />}
                 iconPosition="start"
               />
             </Tabs>
@@ -391,6 +421,24 @@ const SchoolDocuments: React.FC = () => {
             <DocumentViewer 
               documents={policyDocuments}
               title="Policy Documents"
+              showDownload={true}
+              showFullscreen={true}
+            />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={5}>
+            <DocumentViewer 
+              documents={attendanceDocuments}
+              title="Attendance Documents"
+              showDownload={true}
+              showFullscreen={true}
+            />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={6}>
+            <DocumentViewer 
+              documents={languageDocuments}
+              title="Language Documents"
               showDownload={true}
               showFullscreen={true}
             />

@@ -25,8 +25,8 @@ import {
   School,
   Support,
 } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 import axios from 'axios';
-import { uploadStaffImage } from '../utils/imageUtils';
 import { StaffAvatar } from '../components/OptimizedImage';
 
 interface StaffMember {
@@ -89,14 +89,30 @@ const AdminStaffUpload: React.FC = () => {
       setUploading(true);
       setMessage(null);
 
-      const result = await uploadStaffImage(file, staffMember.id, (progress) => {
-        console.log(`Upload progress: ${progress.percentage}%`);
+      // Create FormData for the upload
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('name', staffMember.name);
+      formData.append('role', staffMember.role);
+      formData.append('category', staffMember.category);
+
+      // Upload to staff endpoint
+      const response = await axios.put(`/api/staff/${staffMember.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total || 1)
+          );
+          console.log(`Upload progress: ${percentCompleted}%`);
+        },
       });
 
-      if (result) {
+      if (response.data.success) {
         setMessage({ type: 'success', text: `Image uploaded successfully for ${staffMember.name}` });
         // Update the staff member with new image URL
-        const newImageUrl = result.fileUrl;
+        const newImageUrl = response.data.data.staff.imageUrl;
         setStaff(prev => prev.map(s => 
           s.id === staffMember.id 
             ? { ...s, imageUrl: newImageUrl }
@@ -104,7 +120,7 @@ const AdminStaffUpload: React.FC = () => {
         ));
         setSelectedStaff(prev => prev ? { ...prev, imageUrl: newImageUrl } : null);
       } else {
-        throw new Error('Upload failed');
+        throw new Error(response.data.error || 'Upload failed');
       }
     } catch (error) {
       setMessage({ 
@@ -139,6 +155,9 @@ const AdminStaffUpload: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4 }}>
         Staff Image Upload
       </Typography>

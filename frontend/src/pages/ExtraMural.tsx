@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Typography, Box, Card, CardContent, Divider, Grid, useTheme, Stack, Button } from '@mui/material';
 import { TheaterComedy, SportsSoccer, SportsHandball, SportsMartialArts, Palette, EmojiPeople, Email, Phone } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 
 const activities = [
   {
@@ -39,6 +40,9 @@ const ExtraMural: React.FC = () => {
   const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>

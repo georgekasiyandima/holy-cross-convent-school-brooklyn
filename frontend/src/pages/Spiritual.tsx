@@ -23,6 +23,7 @@ import {
   Facebook,
   VideoLibrary
 } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 import { styled } from '@mui/material/styles';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 
@@ -120,6 +121,9 @@ const Spiritual: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <SpiritualSection>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReturnToHome from '../components/ReturnToHome';
 import {
   Container,
   Typography,
@@ -101,6 +102,9 @@ const History: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Typography 

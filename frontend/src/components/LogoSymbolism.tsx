@@ -23,6 +23,7 @@ import {
   Close as CloseIcon
 } from '@mui/icons-material';
 import OptimizedImage from './OptimizedImage';
+import ReturnToHome from './ReturnToHome';
 
 interface LogoElement {
   id: string;
@@ -38,39 +39,46 @@ const LogoSymbolism: React.FC = () => {
 
   const logoElements: LogoElement[] = [
     {
-      id: 'cross',
-      title: 'The Cross',
-      description: 'The central symbol of our faith',
-      meaning: 'Represents our commitment to Christian values and the sacrifice of Jesus Christ. It serves as a constant reminder of our mission to serve God and others.',
-      color: '#1a237e'
-    },
-    {
-      id: 'flame',
-      title: 'The Flame',
-      description: 'The Holy Spirit and divine inspiration',
-      meaning: 'Symbolizes the Holy Spirit guiding our educational mission. It represents the light of knowledge, wisdom, and the divine spark in every child.',
-      color: '#ff6b35'
-    },
-    {
-      id: 'book',
-      title: 'The Open Book',
-      description: 'Knowledge and learning',
-      meaning: 'Represents our dedication to academic excellence and the pursuit of knowledge. It symbolizes the importance of education in developing the whole person.',
+      id: 'hills',
+      title: 'The Three Hills (Green)',
+      description: 'Symbol of the earth and universal mission',
+      meaning: 'The three hills symbolize the earth. God\'s mission applies to all people on earth, representing our commitment to serve all of humanity.',
       color: '#2e7d32'
     },
     {
-      id: 'shield',
-      title: 'The Shield',
-      description: 'Protection and strength',
-      meaning: 'Represents our commitment to providing a safe, nurturing environment where children can grow and flourish. It symbolizes the protection of our values and traditions.',
+      id: 'background',
+      title: 'Blue Background',
+      description: 'God\'s presence and spirit',
+      meaning: 'The blue background speaks to us of God\'s presence. Blue is believed to be the colour of God\'s spirit, surrounding and encompassing all that we do.',
+      color: '#1976d2'
+    },
+    {
+      id: 'cross',
+      title: 'The Red Cross',
+      description: 'Centered in salvation',
+      meaning: 'The cross stands on the centre hill and symbolizes that we are centred in the cross. It stands below heaven and is a revelation of our salvation.',
       color: '#d32f2f'
     },
     {
-      id: 'crown',
-      title: 'The Crown',
-      description: 'Excellence and dignity',
-      meaning: 'Symbolizes our pursuit of excellence in all endeavors and the dignity of every person. It represents the crown of achievement and the royal nature of our calling.',
+      id: 'stars',
+      title: 'The Stars (Golden/Yellow)',
+      description: 'God\'s gifts and Holy Cross Sisters\' vows',
+      meaning: 'The stars speak to us of the many gifts and graces which we have received from God. They also remind the Holy Cross Sisters of the three vows which they have made.',
       color: '#ffca28'
+    },
+    {
+      id: 'sunmoon',
+      title: 'Sun and Moon (Golden/Yellow)',
+      description: 'Continuous mission around the world',
+      meaning: 'The sun and moon on either side of the cross remind us that at all times, somewhere on earth the work of the Holy Cross Sisters is being done.',
+      color: '#ffca28'
+    },
+    {
+      id: 'motto',
+      title: 'The Motto',
+      description: '"In cruce salus" - In the cross is salvation',
+      meaning: 'Our school motto "In cruce salus" translates to "in the cross is salvation," reminding us that through Christ\'s sacrifice on the cross, we find our ultimate salvation and purpose.',
+      color: '#1a237e'
     }
   ];
 
@@ -86,6 +94,9 @@ const LogoSymbolism: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <Paper 
         elevation={3} 
         sx={{ 
@@ -198,7 +209,7 @@ const LogoSymbolism: React.FC = () => {
           
           <Grid container spacing={3}>
             {logoElements.map((element, index) => (
-              <Grid item xs={12} md={6} key={element.id}>
+              <Grid item xs={12} md={6} lg={4} key={element.id}>
                 <Accordion 
                   elevation={2}
                   sx={{

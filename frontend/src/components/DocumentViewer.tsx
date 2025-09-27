@@ -33,7 +33,7 @@ interface Document {
   id: string;
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
   fileUrl: string;
   fileName: string;
   fileSize: number;
@@ -118,6 +118,12 @@ const getDocumentColor = (type: string) => {
       return '#fff3e0';
     case 'vision':
       return '#e8f5e8';
+    case 'policy':
+      return '#ffebee';
+    case 'attendance':
+      return '#f3e5f5';
+    case 'language':
+      return '#e0f2f1';
     default:
       return '#f5f5f5';
   }

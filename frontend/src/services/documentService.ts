@@ -1,4 +1,14 @@
 import axios from 'axios';
+import { 
+  staticDocuments, 
+  getDocumentsByType, 
+  getDocumentsByCategory, 
+  getAllPublishedDocuments,
+  searchDocuments,
+  getDocumentById,
+  getDocumentStats,
+  StaticDocument
+} from '../data/staticDocuments';
 
 //---------------------------------------------------------
 // TYPES & INTERFACES
@@ -11,7 +21,7 @@ export interface Document {
   fileUrl: string;
   fileSize: number;
   mimeType: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
   category: string;
   tags: string[];
   isPublished: boolean;
@@ -24,7 +34,7 @@ export interface Document {
 export interface DocumentUpload {
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
   category: string;
   tags: string[];
   isPublished: boolean;
@@ -97,15 +107,64 @@ class DocumentService {
   //---------------------------------------------------------
 
   /**
-   * Get all documents by category
+   * Get all documents by category (includes static documents)
    */
   async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
     try {
-      const response = await api.get(`/api/documents/${category}?published=${published}`);
-      return response.data.data;
+      // Get static documents first
+      const staticDocs = getDocumentsByCategory(category);
+      
+      // Try to get API documents (fallback gracefully if API is not available)
+      let apiDocs: Document[] = [];
+      try {
+        const response = await api.get(`/api/documents/${category}?published=${published}`);
+        apiDocs = response.data.data || [];
+      } catch (apiError) {
+        console.warn('API documents not available, using static documents only:', apiError);
+      }
+      
+      // Combine and deduplicate documents
+      const allDocs = [...staticDocs, ...apiDocs];
+      const uniqueDocs = allDocs.filter((doc, index, self) => 
+        index === self.findIndex(d => d.id === doc.id)
+      );
+      
+      return uniqueDocs;
     } catch (error) {
       console.error('Error fetching documents:', error);
-      throw new Error('Failed to fetch documents');
+      // Fallback to static documents only
+      return getDocumentsByCategory(category);
+    }
+  }
+
+  /**
+   * Get documents by type (includes static documents)
+   */
+  async getDocumentsByType(type: string, published: boolean = true): Promise<Document[]> {
+    try {
+      // Get static documents first
+      const staticDocs = getDocumentsByType(type);
+      
+      // Try to get API documents (fallback gracefully if API is not available)
+      let apiDocs: Document[] = [];
+      try {
+        const response = await api.get(`/api/documents/type/${type}?published=${published}`);
+        apiDocs = response.data.data || [];
+      } catch (apiError) {
+        console.warn('API documents not available, using static documents only:', apiError);
+      }
+      
+      // Combine and deduplicate documents
+      const allDocs = [...staticDocs, ...apiDocs];
+      const uniqueDocs = allDocs.filter((doc, index, self) => 
+        index === self.findIndex(d => d.id === doc.id)
+      );
+      
+      return uniqueDocs;
+    } catch (error) {
+      console.error('Error fetching documents by type:', error);
+      // Fallback to static documents only
+      return getDocumentsByType(type);
     }
   }
 
@@ -114,6 +173,13 @@ class DocumentService {
    */
   async getDocumentById(category: string, id: string): Promise<Document> {
     try {
+      // First check static documents
+      const staticDoc = getDocumentById(id);
+      if (staticDoc) {
+        return staticDoc;
+      }
+      
+      // Then try API
       const response = await api.get(`/api/documents/${category}/${id}`);
       return response.data.data;
     } catch (error) {

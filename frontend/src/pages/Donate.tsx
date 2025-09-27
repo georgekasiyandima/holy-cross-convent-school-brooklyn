@@ -54,6 +54,7 @@ import {
   Security,
   VerifiedUser
 } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 import { styled } from '@mui/material/styles';
 import SEO from '../components/SEO';
 
@@ -626,6 +627,9 @@ const Donate: React.FC = () => {
       />
       
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Return to Home */}
+        <ReturnToHome />
+        
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography variant="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
             Support Our School

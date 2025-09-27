@@ -1,7 +1,6 @@
 import React, { useState, useEffect, memo, useCallback } from 'react';
 import { 
   Fab, 
-  Zoom, 
   Box, 
   Tooltip,
   useTheme,
@@ -127,7 +126,7 @@ const ActionButton = React.memo(React.forwardRef<HTMLButtonElement, {
 )));
 
 const BackToTop: React.FC<BackToTopProps> = ({ 
-  showHomeButton = true,
+  showHomeButton = false,
   showSchoolButton = true,
   homeButtonTooltip = "Back to Home",
   schoolButtonTooltip = "School Information",

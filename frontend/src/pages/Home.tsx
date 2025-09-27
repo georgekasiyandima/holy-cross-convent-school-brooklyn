@@ -110,7 +110,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'url("/Logo(1).svg") no-repeat center',
+    background: 'url("/HCLOGO1.png") no-repeat center',
     backgroundSize: 'contain',
     opacity: 0.1,
     animation: 'float 6s ease-in-out infinite'

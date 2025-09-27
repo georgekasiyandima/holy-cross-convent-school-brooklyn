@@ -16,6 +16,7 @@ import {
   Avatar,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import ReturnToHome from "../components/ReturnToHome";
 import {
   School,
   Person,
@@ -515,6 +516,9 @@ const Staff: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       {/* Header */}
       <Box sx={{ textAlign: "center", mb: 6 }}>
         <Typography

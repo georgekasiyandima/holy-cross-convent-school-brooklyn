@@ -24,6 +24,9 @@ import AdminStaffUpload from './pages/AdminStaffUpload';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
 import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
+import MissionVision from './pages/MissionVision';
+import FamilyStatementPage from './pages/FamilyStatement';
+import Academics from './pages/Academics';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -97,6 +100,12 @@ const NavigationWrapper: React.FC = () => {
         return 'Document Upload';
       case '/logo-symbolism':
         return 'Logo Symbolism';
+      case '/mission-vision':
+        return 'Mission & Vision';
+      case '/family-statement':
+        return 'Family Statement';
+      case '/academics':
+        return 'Academics';
       default:
         return 'Home';
     }
@@ -128,6 +137,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
         <Route path="/documents" element={<SchoolDocuments />} />
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
+        <Route path="/mission-vision" element={<MissionVision />} />
+        <Route path="/family-statement" element={<FamilyStatementPage />} />
+        <Route path="/academics" element={<Academics />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>

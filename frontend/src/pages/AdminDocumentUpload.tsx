@@ -45,6 +45,7 @@ import {
   Add,
   Edit
 } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 import useDocumentManagement from '../hooks/useDocumentManagement';
 import { DocumentUpload } from '../services/documentService';
 
@@ -319,6 +320,9 @@ const AdminDocumentUpload: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4 }}>
         Document Upload Management
       </Typography>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Typography, Box, Card, CardContent, Button, Divider, List, ListItem, ListItemIcon, ListItemText, useTheme, Paper, Stack } from '@mui/material';
 import { PictureAsPdf, Download, HelpOutline, Email, Phone } from '@mui/icons-material';
+import ReturnToHome from '../components/ReturnToHome';
 
 const resources = [
   {
@@ -44,6 +45,9 @@ const FormsFees: React.FC = () => {
   const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography variant="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2, fontSize: { xs: '2rem', md: '2.5rem' } }}>

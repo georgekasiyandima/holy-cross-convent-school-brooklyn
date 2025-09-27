@@ -7,8 +7,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 import MissionStatement from '../components/MissionStatement';
-import FamilyStatement from '../components/FamilyStatement';
-import LogoSymbolism from '../components/LogoSymbolism';
+import ReturnToHome from '../components/ReturnToHome';
 
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
@@ -28,6 +27,9 @@ const values = [
 
 const Info: React.FC = () => (
   <Container maxWidth="md" sx={{ py: 6 }}>
+    {/* Return to Home */}
+    <ReturnToHome />
+    
     {/* Hero Section */}
     <Paper elevation={3} sx={{ p: 4, mb: 5, textAlign: 'center', background: '#e3eafc' }}>
       <Avatar
@@ -170,29 +172,31 @@ const Info: React.FC = () => (
     {/* Policy Documents */}
     <Box sx={{ mb: 5 }}>
       <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
-        Admission & Policy Documents
+        School Documents & Policies
       </Typography>
       <Typography variant="body1" sx={{ mb: 2 }}>
-        Download our latest admission forms and school policies below.
+        Access our comprehensive collection of school documents including language policy, attendance policies, and other important information.
       </Typography>
-      <Button variant="contained" color="primary" disabled>
-        Download Policy Document
+      <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={() => window.location.href = '/documents'}
+        sx={{ mr: 2 }}
+      >
+        View All Documents
+      </Button>
+      <Button 
+        variant="outlined" 
+        color="primary" 
+        onClick={() => window.location.href = '/logo-symbolism'}
+      >
+        View Logo Symbolism
       </Button>
     </Box>
 
     {/* Mission Statement Section */}
     <Box sx={{ my: 6 }}>
       <MissionStatement />
-    </Box>
-
-    {/* Family Statement Section */}
-    <Box sx={{ my: 6 }}>
-      <FamilyStatement />
-    </Box>
-
-    {/* Logo Symbolism Section */}
-    <Box sx={{ my: 6 }}>
-      <LogoSymbolism />
     </Box>
   </Container>
 );

@@ -1,10 +1,14 @@
 import React from 'react';
 import { Container, Typography, Box, Alert } from '@mui/material';
 import FacebookEmbed from '../components/FacebookEmbed';
+import ReturnToHome from '../components/ReturnToHome';
 
 const FacebookDemo: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+      {/* Return to Home */}
+      <ReturnToHome />
+      
       <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, textAlign: 'center', mb: 4 }}>
         Facebook Embed Demo
       </Typography>
