@@ -200,7 +200,7 @@ class DocumentService {
       formData.append('category', category);
       formData.append('isPublished', documentData.isPublished.toString());
 
-      const response = await api.post('/api/simple-upload/upload', formData, {
+      const response = await api.post('/api/upload/document', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

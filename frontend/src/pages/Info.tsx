@@ -33,7 +33,7 @@ const Info: React.FC = () => (
     {/* Hero Section */}
     <Paper elevation={3} sx={{ p: 4, mb: 5, textAlign: 'center', background: '#e3eafc' }}>
       <Avatar
-        src="/Logo(1).svg"
+        src="/HCLOGO1.png"
         alt="School Logo"
         sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
       />

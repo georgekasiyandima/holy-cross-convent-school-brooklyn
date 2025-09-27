@@ -257,6 +257,15 @@ const navigationItems: NavigationItem[] = [
     path: '/donate',
     icon: <VolunteerActivism />,
     type: 'single'
+  },
+  {
+    name: 'Admin',
+    icon: <AdminPanelSettings />,
+    type: 'dropdown',
+    items: [
+      { name: 'Staff Upload', path: '/admin/staff-upload', icon: <People /> },
+      { name: 'Document Upload', path: '/admin/document-upload', icon: <Description /> }
+    ]
   }
 ];
 

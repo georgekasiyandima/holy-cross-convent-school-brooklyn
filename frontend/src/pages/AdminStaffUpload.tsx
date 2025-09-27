@@ -53,7 +53,8 @@ const AdminStaffUpload: React.FC = () => {
   const loadStaff = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/staff');
+      // Use direct backend URL to bypass proxy issues
+      const response = await axios.get('http://localhost:5000/api/staff');
       if (response.data.success) {
         setStaff(response.data.data.staff);
       }
@@ -96,8 +97,8 @@ const AdminStaffUpload: React.FC = () => {
       formData.append('role', staffMember.role);
       formData.append('category', staffMember.category);
 
-      // Upload to staff endpoint
-      const response = await axios.put(`/api/staff/${staffMember.id}`, formData, {
+      // Upload to enhanced upload endpoint (using direct backend URL)
+      const response = await axios.put(`http://localhost:5000/api/upload/staff/${staffMember.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
