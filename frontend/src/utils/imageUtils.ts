@@ -8,7 +8,7 @@ import ImageService from '../services/imageService';
 const imageService = ImageService.getInstance();
 
 // Base URL for static images
-const STATIC_IMAGE_BASE = '/staff-images/';
+const STATIC_IMAGE_BASE = '/uploads/staff/';
 
 /**
  * Get image URL for staff member

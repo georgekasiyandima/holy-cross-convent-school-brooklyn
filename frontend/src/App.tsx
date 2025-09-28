@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import Analytics from './components/Analytics';
@@ -22,6 +23,8 @@ import ContactForm from './components/ContactForm';
 import Donate from './pages/Donate';
 import AdminStaffUpload from './pages/AdminStaffUpload';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
+import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
 import MissionVision from './pages/MissionVision';
@@ -139,7 +142,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/music" element={<Music />} />
         <Route path="/donate" element={<Donate />} />
         <Route path="/contact" element={<ContactForm />} />
-        <Route path="/admin/staff-upload" element={<AdminStaffUpload />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
         <Route path="/documents" element={<SchoolDocuments />} />
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
@@ -175,11 +179,13 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <HelmetProvider>
-        <PerformanceMonitor />
-        <Analytics />
-        <Router>
-          <NavigationWrapper />
-        </Router>
+        <AuthProvider>
+          <PerformanceMonitor />
+          <Analytics />
+          <Router>
+            <NavigationWrapper />
+          </Router>
+        </AuthProvider>
       </HelmetProvider>
     </ThemeProvider>
   );

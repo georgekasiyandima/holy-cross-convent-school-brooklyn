@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 import { StaffAvatar } from '../components/OptimizedImage';
 
 interface StaffMember {
@@ -38,6 +39,7 @@ interface StaffMember {
 }
 
 const AdminStaffUpload: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -47,8 +49,10 @@ const AdminStaffUpload: React.FC = () => {
 
   // Load staff members on component mount
   React.useEffect(() => {
-    loadStaff();
-  }, []);
+    if (isAuthenticated) {
+      loadStaff();
+    }
+  }, [isAuthenticated]);
 
   const loadStaff = async () => {
     try {
@@ -153,6 +157,18 @@ const AdminStaffUpload: React.FC = () => {
       default: return '#f5f5f5';
     }
   };
+
+  // Check authentication
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          You must be logged in to access this page.
+        </Alert>
+        <ReturnToHome />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
