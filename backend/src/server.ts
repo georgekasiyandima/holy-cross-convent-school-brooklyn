@@ -19,9 +19,12 @@ import eventsRoutes from './routes/events';
 import staffRoutes from './routes/staff';
 import galleryRoutes from './routes/gallery';
 import contactRoutes from './routes/contact';
-// import documentRoutes from './routes/documents'; // Temporarily commented out due to TypeScript errors
+import documentRoutes from './routes/documents';
 // import assetRoutes from './routes/assets'; // Temporarily commented out due to TypeScript errors
+import uploadRoutes from './routes/upload'; // Enhanced upload service
+import simpleUploadRoutes from './routes/simpleUpload';
 import schoolRoutes from './routes/schoolInfo';
+import schoolStatsRoutes from './routes/schoolStats';
 // import analyticsRoutes from './routes/analytics'; // Commented out - route doesn't exist yet
 
 // Load environment variables
@@ -50,6 +53,7 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
 // CORS configuration
@@ -90,8 +94,22 @@ if (NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Static file serving for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static file serving for uploads with CORS headers
+app.use('/uploads', (req, res, next) => {
+  // Set CORS headers for static files
+  res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'http://localhost:3000');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -128,9 +146,12 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/contact', contactRoutes);
-// app.use('/api/documents', documentRoutes); // Temporarily commented out due to TypeScript errors
+app.use('/api/documents', documentRoutes);
 // app.use('/api/assets', assetRoutes); // Temporarily commented out due to TypeScript errors
+app.use('/api/upload', uploadRoutes); // Enhanced upload service
+app.use('/api/simple-upload', simpleUploadRoutes);
 app.use('/api/school', schoolRoutes);
+app.use('/api/school-stats', schoolStatsRoutes);
 // app.use('/api/analytics', analyticsRoutes); // Commented out - route doesn't exist yet
 
 // Welcome route
@@ -150,6 +171,7 @@ app.get('/', (req, res) => {
       contact: '/api/contact',
       documents: '/api/documents',
       assets: '/api/assets',
+      upload: '/api/upload',
       school: '/api/school',
       analytics: '/api/analytics',
     },
@@ -171,6 +193,7 @@ app.use('*', (req, res) => {
       '/api/contact',
       '/api/documents',
       '/api/assets',
+      '/api/upload',
       '/api/school',
       '/api/analytics',
     ],
@@ -181,6 +204,18 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Graceful shutdown
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process, just log the error
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process, just log the error
+});
+
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   await prisma.$disconnect();

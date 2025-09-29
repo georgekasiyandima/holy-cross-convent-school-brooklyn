@@ -1,187 +1,249 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { PrismaClient } from '@prisma/client';
-import { createError } from '../middleware/errorHandler';
+import { uploadImage, uploadDocument } from '../middleware/upload';
+import { requireEditor, authMiddleware } from '../middleware/auth';
+import uploadService from '../services/uploadService';
 import { AuthRequest } from '../middleware/auth';
+import { createError } from '../middleware/errorHandler';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+/**
+ * POST /api/upload/staff
+ * Upload new staff member with image
+ */
+router.post('/staff', 
+  authMiddleware,
+  requireEditor,
+  uploadImage.single('image'),
+  async (req: AuthRequest, res, next) => {
+    try {
+      if (!req.file) {
+        return next(createError('No image file provided', 400));
+      }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+      const staffData = {
+        name: req.body.name,
+        role: req.body.role,
+        email: req.body.email,
+        phone: req.body.phone,
+        bio: req.body.bio,
+        grade: req.body.grade,
+        subjects: req.body.subjects ? JSON.parse(req.body.subjects) : undefined,
+        qualifications: req.body.qualifications,
+        experience: req.body.experience,
+        category: req.body.category,
+        order: req.body.order ? parseInt(req.body.order) : undefined
+      };
 
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow images and PDFs
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+      const result = await uploadService.uploadStaffImage(req.file, staffData);
 
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image and document files are allowed'));
+      if (!result.success) {
+        return next(createError(result.error || 'Upload failed', 400));
+      }
+
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        data: result.data
+      });
+
+    } catch (error) {
+      next(error);
     }
   }
-});
+);
 
-// Upload single file
-router.post('/single', upload.single('file'), async (req: AuthRequest, res, next) => {
+/**
+ * PUT /api/upload/staff/:id
+ * Update existing staff member with new image
+ */
+router.put('/staff/:id',
+  authMiddleware,
+  requireEditor,
+  uploadImage.single('image'),
+  async (req: AuthRequest, res, next) => {
   try {
-    if (!req.file) {
-      throw createError('No file uploaded', 400);
-    }
-
-    const fileUrl = `/uploads/${req.file.filename}`;
-
-    // Save file record to database
-    const fileRecord = await prisma.fileUpload.create({
-      data: {
+    console.log('🔍 Upload Route: Received request for staff ID:', req.params.id);
+    console.log('🔍 Upload Route: File received:', req.file ? 'Yes' : 'No');
+    if (req.file) {
+      console.log('🔍 Upload Route: File details:', {
+        originalname: req.file.originalname,
         filename: req.file.filename,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        url: fileUrl,
-        uploadedBy: req.user!.id
+        path: req.file.path,
+        size: req.file.size
+      });
+    }
+    
+    if (!req.file) {
+        return next(createError('No image file provided', 400));
       }
-    });
+
+      const staffId = req.params.id;
+      const staffData = {
+        name: req.body.name,
+        role: req.body.role,
+        email: req.body.email,
+        phone: req.body.phone,
+        bio: req.body.bio,
+        grade: req.body.grade,
+        subjects: req.body.subjects ? JSON.parse(req.body.subjects) : undefined,
+        qualifications: req.body.qualifications,
+        experience: req.body.experience,
+        category: req.body.category,
+        order: req.body.order ? parseInt(req.body.order) : undefined
+      };
+
+      const result = await uploadService.updateStaffImage(staffId, req.file, staffData);
+
+      if (!result.success) {
+        return next(createError(result.error || 'Update failed', 400));
+      }
 
     res.json({
       success: true,
-      message: 'File uploaded successfully',
-      data: {
-        file: fileRecord,
-        url: fileUrl
-      }
-    });
+        message: result.message,
+        data: result.data
+      });
+
   } catch (error) {
     next(error);
   }
-});
+  }
+);
 
-// Upload multiple files
-router.post('/multiple', upload.array('files', 10), async (req: AuthRequest, res, next) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      throw createError('No files uploaded', 400);
-    }
+/**
+ * POST /api/upload/document
+ * Upload document
+ */
+router.post('/document',
+  authMiddleware,
+  requireEditor,
+  uploadDocument.single('file'),
+  async (req: AuthRequest, res, next) => {
+    try {
+      if (!req.file) {
+        return next(createError('No file provided', 400));
+      }
 
-    const files = req.files as Express.Multer.File[];
-    const uploadedFiles = [];
+      const documentData = {
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category,
+        type: req.body.type,
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        isPublished: req.body.isPublished === 'true'
+      };
 
-    for (const file of files) {
-      const fileUrl = `/uploads/${file.filename}`;
+      const result = await uploadService.uploadDocument(
+        req.file, 
+        documentData, 
+        req.user!.id
+      );
 
-      const fileRecord = await prisma.fileUpload.create({
+      if (!result.success) {
+        return next(createError(result.error || 'Upload failed', 400));
+      }
+
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        data: result.data
+      });
+
+  } catch (error) {
+    next(error);
+  }
+  }
+);
+
+/**
+ * GET /api/upload/stats
+ * Get upload statistics
+ */
+router.get('/stats',
+  authMiddleware,
+  requireEditor,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const result = await uploadService.getUploadStats();
+
+      if (!result.success) {
+        return next(createError(result.error || 'Failed to get stats', 500));
+      }
+
+    res.json({
+      success: true,
+        data: result.data
+      });
+
+  } catch (error) {
+    next(error);
+  }
+  }
+);
+
+/**
+ * POST /api/upload/validate
+ * Validate file before upload
+ */
+router.post('/validate',
+  requireEditor,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const { fileType, fileSize } = req.body;
+
+      if (!fileType || !fileSize) {
+        return next(createError('File type and size are required', 400));
+      }
+
+      // Basic validation
+      const allowedImageTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
+      ];
+      const allowedDocumentTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain',
+        'text/csv'
+      ];
+
+      const isImage = allowedImageTypes.includes(fileType);
+      const isDocument = allowedDocumentTypes.includes(fileType);
+      const maxSize = isImage ? 5 * 1024 * 1024 : 20 * 1024 * 1024; // 5MB for images, 20MB for documents
+
+      if (!isImage && !isDocument) {
+        return res.json({
+          success: false,
+          error: `File type ${fileType} is not allowed`
+        });
+      }
+
+      if (fileSize > maxSize) {
+        return res.json({
+          success: false,
+          error: `File size exceeds maximum allowed size of ${maxSize / (1024 * 1024)}MB`
+        });
+      }
+
+    res.json({
+      success: true,
+        message: 'File validation passed',
         data: {
-          filename: file.filename,
-          originalName: file.originalname,
-          mimeType: file.mimetype,
-          size: file.size,
-          url: fileUrl,
-          uploadedBy: req.user!.id
+          fileType,
+          fileSize,
+          isImage,
+          isDocument,
+          maxAllowedSize: maxSize
         }
       });
 
-      uploadedFiles.push({
-        file: fileRecord,
-        url: fileUrl
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Files uploaded successfully',
-      data: { files: uploadedFiles }
-    });
   } catch (error) {
     next(error);
   }
-});
-
-// Get uploaded files (admin only)
-router.get('/', async (req: AuthRequest, res, next) => {
-  try {
-    const { page = 1, limit = 20 } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const [files, total] = await Promise.all([
-      prisma.fileUpload.findMany({
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: Number(limit)
-      }),
-      prisma.fileUpload.count()
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        files,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
-    });
-  } catch (error) {
-    next(error);
   }
-});
-
-// Delete uploaded file (admin only)
-router.delete('/:id', async (req: AuthRequest, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const fileRecord = await prisma.fileUpload.findUnique({
-      where: { id }
-    });
-
-    if (!fileRecord) {
-      throw createError('File not found', 404);
-    }
-
-    // Delete physical file
-    const filePath = path.join(uploadsDir, fileRecord.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // Delete database record
-    await prisma.fileUpload.delete({
-      where: { id }
-    });
-
-    res.json({
-      success: true,
-      message: 'File deleted successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+);
 
 export default router; 

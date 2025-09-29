@@ -26,17 +26,18 @@ async function main() {
   // Create sample staff members
   const staffMembers = [
     {
-      name: 'Sr. Mary Principal',
+      name: 'Mrs Du Plesis',
       role: 'Principal',
-      email: 'principal@holycross.co.za',
-      phone: '+27 21 123 4567',
-      bio: 'Dedicated principal with over 20 years of experience in Catholic education.',
+      email: 'admin@holycrossbrooklyn.co.za',
+      phone: '+27 21 511 4337',
+      bio: 'The future belongs to those who believe in the beauty of their dreams - Eleanor Roosevelt',
       grade: 'All',
       subjects: JSON.stringify(['Leadership', 'Religious Education']),
       qualifications: 'M.Ed in Educational Leadership, B.Ed in Primary Education',
       experience: '20+ years in Catholic education',
       isActive: true,
-      order: 1
+      order: 1,
+      category: 'LEADERSHIP' as const
     },
     {
       name: 'Mrs. Sarah Johnson',
@@ -49,7 +50,8 @@ async function main() {
       qualifications: 'B.Ed Honours, Advanced Certificate in Education',
       experience: '15 years in primary education',
       isActive: true,
-      order: 2
+      order: 2,
+      category: 'LEADERSHIP' as const
     },
     {
       name: 'Mr. David Smith',
@@ -62,7 +64,36 @@ async function main() {
       qualifications: 'B.Ed in Intermediate Phase, Mathematics Specialization',
       experience: '8 years teaching experience',
       isActive: true,
-      order: 3
+      order: 3,
+      category: 'TEACHING' as const
+    },
+    {
+      name: 'Ms. Lisa Brown',
+      role: 'Grade 5 Teacher',
+      email: 'lisa.brown@holycross.co.za',
+      phone: '+27 21 123 4570',
+      bio: 'Creative English and Social Sciences teacher with a passion for literature.',
+      grade: '5',
+      subjects: JSON.stringify(['English', 'Social Sciences']),
+      qualifications: 'B.Ed in Foundation Phase, English Literature Specialization',
+      experience: '6 years teaching experience',
+      isActive: true,
+      order: 4,
+      category: 'TEACHING' as const
+    },
+    {
+      name: 'Mrs. Patricia Wilson',
+      role: 'School Secretary',
+      email: 'patricia.wilson@holycross.co.za',
+      phone: '+27 21 123 4571',
+      bio: 'Efficient administrative support with excellent communication skills.',
+      grade: 'All',
+      subjects: JSON.stringify(['Administration']),
+      qualifications: 'Diploma in Office Administration',
+      experience: '10 years administrative experience',
+      isActive: true,
+      order: 5,
+      category: 'SUPPORT' as const
     }
   ];
 

@@ -176,12 +176,12 @@ const getCategoryColors = (category: string): CategoryColors => {
 };
 
 const getAvatarStyles = (isLeadership: boolean) => ({
-  width: isLeadership ? 100 : 80,
-  height: isLeadership ? 100 : 80,
+  width: isLeadership ? 140 : 120,
+  height: isLeadership ? 140 : 120,
   mx: "auto",
   mb: 2,
   bgcolor: "#1a237e",
-  fontSize: isLeadership ? "2.5rem" : "2rem",
+  fontSize: isLeadership ? "3rem" : "2.5rem",
 });
 
 /**
@@ -233,7 +233,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
         <StaffAvatar
           src={getStaffImageUrl(member.imageUrl)}
           name={member.name}
-          size={isLeadership ? 120 : 100}
+          size={isLeadership ? 140 : 120}
           category={member.category}
           sx={getAvatarStyles(isLeadership)}
         />

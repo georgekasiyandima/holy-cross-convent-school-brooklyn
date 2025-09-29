@@ -202,17 +202,25 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Success state
   if (variant === 'avatar') {
-    return (
-      <Avatar
-        src={imageUrl}
-        alt={alt}
-        sx={{ width, height, ...sx }}
-        className={className}
-        onError={handleImageError}
-      >
-        {initials}
-      </Avatar>
-    );
+  return (
+    <Avatar
+      src={imageUrl}
+      alt={alt}
+      sx={{ 
+        width, 
+        height, 
+        '& .MuiAvatar-img': {
+          objectFit: 'cover',
+          objectPosition: 'center top', // Center horizontally, align to top to show face
+        },
+        ...sx 
+      }}
+      className={className}
+      onError={handleImageError}
+    >
+      {initials}
+    </Avatar>
+  );
   }
 
   return (
@@ -270,6 +278,10 @@ export const StaffAvatar: React.FC<{
         bgcolor: getCategoryColor(),
         color: 'white',
         fontWeight: 600,
+        '& .MuiAvatar-img': {
+          objectFit: 'cover',
+          objectPosition: 'center 30%', // Center horizontally, focus on upper portion for faces
+        },
         ...sx
       }}
     />

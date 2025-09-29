@@ -416,6 +416,26 @@ model FileUpload {
   @@map("file_uploads")
 }
 
+// Documents
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  category    String
+  tags        String   // JSON array of strings
+  isPublished Boolean  @default(false)
+  authorId    String
+  authorName  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("documents")
+}
+
 // Analytics and Statistics
 model Analytics {
   id          String   @id @default(cuid())

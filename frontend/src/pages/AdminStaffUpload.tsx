@@ -218,7 +218,7 @@ const AdminStaffUpload: React.FC = () => {
                     <StaffAvatar
                       src={member.imageUrl}
                       name={member.name}
-                      size={80}
+                      size={100}
                       category={member.category}
                       sx={{ mx: 'auto', mb: 2 }}
                     />

@@ -21,6 +21,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "ts-node src/scripts/seed.ts",
+    "db:init-stats": "ts-node src/scripts/initializeSchoolStats.ts",
     "db:backup": "sqlite3 prisma/dev.db \".backup 'backups/$(date +%Y%m%d_%H%M%S).db'\"",
     "db:reset": "prisma migrate reset --force",
     "logs": "tail -f logs/app.log",
@@ -43,6 +44,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -61,6 +63,7 @@
     "puppeteer": "^23.10.4",
     "sharp": "^0.33.5",
     "sqlite3": "^5.1.7",
+    "uuid": "^13.0.0",
     "winston": "^3.13.0",
     "yup": "^1.4.0"
   },

@@ -3,34 +3,18 @@ import { PrismaClient } from '@prisma/client';
 import { createError } from '../middleware/errorHandler';
 import { AuthRequest, requireEditor } from '../middleware/auth';
 import { validateStaffMember } from '../middleware/validation';
-import multer from 'multer';
-import path from 'path';
-import sharp from 'sharp';
-import fs from 'fs';
+import { uploadImage } from '../middleware/upload';
+import uploadService from '../services/uploadService';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 /**
  * ========================================
- * MULTER CONFIGURATION
+ * ENHANCED UPLOAD SERVICE INTEGRATION
  * ========================================
- * Configure multer for staff photo uploads with validation
+ * Using the new uploadService for robust file handling
  */
-const uploadImage = multer({
-  dest: 'temp/',
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.'));
-    }
-  }
-});
 
 /**
  * ========================================
@@ -57,40 +41,7 @@ const parseSubjects = (subjects: any): string | null => {
   }
 };
 
-/**
- * Process and optimize uploaded staff image
- * @param file - Multer file object
- * @param staffName - Staff member name for filename
- * @returns Optimized image URL
- */
-const processStaffImage = async (file: Express.Multer.File, staffName: string): Promise<string> => {
-  const timestamp = Date.now();
-  const baseName = `${staffName.toLowerCase().replace(/\s+/g, '-')}-${timestamp}`;
-  
-  // Ensure uploads directory exists
-  const uploadsDir = path.join(process.cwd(), 'uploads', 'staff');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-
-  // Optimize and save image using Sharp
-  const optimizedPath = path.join(uploadsDir, `${baseName}.jpg`);
-  
-  await sharp(file.path)
-    .resize(1200, 1200, {
-      fit: 'inside',
-      withoutEnlargement: true,
-      background: { r: 255, g: 255, b: 255, alpha: 1 }
-    })
-    .jpeg({ quality: 90, progressive: true })
-    .toFile(optimizedPath);
-
-  // Clean up temp file
-  fs.unlinkSync(file.path);
-
-  const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-  return `${baseUrl}/uploads/staff/${baseName}.jpg`;
-};
+// Old processStaffImage function removed - now using uploadService
 
 /**
  * Group staff members by category for frontend consumption
@@ -186,7 +137,7 @@ router.get('/:id', async (req, res, next) => {
 
 /**
  * POST /api/staff
- * Create new staff member with photo upload
+ * Create new staff member with photo upload using enhanced upload service
  * Middleware: requireEditor, validateStaffMember, uploadImage
  */
 router.post(
@@ -196,65 +147,35 @@ router.post(
   validateStaffMember,
   async (req: AuthRequest, res, next) => {
     try {
-      const {
-        name,
-        role,
-        email,
-        phone,
-        bio,
-        grade,
-        order,
-        category,
-        subjects,
-        qualifications,
-        experience
-      } = req.body;
-
-      // ✅ Safe subjects parsing
-      const parsedSubjects = parseSubjects(subjects);
-      if (subjects && !parsedSubjects) {
-        return res.status(400).json({ 
-          success: false, 
-          error: "Invalid subjects format" 
-        });
+      if (!req.file) {
+        return next(createError('Image file is required', 400));
       }
 
-      // Process uploaded image if provided
-      let imageUrl: string | undefined = undefined;
-      if (req.file) {
-        try {
-          imageUrl = await processStaffImage(req.file, name);
-        } catch (imageError) {
-          console.error('Image processing error:', imageError);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to process uploaded image'
-          });
-        }
-      }
+      const staffData = {
+        name: req.body.name,
+        role: req.body.role,
+        email: req.body.email,
+        phone: req.body.phone,
+        bio: req.body.bio,
+        grade: req.body.grade,
+        subjects: req.body.subjects ? JSON.parse(req.body.subjects) : undefined,
+        qualifications: req.body.qualifications,
+        experience: req.body.experience,
+        category: req.body.category,
+        order: req.body.order ? parseInt(req.body.order) : undefined
+      };
 
-      // Create staff member in database
-    const staff = await prisma.staffMember.create({
-      data: {
-          name,
-          role,
-          email,
-          phone,
-          bio,
-          grade,
-          order: order ? parseInt(order, 10) : 0,
-          subjects: parsedSubjects,
-          qualifications,
-          experience,
-          imageUrl,
-          category: category || 'TEACHING',
-        },
-      });
+      // Use enhanced upload service
+      const result = await uploadService.uploadStaffImage(req.file, staffData);
+
+      if (!result.success) {
+        return next(createError(result.error || 'Staff creation failed', 400));
+      }
 
       return res.status(201).json({ 
         success: true, 
-        message: 'Staff member created successfully',
-        data: { staff } 
+        message: result.message,
+        data: result.data
       });
     } catch (error) {
       return next(error);
@@ -299,21 +220,36 @@ router.put(
         });
       }
 
-      // Process uploaded image if provided
-      let imageUrl: string | undefined = undefined;
+      // Use enhanced upload service if image is provided
       if (req.file) {
-        try {
-          imageUrl = await processStaffImage(req.file, name);
-        } catch (imageError) {
-          console.error('Image processing error:', imageError);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to process uploaded image'
-          });
+        const staffData = {
+          name,
+          role,
+          email,
+          phone,
+          bio,
+          grade,
+          subjects: parsedSubjects ? JSON.parse(parsedSubjects) : undefined,
+          qualifications,
+          experience,
+          category,
+          order: order ? parseInt(order, 10) : undefined
+        };
+
+        const result = await uploadService.updateStaffImage(id, req.file, staffData);
+
+        if (!result.success) {
+          return next(createError(result.error || 'Staff update failed', 400));
         }
+
+        return res.json({
+          success: true,
+          message: result.message,
+          data: result.data
+        });
       }
 
-      // Prepare update data
+      // Update without image
       const updateData: any = {
         name,
         role,
@@ -329,12 +265,6 @@ router.put(
         category,
       };
 
-      // ✅ Only update imageUrl if new image provided
-      if (imageUrl) {
-        updateData.imageUrl = imageUrl;
-      }
-
-      // Update staff member in database
       const staff = await prisma.staffMember.update({
         where: { id },
         data: updateData,

@@ -13,7 +13,10 @@ const createUploadDirectories = () => {
     'uploads/news',
     'uploads/events',
     'uploads/newsletters',
-    'uploads/reports'
+    'uploads/reports',
+    'uploads/general',
+    'uploads/thumbnails',
+    'uploads/documents'
   ];
 
   directories.forEach(dir => {
@@ -31,21 +34,22 @@ const storage = multer.diskStorage({
     let uploadPath = 'uploads/';
     
     // Determine upload path based on route or file type
-    if (req.baseUrl.includes('policies')) {
+    const fullPath = req.baseUrl + req.path;
+    if (req.baseUrl.includes('policies') || fullPath.includes('policies')) {
       uploadPath += 'policies/';
-    } else if (req.baseUrl.includes('forms')) {
+    } else if (req.baseUrl.includes('forms') || fullPath.includes('forms')) {
       uploadPath += 'forms/';
-    } else if (req.baseUrl.includes('gallery')) {
+    } else if (req.baseUrl.includes('gallery') || fullPath.includes('gallery')) {
       uploadPath += 'gallery/';
-    } else if (req.baseUrl.includes('staff')) {
+    } else if (req.baseUrl.includes('staff') || fullPath.includes('staff')) {
       uploadPath += 'staff/';
-    } else if (req.baseUrl.includes('news')) {
+    } else if (req.baseUrl.includes('news') || fullPath.includes('news')) {
       uploadPath += 'news/';
-    } else if (req.baseUrl.includes('events')) {
+    } else if (req.baseUrl.includes('events') || fullPath.includes('events')) {
       uploadPath += 'events/';
-    } else if (req.baseUrl.includes('newsletters')) {
+    } else if (req.baseUrl.includes('newsletters') || fullPath.includes('newsletters')) {
       uploadPath += 'newsletters/';
-    } else if (req.baseUrl.includes('reports')) {
+    } else if (req.baseUrl.includes('reports') || fullPath.includes('reports')) {
       uploadPath += 'reports/';
     } else {
       uploadPath += 'general/';
@@ -135,6 +139,10 @@ export const uploadDocument = multer({
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
       'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-excel',
@@ -146,7 +154,7 @@ export const uploadDocument = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only document files are allowed'));
+      cb(new Error('File type not supported. Please upload PDF, images, or document files.'));
     }
   },
   limits: {
