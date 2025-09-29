@@ -342,11 +342,11 @@ const Sitemap: React.FC = () => {
         <Typography variant="body2" sx={{ color: '#666' }}>
           <strong>Need help finding something?</strong> Contact our school office at{' '}
           <Link href="tel:+27215114337" sx={{ color: '#1a237e', textDecoration: 'none' }}>
-            (021) 511 4337
+            +27 21 511 4337
           </Link>
           {' '}or email us at{' '}
-          <Link href="mailto:info@holycrossbrooklyn.edu.za" sx={{ color: '#1a237e', textDecoration: 'none' }}>
-            info@holycrossbrooklyn.edu.za
+          <Link href="mailto:admin@holycrossbrooklyn.co.za" sx={{ color: '#1a237e', textDecoration: 'none' }}>
+            admin@holycrossbrooklyn.co.za
           </Link>
         </Typography>
       </Box>

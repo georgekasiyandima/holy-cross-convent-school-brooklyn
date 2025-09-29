@@ -493,7 +493,7 @@ const Home: React.FC = () => {
               <Typography variant="body1">
                 162 Koeberg Road<br />
                 Brooklyn, Cape Town<br />
-                South Africa
+                7405 South Africa
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
@@ -502,7 +502,7 @@ const Home: React.FC = () => {
                 Call Us
               </Typography>
               <Typography variant="body1">
-                +27 21 511 9690
+                +27 21 511 4337
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
@@ -511,8 +511,7 @@ const Home: React.FC = () => {
                 Email Us
               </Typography>
               <Typography variant="body1">
-                info@holycrossbrooklyn.co.za<br />
-                admissions@holycrossbrooklyn.co.za
+                admin@holycrossbrooklyn.co.za
               </Typography>
             </Box>
           </Box>

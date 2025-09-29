@@ -74,13 +74,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Phone sx={{ color: '#ffd700', mr: 1, fontSize: 20 }} />
                 <Typography variant="body2">
-                  (021) 511 4337
+                  +27 21 511 4337
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Email sx={{ color: '#ffd700', mr: 1, fontSize: 20 }} />
                 <Typography variant="body2">
-                  info@holycrossbrooklyn.edu
+                  admin@holycrossbrooklyn.co.za
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -131,13 +131,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
+                NPO: 202-196
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
+                School Registration Number: 0103000810
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
                 PBO Number: 930011798
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                EMIS Number: 0103000810
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                School Reg No. 13/3/1/51
               </Typography>
             </Box>
 

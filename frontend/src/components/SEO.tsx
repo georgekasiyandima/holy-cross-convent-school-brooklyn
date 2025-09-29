@@ -83,7 +83,8 @@ const SEO: React.FC<SEOProps> = ({
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: '+27-21-511-4337',
-      contactType: 'customer service'
+      contactType: 'customer service',
+      email: 'admin@holycrossbrooklyn.co.za'
     }
   }), [fullUrl, fullImageUrl]);
 

@@ -122,20 +122,20 @@ const contactInfo: ContactInfo[] = [
   {
     icon: <Phone sx={{ color: '#ffca28', fontSize: 30 }} />,
     title: 'Phone',
-    primary: '(021) 511 4337',
+    primary: '+27 21 511 4337',
     secondary: 'Office Hours: Mon-Fri 7:30 AM - 4:00 PM'
   },
   {
     icon: <Email sx={{ color: '#ffca28', fontSize: 30 }} />,
     title: 'Email',
-    primary: 'info@holycrossbrooklyn.edu.za',
-    secondary: 'admissions@holycrossbrooklyn.edu.za'
+    primary: 'admin@holycrossbrooklyn.co.za',
+    secondary: 'admissions@holycrossbrooklyn.co.za'
   },
   {
     icon: <LocationOn sx={{ color: '#ffca28', fontSize: 30 }} />,
     title: 'Address',
     primary: '162 Koeberg Road, Brooklyn, Cape Town',
-    secondary: 'Western Cape, South Africa',
+    secondary: '7405 Western Cape, South Africa',
     tertiary: 'Easily accessible from major routes'
   }
 ];
