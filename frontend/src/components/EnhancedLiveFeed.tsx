@@ -22,7 +22,10 @@ import {
   Tooltip,
   Skeleton,
   Alert,
-  Stack
+  Stack,
+  TextField,
+  InputAdornment,
+  CircularProgress
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -42,10 +45,14 @@ import {
   Star,
   Bookmark,
   Share,
-  Visibility
+  Visibility,
+  Search,
+  Clear
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { useLiveFeed } from '../hooks/useLiveFeed';
+import { LiveFeedItem } from '../services/liveFeedService';
 
 //---------------------------------------------------------
 // TYPES & INTERFACES
@@ -215,78 +222,95 @@ const EnhancedLiveFeed: React.FC = memo(() => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [refreshing, setRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  // Sample data - in production, this would come from APIs
-  const upcomingEvents: Event[] = [
-    {
-      id: 1,
-      title: 'Robotics Program Launch',
-      date: '2025-02-15',
-      time: '10:00 AM',
-      location: 'New Computer Lab',
-      category: 'Technology',
-      icon: <Science />,
-      color: '#9c27b0',
-      description: 'Launch of our new robotics program for students',
-      imageUrl: '/images/robotics-lab.jpg',
-      isFeatured: true,
-      registrationRequired: true,
-      maxAttendees: 30,
-      currentAttendees: 15
-    },
-    {
-      id: 2,
-      title: 'Computer Lab Unveiling',
-      date: '2025-02-20',
-      time: '02:00 PM',
-      location: 'Main Building',
-      category: 'Infrastructure',
-      icon: <School />,
-      color: '#2196f3',
-      description: 'Official unveiling of our new computer lab',
-      imageUrl: '/images/computer-lab.jpg',
-      isFeatured: true
-    },
-    {
-      id: 3,
-      title: 'Sports Day',
-      date: '2025-02-25',
-      time: '09:00 AM',
-      location: 'Sports Field',
-      category: 'Sports',
-      icon: <SportsSoccer />,
-      color: '#4caf50',
-      description: 'Annual sports day with various competitions',
-      imageUrl: '/images/sports-day.jpg'
-    }
-  ];
+  // Use live feed hook for real-time data
+  const {
+    items: liveFeedItems,
+    upcomingEvents: apiEvents,
+    latestNews: apiNews,
+    loading,
+    refreshing: isRefreshing,
+    error,
+    refresh,
+    search,
+    clearSearch,
+    searchQuery,
+    isSearching,
+    lastUpdated
+  } = useLiveFeed({
+    autoRefresh: true,
+    refreshInterval: 30000, // 30 seconds
+    pageSize: 20,
+    enableSearch: true
+  });
 
-  const latestNews: News[] = [
-    {
-      id: 1,
-      title: 'New Computer Lab Opens',
-      summary: 'State-of-the-art computer lab with latest technology',
-      category: 'Infrastructure',
-      priority: 'high',
-      date: '2025-01-15',
-      author: 'Principal',
-      imageUrl: '/images/computer-lab.jpg',
-      readTime: 3,
-      isBreaking: true
-    },
-    {
-      id: 2,
-      title: 'Robotics Program Success',
-      summary: 'Students excel in robotics competitions',
-      category: 'Academic',
-      priority: 'medium',
-      date: '2025-01-10',
-      author: 'Science Department',
-      imageUrl: '/images/robotics-success.jpg',
-      readTime: 5
+  // Transform API data to component format
+  const upcomingEvents: Event[] = apiEvents.map(event => ({
+    id: parseInt(event.id),
+    title: event.title,
+    date: event.startDate.split('T')[0],
+    time: new Date(event.startDate).toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    }),
+    location: event.location || 'TBA',
+    category: event.category,
+    icon: getCategoryIcon(event.category),
+    color: getCategoryColor(event.category),
+    description: event.description,
+    imageUrl: '/images/default-event.jpg',
+    isFeatured: event.category === 'Technology' || event.category === 'Academic'
+  }));
+
+  const latestNews: News[] = apiNews.map(article => ({
+    id: parseInt(article.id),
+    title: article.title,
+    summary: article.summary,
+    category: article.category,
+    priority: article.category === 'Infrastructure' ? 'high' : 'medium',
+    date: article.publishedAt.split('T')[0],
+    author: article.author.name,
+    imageUrl: '/images/default-news.jpg',
+    readTime: Math.ceil(article.content.length / 200)
+  }));
+
+  // Helper functions for category icons and colors
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'technology':
+      case 'academic':
+        return <Science />;
+      case 'sports':
+        return <SportsSoccer />;
+      case 'infrastructure':
+        return <School />;
+      case 'music':
+        return <MusicNote />;
+      case 'celebration':
+        return <Celebration />;
+      default:
+        return <EventIcon />;
     }
-  ];
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'technology':
+      case 'academic':
+        return '#9c27b0';
+      case 'sports':
+        return '#4caf50';
+      case 'infrastructure':
+        return '#2196f3';
+      case 'music':
+        return '#ff9800';
+      case 'celebration':
+        return '#e91e63';
+      default:
+        return '#1a237e';
+    }
+  };
 
   const announcements: Announcement[] = [
     {
@@ -341,11 +365,10 @@ const EnhancedLiveFeed: React.FC = memo(() => {
   //---------------------------------------------------------
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLastUpdated(new Date());
+    // Use the refresh function from the hook
+    await refresh();
     setRefreshing(false);
-  }, []);
+  }, [refresh]);
 
   //---------------------------------------------------------
   // EVENT HANDLERS
@@ -532,7 +555,7 @@ const EnhancedLiveFeed: React.FC = memo(() => {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            Last updated: {lastUpdated.toLocaleTimeString()}
+            Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never'}
           </Typography>
           <Tooltip title="Refresh">
             <IconButton

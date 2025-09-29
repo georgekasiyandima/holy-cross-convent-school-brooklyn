@@ -35,8 +35,9 @@ import {
 import { styled } from '@mui/material/styles';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
-import EnhancedLiveFeed from '../components/EnhancedLiveFeed';
+import LiveFeed from '../components/LiveFeed';
 import DynamicLiveChat from '../components/DynamicLiveChat';
+import SchoolStatistics from '../components/SchoolStatistics';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -228,6 +229,7 @@ const Home: React.FC = () => {
                 <Button
                   variant="contained"
                   size="large"
+                  onClick={() => navigate('/gallery')}
                   sx={{
                     backgroundColor: '#ffd700',
                     color: '#1a237e',
@@ -273,64 +275,12 @@ const Home: React.FC = () => {
       {/* Live Feed Section */}
       <Box sx={{ py: 6, background: 'white' }}>
         <Container maxWidth="xl">
-          <EnhancedLiveFeed />
+          <LiveFeed />
         </Container>
       </Box>
 
-      {/* Statistics Section */}
-      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
-        <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, mb: 6 }}>
-            Our School by the Numbers
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 4 }}>
-            <Fade in={animateStats} timeout={800}>
-              <StatCard>
-                <TrendingUp sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h3" component="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
-                  64+
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                  Years of Excellence
-                </Typography>
-              </StatCard>
-            </Fade>
-            <Fade in={animateStats} timeout={1000}>
-              <StatCard>
-                <People sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h3" component="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
-                  300+
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                  Students
-                </Typography>
-              </StatCard>
-            </Fade>
-            <Fade in={animateStats} timeout={1200}>
-              <StatCard>
-                <EmojiEvents sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h3" component="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
-                  95%
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                  Academic Success
-                </Typography>
-              </StatCard>
-            </Fade>
-            <Fade in={animateStats} timeout={1400}>
-              <StatCard>
-                <Psychology sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h3" component="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
-                  100%
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                  Character Development
-                </Typography>
-              </StatCard>
-            </Fade>
-          </Box>
-        </Container>
-      </Box>
+      {/* Dynamic Statistics Section */}
+      <SchoolStatistics animate={animateStats} />
 
       {/* Enhanced Features Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>

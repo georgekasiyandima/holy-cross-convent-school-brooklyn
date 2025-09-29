@@ -25,6 +25,8 @@ import AdminStaffUpload from './pages/AdminStaffUpload';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
 import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import AdminDashboard from './pages/AdminDashboard';
+import SchoolStatsManagement from './pages/SchoolStatsManagement';
 import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
 import MissionVision from './pages/MissionVision';
@@ -32,6 +34,7 @@ import FamilyStatementPage from './pages/FamilyStatement';
 import Academics from './pages/Academics';
 import Robotics from './pages/Robotics';
 import ICTHub from './pages/ICTHub';
+import Calendar from './pages/Calendar';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -143,8 +146,10 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/donate" element={<Donate />} />
         <Route path="/contact" element={<ContactForm />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
+        <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
         <Route path="/documents" element={<SchoolDocuments />} />
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
         <Route path="/mission-vision" element={<MissionVision />} />
@@ -152,6 +157,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/academics" element={<Academics />} />
         <Route path="/robotics" element={<Robotics />} />
         <Route path="/ict-hub" element={<ICTHub />} />
+        <Route path="/calendar" element={<Calendar />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>

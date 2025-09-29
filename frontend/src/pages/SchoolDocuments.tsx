@@ -5,29 +5,35 @@ import {
   Box,
   Alert,
   CircularProgress,
-  Tabs,
-  Tab,
   Paper,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
   Chip,
   Stack,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar
 } from '@mui/material';
 import {
   School,
   Description,
-  Visibility,
   PictureAsPdf,
+  Download,
+  Visibility,
+  Search,
   Add,
-  Search
+  CheckCircle,
+  Error
 } from '@mui/icons-material';
 import DocumentViewer from '../components/DocumentViewer';
 import useDocumentManagement from '../hooks/useDocumentManagement';
@@ -41,7 +47,7 @@ interface Document {
   id: string;
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'attendance' | 'language' | 'other';
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
   fileUrl: string;
   fileName: string;
   fileSize: number;
@@ -50,107 +56,102 @@ interface Document {
   tags: string[];
 }
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-//---------------------------------------------------------
-// TAB PANEL COMPONENT
-//---------------------------------------------------------
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`document-tabpanel-${index}`}
-      aria-labelledby={`document-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-};
-
-//---------------------------------------------------------
-// SAMPLE DATA (Replace with API calls)
-//---------------------------------------------------------
-const sampleDocuments: Document[] = [
-  {
-    id: '1',
-    title: 'Holy Cross Convent School Logo',
-    description: 'Official school logo with detailed explanation of its symbolic meaning and design elements.',
-    type: 'logo',
-    fileUrl: '/documents/logo-explanation.pdf',
-    fileName: 'logo-explanation.pdf',
-    fileSize: 2048576, // 2MB
-    uploadedAt: '2025-01-15',
-    category: 'Branding',
-    tags: ['logo', 'branding', 'symbolism']
-  },
-  {
-    id: '2',
-    title: 'Mission Statement',
-    description: 'Our school\'s mission statement outlining our commitment to academic excellence and character development.',
-    type: 'mission',
-    fileUrl: '/documents/mission-statement.pdf',
-    fileName: 'mission-statement.pdf',
-    fileSize: 1536000, // 1.5MB
-    uploadedAt: '2025-01-10',
-    category: 'Governance',
-    tags: ['mission', 'values', 'goals']
-  },
-  {
-    id: '3',
-    title: 'Vision Statement',
-    description: 'Our vision for the future of education and the development of our students.',
-    type: 'vision',
-    fileUrl: '/documents/vision-statement.pdf',
-    fileName: 'vision-statement.pdf',
-    fileSize: 1024000, // 1MB
-    uploadedAt: '2025-01-08',
-    category: 'Governance',
-    tags: ['vision', 'future', 'aspirations']
-  },
-  {
-    id: '4',
-    title: 'School Policies Handbook',
-    description: 'Comprehensive handbook covering all school policies and procedures.',
-    type: 'policy',
-    fileUrl: '/documents/policies-handbook.pdf',
-    fileName: 'policies-handbook.pdf',
-    fileSize: 5120000, // 5MB
-    uploadedAt: '2025-01-05',
-    category: 'Governance',
-    tags: ['policies', 'procedures', 'handbook']
-  }
-];
-
 //---------------------------------------------------------
 // MAIN COMPONENT
 //---------------------------------------------------------
 const SchoolDocuments: React.FC = () => {
-  const {
-    documents,
-    loading,
-    error,
-    loadDocuments,
-    clearError
-  } = useDocumentManagement();
-
-  const [tabValue, setTabValue] = useState(0);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [filterType, setFilterType] = useState('all');
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({ open: false, message: '', severity: 'success' });
 
-  // Load documents on component mount
+  const { uploadDocument, loading: uploadLoading } = useDocumentManagement();
+
+  //---------------------------------------------------------
+  // SAMPLE DATA (Replace with API calls)
+  //---------------------------------------------------------
+  const sampleDocuments: Document[] = [
+    {
+      id: '1',
+      title: 'Holy Cross Convent School Logo',
+      description: 'Official school logo with detailed explanation of its symbolic meaning and design elements.',
+      type: 'logo',
+      fileUrl: '/documents/logo-explanation.pdf',
+      fileName: 'logo-explanation.pdf',
+      fileSize: 2048576,
+      uploadedAt: '2025-01-15',
+      category: 'Branding',
+      tags: ['logo', 'branding', 'symbolism']
+    },
+    {
+      id: '2',
+      title: 'Mission Statement',
+      description: 'Our school\'s mission statement outlining our commitment to academic excellence and character development.',
+      type: 'mission',
+      fileUrl: '/documents/mission-statement.pdf',
+      fileName: 'mission-statement.pdf',
+      fileSize: 1536000,
+      uploadedAt: '2025-01-10',
+      category: 'Mission',
+      tags: ['mission', 'values', 'education']
+    },
+    {
+      id: '3',
+      title: 'Vision Statement',
+      description: 'Our vision for the future of education and student development at Holy Cross Convent School.',
+      type: 'vision',
+      fileUrl: '/documents/vision-statement.pdf',
+      fileName: 'vision-statement.pdf',
+      fileSize: 1280000,
+      uploadedAt: '2025-01-08',
+      category: 'Vision',
+      tags: ['vision', 'future', 'goals']
+    },
+    {
+      id: '4',
+      title: 'School Policies',
+      description: 'Comprehensive school policies covering academic standards, behavior expectations, and procedures.',
+      type: 'policy',
+      fileUrl: '/documents/school-policies.pdf',
+      fileName: 'school-policies.pdf',
+      fileSize: 5120000,
+      uploadedAt: '2025-01-05',
+      category: 'Policies',
+      tags: ['policies', 'rules', 'procedures']
+    }
+  ];
+
+  //---------------------------------------------------------
+  // EFFECTS
+  //---------------------------------------------------------
   useEffect(() => {
-    loadDocuments('Policies', true); // Load published policy documents
-  }, [loadDocuments]);
+    loadDocuments();
+  }, []);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  //---------------------------------------------------------
+  // HANDLERS
+  //---------------------------------------------------------
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setDocuments(sampleDocuments);
+    } catch (err) {
+      setError('Failed to load documents');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,6 +162,16 @@ const SchoolDocuments: React.FC = () => {
     setFilterType(event.target.value);
   };
 
+  const handleDocumentClick = (document: Document) => {
+    setSelectedDocument(document);
+    setViewerOpen(true);
+  };
+
+  const handleViewerClose = () => {
+    setViewerOpen(false);
+    setSelectedDocument(null);
+  };
+
   const handleUploadDialogOpen = () => {
     setUploadDialogOpen(true);
   };
@@ -169,31 +180,48 @@ const SchoolDocuments: React.FC = () => {
     setUploadDialogOpen(false);
   };
 
-  // Filter documents based on search and filter criteria
+  const handleUploadSuccess = () => {
+    setSnackbar({
+      open: true,
+      message: 'Document uploaded successfully!',
+      severity: 'success'
+    });
+    setUploadDialogOpen(false);
+    loadDocuments();
+  };
+
+  const handleUploadError = (error: string) => {
+    setSnackbar({
+      open: true,
+      message: `Upload failed: ${error}`,
+      severity: 'error'
+    });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  //---------------------------------------------------------
+  // FILTERED DOCUMENTS
+  //---------------------------------------------------------
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+                         doc.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || doc.type === filterType;
-    
     return matchesSearch && matchesFilter;
   });
 
-  // Group documents by type
-  const logoDocuments = filteredDocuments.filter(doc => doc.type === 'logo');
-  const missionDocuments = filteredDocuments.filter(doc => doc.type === 'mission');
-  const visionDocuments = filteredDocuments.filter(doc => doc.type === 'vision');
-  const policyDocuments = filteredDocuments.filter(doc => doc.type === 'policy');
-  const attendanceDocuments = filteredDocuments.filter(doc => doc.type === 'attendance');
-  const languageDocuments = filteredDocuments.filter(doc => doc.type === 'language');
-
+  //---------------------------------------------------------
+  // RENDER
+  //---------------------------------------------------------
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-          <CircularProgress size={60} />
-        </Box>
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} sx={{ color: '#1a237e', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary">
+          Loading documents...
+        </Typography>
       </Container>
     );
   }
@@ -204,6 +232,7 @@ const SchoolDocuments: React.FC = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
+        <ReturnToHome />
       </Container>
     );
   }
@@ -217,11 +246,10 @@ const SchoolDocuments: React.FC = () => {
       />
       
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Return to Home */}
         <ReturnToHome />
         
         {/* Header Section */}
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
           <Typography 
             variant="h3" 
             sx={{ 
@@ -230,6 +258,7 @@ const SchoolDocuments: React.FC = () => {
               mb: 2,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: 2
             }}
           >
@@ -240,14 +269,14 @@ const SchoolDocuments: React.FC = () => {
           <Typography 
             variant="h6" 
             color="text.secondary" 
-            sx={{ mb: 3, maxWidth: 800 }}
+            sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}
           >
             Access important school documents including our mission statement, vision statement, 
-            school logo explanation, and comprehensive policy documents.
+            and comprehensive policy documents.
           </Typography>
 
           {/* Search and Filter Controls */}
-          <Paper sx={{ p: 2, mb: 3 }}>
+          <Paper sx={{ p: 3, mb: 3, maxWidth: 800, mx: 'auto' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
               <TextField
                 placeholder="Search documents..."
@@ -272,204 +301,124 @@ const SchoolDocuments: React.FC = () => {
                   <MenuItem value="mission">Mission</MenuItem>
                   <MenuItem value="vision">Vision</MenuItem>
                   <MenuItem value="policy">Policy</MenuItem>
-                  <MenuItem value="attendance">Attendance</MenuItem>
-                  <MenuItem value="language">Language</MenuItem>
+                  <MenuItem value="form">Form</MenuItem>
                 </Select>
               </FormControl>
-
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={handleUploadDialogOpen}
-                sx={{ 
-                  bgcolor: '#1a237e',
-                  '&:hover': { bgcolor: '#0d1421' }
-                }}
-              >
-                Upload Document
-              </Button>
             </Stack>
           </Paper>
         </Box>
 
-        {/* Document Statistics */}
-        <Box sx={{ mb: 4 }}>
-          <Stack direction="row" spacing={2} flexWrap="wrap">
-            <Chip 
-              icon={<School />} 
-              label={`${logoDocuments.length} Logo Documents`} 
-              color="primary" 
-              variant="outlined" 
-            />
-            <Chip 
-              icon={<Description />} 
-              label={`${missionDocuments.length} Mission Documents`} 
-              color="secondary" 
-              variant="outlined" 
-            />
-            <Chip 
-              icon={<Visibility />} 
-              label={`${visionDocuments.length} Vision Documents`} 
-              color="success" 
-              variant="outlined" 
-            />
-            <Chip 
-              icon={<PictureAsPdf />} 
-              label={`${policyDocuments.length} Policy Documents`} 
-              color="warning" 
-              variant="outlined" 
-            />
-            <Chip 
-              icon={<School />} 
-              label={`${attendanceDocuments.length} Attendance Documents`} 
-              color="info" 
-              variant="outlined" 
-            />
-            <Chip 
-              icon={<Description />} 
-              label={`${languageDocuments.length} Language Documents`} 
-              color="success" 
-              variant="outlined" 
-            />
-          </Stack>
-        </Box>
+        {/* Documents Grid */}
+        <Grid container spacing={3}>
+          {filteredDocuments.map((document) => (
+            <Grid key={document.id} item xs={12} sm={6} md={4} {...({ item: true } as any)}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4
+                  }
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PictureAsPdf sx={{ color: '#1a237e', mr: 1 }} />
+                    <Chip 
+                      label={document.type.toUpperCase()} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: '#1a237e',
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }} 
+                    />
+                  </Box>
+                  
+                  <Typography variant="h6" sx={{ mb: 1, color: '#1a237e', fontWeight: 600 }}>
+                    {document.title}
+                  </Typography>
+                  
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {document.description}
+                  </Typography>
+                  
+                  <Typography variant="caption" color="text.secondary">
+                    {document.fileName} • {(document.fileSize / 1024 / 1024).toFixed(1)} MB
+                  </Typography>
+                </CardContent>
+                
+                <CardActions sx={{ p: 2, pt: 0 }}>
+                  <Button
+                    size="small"
+                    startIcon={<Visibility />}
+                    onClick={() => handleDocumentClick(document)}
+                    sx={{ color: '#1a237e' }}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<Download />}
+                    href={document.fileUrl}
+                    download
+                    sx={{ color: '#1a237e' }}
+                  >
+                    Download
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
 
-        {/* Document Tabs */}
-        <Paper sx={{ width: '100%' }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab 
-                label={`All Documents (${filteredDocuments.length})`} 
-                icon={<PictureAsPdf />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Logo (${logoDocuments.length})`} 
-                icon={<School />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Mission (${missionDocuments.length})`} 
-                icon={<Description />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Vision (${visionDocuments.length})`} 
-                icon={<Visibility />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Policies (${policyDocuments.length})`} 
-                icon={<PictureAsPdf />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Attendance (${attendanceDocuments.length})`} 
-                icon={<School />}
-                iconPosition="start"
-              />
-              <Tab 
-                label={`Language (${languageDocuments.length})`} 
-                icon={<Description />}
-                iconPosition="start"
-              />
-            </Tabs>
-          </Box>
-
-          <TabPanel value={tabValue} index={0}>
-            <DocumentViewer 
-              documents={filteredDocuments}
-              title="All Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={1}>
-            <DocumentViewer 
-              documents={logoDocuments}
-              title="Logo Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={2}>
-            <DocumentViewer 
-              documents={missionDocuments}
-              title="Mission Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={3}>
-            <DocumentViewer 
-              documents={visionDocuments}
-              title="Vision Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={4}>
-            <DocumentViewer 
-              documents={policyDocuments}
-              title="Policy Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={5}>
-            <DocumentViewer 
-              documents={attendanceDocuments}
-              title="Attendance Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={6}>
-            <DocumentViewer 
-              documents={languageDocuments}
-              title="Language Documents"
-              showDownload={true}
-              showFullscreen={true}
-            />
-          </TabPanel>
-        </Paper>
-
-        {/* Upload Dialog */}
-        <Dialog 
-          open={uploadDialogOpen} 
-          onClose={handleUploadDialogClose}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Upload New Document</DialogTitle>
-          <DialogContent>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              This feature will be implemented in the next phase. For now, please contact the administrator to upload documents.
-            </Alert>
-            <Typography variant="body2" color="text.secondary">
-              Future upload functionality will include:
-              <br />• PDF file validation
-              <br />• Automatic categorization
-              <br />• Tag management
-              <br />• Version control
+        {filteredDocuments.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              No documents found matching your criteria.
             </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleUploadDialogClose}>Close</Button>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        )}
       </Container>
+
+      {/* Document Viewer Dialog */}
+      <Dialog
+        open={viewerOpen}
+        onClose={handleViewerClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedDocument?.title}
+        </DialogTitle>
+        <DialogContent>
+          {selectedDocument && (
+            <DocumentViewer 
+              document={selectedDocument}
+              onClose={handleViewerClose}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

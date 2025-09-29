@@ -28,6 +28,7 @@ import {
   Favorite,
   ExpandMore,
   Event,
+  CalendarToday,
   Newspaper,
   PhotoLibrary,
   MusicNote,
@@ -208,6 +209,7 @@ const navigationItems: NavigationItem[] = [
     type: 'dropdown',
     items: [
       { name: 'Events', path: '/events', icon: <Event /> },
+      { name: 'Calendar', path: '/calendar', icon: <CalendarToday /> },
       { name: 'Gallery', path: '/gallery', icon: <PhotoLibrary /> },
       { name: 'School Announcements', path: '/news', icon: <Newspaper /> },
       { name: 'Music', path: '/music', icon: <MusicNote /> },

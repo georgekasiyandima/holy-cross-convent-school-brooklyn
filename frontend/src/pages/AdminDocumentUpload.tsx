@@ -16,15 +16,7 @@ import {
   Chip,
   LinearProgress,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Snackbar,
   Stepper,
   Step,
   StepLabel,
@@ -32,18 +24,10 @@ import {
 } from '@mui/material';
 import {
   CloudUpload,
-  Delete,
-  Save,
   Description,
   PictureAsPdf,
   School,
-  Visibility,
-  Info,
-  CheckCircle,
-  Error,
-  Upload,
-  Add,
-  Edit
+  Upload
 } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import useDocumentManagement from '../hooks/useDocumentManagement';
@@ -52,17 +36,14 @@ import { DocumentUpload } from '../services/documentService';
 //---------------------------------------------------------
 // TYPES & INTERFACES
 //---------------------------------------------------------
-interface LocalDocumentUpload extends DocumentUpload {
+interface LocalDocumentUpload extends Omit<DocumentUpload, 'type' | 'file'> {
+  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
   uploadProgress?: number;
   status?: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
+  file: File | null; // Explicitly type file
 }
 
-interface UploadStep {
-  label: string;
-  description: string;
-  completed: boolean;
-}
 
 //---------------------------------------------------------
 // SAMPLE DATA
@@ -70,8 +51,11 @@ interface UploadStep {
 const documentTypes = [
   { value: 'logo', label: 'Logo & Branding', icon: <School /> },
   { value: 'mission', label: 'Mission Statement', icon: <Description /> },
-  { value: 'vision', label: 'Vision Statement', icon: <Visibility /> },
+  { value: 'vision', label: 'Vision Statement', icon: <Description /> },
   { value: 'policy', label: 'Policy Documents', icon: <PictureAsPdf /> },
+  { value: 'form', label: 'Forms', icon: <Description /> },
+  { value: 'attendance', label: 'Attendance Records', icon: <Description /> },
+  { value: 'language', label: 'Language Documents', icon: <Description /> },
   { value: 'other', label: 'Other Documents', icon: <Description /> }
 ];
 
@@ -82,41 +66,12 @@ const categories = [
   'newsletter'
 ];
 
-const uploadSteps: UploadStep[] = [
-  {
-    label: 'Document Information',
-    description: 'Provide document details and metadata',
-    completed: false
-  },
-  {
-    label: 'File Selection',
-    description: 'Choose and validate the document file',
-    completed: false
-  },
-  {
-    label: 'Upload & Review',
-    description: 'Upload document and review before publishing',
-    completed: false
-  }
-];
 
 //---------------------------------------------------------
 // MAIN COMPONENT
 //---------------------------------------------------------
 const AdminDocumentUpload: React.FC = () => {
-  const {
-    documents,
-    loading,
-    error,
-    uploading,
-    uploadProgress,
-    loadDocuments,
-    uploadDocument,
-    deleteDocument,
-    togglePublishStatus,
-    clearError,
-    resetUploadProgress
-  } = useDocumentManagement();
+  const { uploadDocument } = useDocumentManagement();
 
   const [currentDocument, setCurrentDocument] = useState<LocalDocumentUpload>({
     title: '',
@@ -125,15 +80,23 @@ const AdminDocumentUpload: React.FC = () => {
     category: 'policy',
     tags: [],
     isPublished: false,
-    file: null as any
+    file: null
   });
   const [activeStep, setActiveStep] = useState(0);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({ open: false, message: '', severity: 'success' });
   const [newTag, setNewTag] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  //---------------------------------------------------------
+  // HANDLERS
+  //---------------------------------------------------------
   const handleInputChange = (field: keyof DocumentUpload, value: any) => {
     setCurrentDocument(prev => ({
       ...prev,
@@ -148,120 +111,86 @@ const AdminDocumentUpload: React.FC = () => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setMessage({ type: 'error', text: 'Please select a valid PDF or image file' });
+      setSnackbar({
+        open: true,
+        message: 'Invalid file type. Please select a PDF or image file.',
+        severity: 'error'
+      });
       return;
     }
 
     // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File size must be less than 10MB' });
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setSnackbar({
+        open: true,
+        message: 'File size too large. Please select a file smaller than 10MB.',
+        severity: 'error'
+      });
       return;
     }
 
-    setCurrentDocument(prev => ({
-      ...prev,
-      file,
-      status: 'pending'
-    }));
-
-    setMessage(null);
+    handleInputChange('file', file);
+    setActiveStep(2); // Move to upload step
   };
 
   const handleAddTag = () => {
     if (newTag.trim() && !currentDocument.tags.includes(newTag.trim())) {
-      setCurrentDocument(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
+      handleInputChange('tags', [...currentDocument.tags, newTag.trim()]);
       setNewTag('');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setCurrentDocument(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
-  const handleNext = () => {
-    if (activeStep === 0) {
-      // Validate document information
-      if (!currentDocument.title.trim()) {
-        setMessage({ type: 'error', text: 'Please enter a document title' });
-        return;
-      }
-      if (!currentDocument.description.trim()) {
-        setMessage({ type: 'error', text: 'Please enter a document description' });
-        return;
-      }
-      if (!currentDocument.category) {
-        setMessage({ type: 'error', text: 'Please select a category' });
-        return;
-      }
-    } else if (activeStep === 1) {
-      // Validate file selection
-      if (!currentDocument.file) {
-        setMessage({ type: 'error', text: 'Please select a file to upload' });
-        return;
-      }
-    }
-
-    setMessage(null);
-    setActiveStep(prev => prev + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep(prev => prev - 1);
+    handleInputChange('tags', currentDocument.tags.filter(tag => tag !== tagToRemove));
   };
 
   const handleUpload = async () => {
-    if (!currentDocument.file) return;
+    if (!currentDocument.file) {
+      setSnackbar({
+        open: true,
+        message: 'Please select a file to upload.',
+        severity: 'error'
+      });
+      return;
+    }
 
     try {
-      setMessage(null);
-      clearError();
-      
-      // Set uploading state
-      setCurrentDocument(prev => ({
-        ...prev,
-        status: 'uploading',
-        uploadProgress: 0
-      }));
+      setUploading(true);
+      setUploadProgress(0);
 
-      // Check if file is selected
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       if (!currentDocument.file) {
-        setMessage({ type: 'error', text: 'Please select a file to upload' });
-        return;
+        throw new Error('No file selected');
       }
-
-      // Upload document using unified service
-      const documentData: DocumentUpload = {
-        title: currentDocument.title,
-        description: currentDocument.description,
-        type: currentDocument.type,
-        category: currentDocument.category,
-        tags: currentDocument.tags,
-        isPublished: currentDocument.isPublished,
-        file: currentDocument.file as File
+      
+      const documentUpload: DocumentUpload = {
+        ...currentDocument,
+        file: currentDocument.file
       };
-      const uploadedDocument = await uploadDocument(currentDocument.category, documentData);
       
-      // Enhanced success message with document details
-      setMessage({ 
-        type: 'success', 
-        text: `Document "${uploadedDocument.title}" uploaded successfully! File: ${uploadedDocument.fileName}` 
+      await uploadDocument(currentDocument.category, documentUpload);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      setSnackbar({
+        open: true,
+        message: 'Document uploaded successfully!',
+        severity: 'success'
       });
-      
-      // Update document status to success
-      setCurrentDocument(prev => ({
-        ...prev,
-        status: 'success',
-        uploadProgress: 100
-      }));
-      
-      // Reset form after a short delay to show success state
-      setTimeout(() => {
+
+    // Reset form
         setCurrentDocument({
           title: '',
           description: '',
@@ -269,104 +198,76 @@ const AdminDocumentUpload: React.FC = () => {
           category: 'policy',
           tags: [],
           isPublished: false,
-          file: null as any
+      file: null
         });
         setActiveStep(0);
-        resetUploadProgress();
-        setMessage(null);
-      }, 3000);
-      
-    } catch (error) {
-      let errorMessage = 'Upload failed. Please try again.';
-      try {
-        if (error && typeof error === 'object' && 'message' in error) {
-          errorMessage = (error as Error).message;
-        } else if (typeof error === 'string') {
-          errorMessage = error;
-        }
-      } catch (e) {
-        console.error('Error processing error message:', e);
-        errorMessage = 'Upload failed. Please try again.';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
-      setMessage({ type: 'error', text: errorMessage });
+
+    } catch (err: unknown) {
+      // Narrow the type of err
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setSnackbar({
+        open: true,
+        message: `Upload failed: ${errorMessage}`,
+        severity: 'error'
+      });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle sx={{ color: '#4caf50' }} />;
-      case 'error':
-        return <Error sx={{ color: '#f44336' }} />;
-      case 'uploading':
-        return <CircularProgress size={20} />;
-      default:
-        return <Upload sx={{ color: '#9e9e9e' }} />;
-    }
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success':
-        return '#4caf50';
-      case 'error':
-        return '#f44336';
-      case 'uploading':
-        return '#2196f3';
-      default:
-        return '#9e9e9e';
-    }
-  };
-
+  //---------------------------------------------------------
+  // RENDER
+  //---------------------------------------------------------
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Return to Home */}
+    <Container maxWidth="md" sx={{ py: 4 }}>
       <ReturnToHome />
       
-      <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4 }}>
-        Document Upload Management
+      {/* Header */}
+      <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
+          Document Upload
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Upload and manage school documents including policies, forms, and other important files.
       </Typography>
+      </Box>
 
-      {message && (
-        <Alert severity={message.type} sx={{ mb: 3 }}>
-          {message.text}
-        </Alert>
-      )}
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
         {/* Upload Form */}
-        <Card>
+      <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 3, color: '#1a237e' }}>
-              Upload New Document
-            </Typography>
-
             <Stepper activeStep={activeStep} orientation="vertical">
               {/* Step 1: Document Information */}
               <Step>
                 <StepLabel>Document Information</StepLabel>
                 <StepContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+                <Box sx={{ mb: 3 }}>
                     <TextField
                       fullWidth
                       label="Document Title"
                       value={currentDocument.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="e.g., School Mission Statement 2025"
+                    sx={{ mb: 2 }}
                     />
                     
                     <TextField
                       fullWidth
-                      multiline
-                      rows={3}
                       label="Description"
                       value={currentDocument.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Brief description of the document content and purpose"
+                    multiline
+                    rows={3}
+                    sx={{ mb: 2 }}
                     />
                     
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <FormControl fullWidth>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
                         <InputLabel>Document Type</InputLabel>
                         <Select
                           value={currentDocument.type}
@@ -384,7 +285,7 @@ const AdminDocumentUpload: React.FC = () => {
                         </Select>
                       </FormControl>
                       
-                      <FormControl fullWidth>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
                         <InputLabel>Category</InputLabel>
                         <Select
                           value={currentDocument.category}
@@ -393,51 +294,48 @@ const AdminDocumentUpload: React.FC = () => {
                         >
                           {categories.map((category) => (
                             <MenuItem key={category} value={category}>
-                              {category}
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
                             </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
-                    </Box>
                     
-                    <Box>
+                  {/* Tags */}
+                  <Box sx={{ mb: 2 }}>
                       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                        Tags
+                      Tags (optional)
                       </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
-                        {currentDocument.tags.map((tag, index) => (
-                          <Chip
-                            key={index}
-                            label={tag}
-                            onDelete={() => handleRemoveTag(tag)}
-                            size="small"
-                            color="primary"
-                          />
-                        ))}
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
                         <TextField
                           size="small"
                           placeholder="Add tag"
                           value={newTag}
                           onChange={(e) => setNewTag(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddTag();
-                            }
-                          }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
                         />
                         <Button onClick={handleAddTag} size="small">
                           Add
                         </Button>
                       </Box>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {currentDocument.tags.map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={tag}
+                          onDelete={() => handleRemoveTag(tag)}
+                          size="small"
+                        />
+                      ))}
                     </Box>
                   </Box>
                   
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleNext} variant="contained">
-                      Next
+                  <Button
+                    variant="contained"
+                    onClick={() => setActiveStep(1)}
+                    disabled={!currentDocument.title}
+                    sx={{ bgcolor: '#1a237e' }}
+                  >
+                    Next: Select File
                     </Button>
                   </Box>
                 </StepContent>
@@ -447,196 +345,130 @@ const AdminDocumentUpload: React.FC = () => {
               <Step>
                 <StepLabel>File Selection</StepLabel>
                 <StepContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+                <Box sx={{ mb: 3 }}>
                     <Paper
                       sx={{
                         p: 3,
                         border: '2px dashed #ccc',
                         textAlign: 'center',
                         cursor: 'pointer',
-                        '&:hover': {
-                          borderColor: '#1a237e',
-                          backgroundColor: '#f5f5f5'
-                        }
+                      '&:hover': { borderColor: '#1a237e' }
                       }}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <CloudUpload sx={{ fontSize: 48, color: '#1a237e', mb: 1 }} />
+                    <CloudUpload sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} />
                       <Typography variant="h6" sx={{ mb: 1 }}>
                         {currentDocument.file ? currentDocument.file.name : 'Click to select file'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Supported formats: PDF, JPEG, PNG, WebP (Max 10MB)
+                      PDF, JPEG, PNG, or WebP files up to 10MB
                       </Typography>
                     </Paper>
                     
                     <input
+                    ref={fileInputRef}
                       type="file"
-                      ref={fileInputRef}
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
                       onChange={handleFileSelect}
-                      accept=".pdf,.jpg,.jpeg,.png,.webp"
                       style={{ display: 'none' }}
                     />
                     
                     {currentDocument.file && (
-                      <Alert severity="info">
+                    <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                      <Typography variant="body2">
+                        <strong>Selected File:</strong> {currentDocument.file.name}
+                      </Typography>
                         <Typography variant="body2">
-                          <strong>Selected File:</strong> {currentDocument.file.name}<br />
-                          <strong>Size:</strong> {(currentDocument.file.size / 1024 / 1024).toFixed(2)} MB<br />
-                          <strong>Type:</strong> {currentDocument.file.type}
+                        <strong>Size:</strong> {(currentDocument.file.size / 1024 / 1024).toFixed(2)} MB
                         </Typography>
-                      </Alert>
+                    </Box>
                     )}
-                  </Box>
                   
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleBack}>
+                  <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                    <Button onClick={() => setActiveStep(0)}>
                       Back
                     </Button>
-                    <Button onClick={handleNext} variant="contained">
-                      Next
+                    <Button
+                      variant="contained"
+                      onClick={() => setActiveStep(2)}
+                      disabled={!currentDocument.file}
+                      sx={{ bgcolor: '#1a237e' }}
+                    >
+                      Next: Upload
                     </Button>
+                  </Box>
                   </Box>
                 </StepContent>
               </Step>
 
-              {/* Step 3: Upload & Review */}
+            {/* Step 3: Upload */}
               <Step>
                 <StepLabel>Upload & Review</StepLabel>
                 <StepContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
-                    <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
-                      <Typography variant="h6" sx={{ mb: 2 }}>
-                        Document Preview
+                <Box sx={{ mb: 3 }}>
+                  <Paper sx={{ p: 2, mb: 2, bgcolor: '#f5f5f5' }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                      Document Summary
                       </Typography>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
+                    <Typography variant="body2">
                         <strong>Title:</strong> {currentDocument.title}
                       </Typography>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>Type:</strong> {documentTypes.find(t => t.value === currentDocument.type)?.label}
+                    <Typography variant="body2">
+                      <strong>Type:</strong> {currentDocument.type}
                       </Typography>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
+                    <Typography variant="body2">
                         <strong>Category:</strong> {currentDocument.category}
                       </Typography>
+                    <Typography variant="body2">
+                      <strong>File:</strong> {currentDocument.file?.name}
+                    </Typography>
+                  </Paper>
+                  
+                  {uploading && (
+                    <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>File:</strong> {currentDocument.file?.name}
+                        Uploading... {uploadProgress}%
                       </Typography>
-                      <Typography variant="body2">
-                        <strong>Tags:</strong> {currentDocument.tags.join(', ')}
-                      </Typography>
-                    </Paper>
-                    
-                    {currentDocument.status === 'uploading' && (
-                      <Box>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          Uploading... {currentDocument.uploadProgress}%
-                        </Typography>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={currentDocument.uploadProgress} 
-                        />
+                      <LinearProgress variant="determinate" value={uploadProgress} />
                       </Box>
                     )}
-                  </Box>
                   
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleBack}>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button onClick={() => setActiveStep(1)}>
                       Back
                     </Button>
                     <Button 
-                      onClick={handleUpload} 
                       variant="contained"
-                      disabled={uploading || !currentDocument.file || currentDocument.status === 'uploading'}
-                      startIcon={
-                        currentDocument.status === 'uploading' ? <CircularProgress size={20} /> :
-                        currentDocument.status === 'success' ? <CheckCircle /> :
-                        uploading ? <CircularProgress size={20} /> : <CloudUpload />
-                      }
-                      color={
-                        currentDocument.status === 'success' ? 'success' :
-                        currentDocument.status === 'error' ? 'error' : 'primary'
-                      }
+                      onClick={handleUpload}
+                      disabled={uploading || !currentDocument.file}
+                      startIcon={uploading ? <CircularProgress size={20} /> : <Upload />}
+                      sx={{ bgcolor: '#1a237e' }}
                     >
-                      {currentDocument.status === 'uploading' ? 'Uploading...' :
-                       currentDocument.status === 'success' ? 'Upload Complete!' :
-                       uploading ? 'Uploading...' : 'Upload Document'}
+                      {uploading ? 'Uploading...' : 'Upload Document'}
                     </Button>
                   </Box>
-                  
-                  {/* Upload Progress and Status */}
-                  {currentDocument.status === 'uploading' && (
-                    <Box sx={{ mt: 2 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={currentDocument.uploadProgress || 0} 
-                        sx={{ mb: 1 }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        Uploading... {currentDocument.uploadProgress || 0}%
-                      </Typography>
                     </Box>
-                  )}
-                  
-                  {currentDocument.status === 'success' && (
-                    <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
-                      <Typography variant="body2" color="success.dark">
-                        ✅ Document uploaded successfully!
-                      </Typography>
-                    </Box>
-                  )}
                 </StepContent>
               </Step>
             </Stepper>
           </CardContent>
         </Card>
 
-        {/* Uploaded Documents List */}
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 3, color: '#1a237e' }}>
-              Uploaded Documents
-            </Typography>
-            
-            {documents.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                No documents uploaded yet
-              </Typography>
-            ) : (
-              <List>
-                {documents.map((doc) => (
-                  <ListItem key={doc.id} sx={{ border: '1px solid #e0e0e0', borderRadius: 1, mb: 1 }}>
-                    <ListItemIcon>
-                      {getStatusIcon(doc.isPublished ? 'published' : 'draft')}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={doc.title}
-                      secondary={
-                        <Box>
-                          <Typography variant="caption" display="block">
-                            {doc.type.toUpperCase()} • {doc.category}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {doc.fileName}
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                    <Chip
-                      label={doc.isPublished ? 'PUBLISHED' : 'DRAFT'}
-                      size="small"
-                      sx={{ 
-                        backgroundColor: getStatusColor(doc.isPublished ? 'published' : 'draft'),
-                        color: 'white',
-                        fontWeight: 600
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -6,10 +6,7 @@ const Events: React.FC = () => {
   return (
     <>
       <ReturnToHome />
-      <SchoolCalendar
-        title="School Events & Calendar"
-        subtitle="Stay updated with all important dates and events for Term 3 2025"
-      />
+      <SchoolCalendar />
     </>
   );
 };
