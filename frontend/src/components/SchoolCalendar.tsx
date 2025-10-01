@@ -9,7 +9,6 @@ import {
   Chip,
   Avatar,
   Paper,
-  Grid,
   Stack,
   Dialog,
   DialogTitle,
@@ -386,8 +385,8 @@ const SchoolCalendar: React.FC = () => {
         <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
           Upcoming Events
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8} {...({ item: true } as any)}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+          <Box sx={{ flex: { xs: '1', md: '2' } }}>
             <Stack spacing={2}>
               {filteredEvents.slice(0, 5).map((event) => (
                 <Card key={event.id} sx={{ cursor: 'pointer' }} onClick={() => handleEventClick(event)}>
@@ -423,8 +422,8 @@ const SchoolCalendar: React.FC = () => {
                 </Card>
               ))}
             </Stack>
-          </Grid>
-          <Grid item xs={12} md={4} {...({ item: true } as any)}>
+          </Box>
+          <Box sx={{ flex: { xs: '1', md: '1' } }}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                 Today's Events
@@ -451,8 +450,8 @@ const SchoolCalendar: React.FC = () => {
                 </List>
               )}
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
 
       {/* Event Details Dialog */}

@@ -249,13 +249,14 @@ export const StaffAvatar: React.FC<{
   src?: string | null;
   name: string;
   size?: number;
-  category?: 'LEADERSHIP' | 'TEACHING' | 'SUPPORT';
+  category?: 'LEADERSHIP' | 'TEACHING' | 'ADMIN' | 'SUPPORT';
   sx?: any;
 }> = ({ src, name, size = 80, category, sx = {} }) => {
   const getCategoryColor = () => {
     switch (category) {
       case 'LEADERSHIP': return '#1a237e';
       case 'TEACHING': return '#ffd700';
+      case 'ADMIN': return '#ff6b35';
       case 'SUPPORT': return '#4caf50';
       default: return '#1a237e';
     }

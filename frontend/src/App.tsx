@@ -21,7 +21,6 @@ import News from './pages/News';
 import Music from './pages/Music';
 import ContactForm from './components/ContactForm';
 import Donate from './pages/Donate';
-import AdminStaffUpload from './pages/AdminStaffUpload';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
 import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -35,6 +34,9 @@ import Academics from './pages/Academics';
 import Robotics from './pages/Robotics';
 import ICTHub from './pages/ICTHub';
 import Calendar from './pages/Calendar';
+import CalendarManagement from './pages/CalendarManagement';
+import GalleryManagement from './pages/GalleryManagement';
+import NewsletterManagement from './pages/NewsletterManagement';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -150,6 +152,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
         <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
+                <Route path="/admin/calendar" element={<CalendarManagement />} />
+                <Route path="/admin/gallery" element={<GalleryManagement />} />
+                <Route path="/admin/newsletters" element={<NewsletterManagement />} />
         <Route path="/documents" element={<SchoolDocuments />} />
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
         <Route path="/mission-vision" element={<MissionVision />} />

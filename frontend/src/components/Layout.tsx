@@ -3,9 +3,6 @@ import { Box, Container, Typography, Paper, Divider, IconButton, Link } from '@m
 import BackToTop from './BackToTop';
 import { 
   Facebook, 
-  Twitter, 
-  Instagram, 
-  LinkedIn, 
   Email, 
   Phone, 
   LocationOn,
@@ -161,44 +158,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
                       color: '#1a237e'
                     }
                   }}
+                  component="a"
+                  href="https://www.facebook.com/profile.php?id=61553924237049"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <Facebook />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    color: 'white', 
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    '&:hover': { 
-                      backgroundColor: '#ffd700',
-                      color: '#1a237e'
-                    }
-                  }}
-                >
-                  <Twitter />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    color: 'white', 
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    '&:hover': { 
-                      backgroundColor: '#ffd700',
-                      color: '#1a237e'
-                    }
-                  }}
-                >
-                  <Instagram />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    color: 'white', 
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    '&:hover': { 
-                      backgroundColor: '#ffd700',
-                      color: '#1a237e'
-                    }
-                  }}
-                >
-                  <LinkedIn />
                 </IconButton>
               </Box>
 

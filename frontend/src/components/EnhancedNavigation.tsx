@@ -168,6 +168,7 @@ const navigationData = {
     { name: 'Afterschool Programme', path: '/afterschool', icon: <TrendingUp /> },
     { name: 'Gallery', path: '/gallery', icon: <Palette /> },
     { name: 'Staff', path: '/staff', icon: <Person /> },
+    { name: 'School Board', path: '/school-board', icon: <AdminPanelSettings /> },
     { name: 'Policies', path: '/policies', icon: <Description /> },
     { name: 'Calendar', path: '/events', icon: <CalendarMonth /> },
     { name: 'History & Mission', path: '/history', icon: <History /> },

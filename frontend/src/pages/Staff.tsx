@@ -50,7 +50,7 @@ interface StaffMember {
   bio?: string;
   imageUrl?: string;
   grade?: string;
-  category: "LEADERSHIP" | "TEACHING" | "SUPPORT";
+  category: "LEADERSHIP" | "TEACHING" | "ADMIN" | "SUPPORT";
   subjects?: string; // JSON string of array
   qualifications?: string;
   experience?: string;
@@ -63,6 +63,7 @@ interface StaffMember {
 interface GroupedStaff {
   leadership: StaffMember[];
   teaching: StaffMember[];
+  admin: StaffMember[];
   support: StaffMember[];
 }
 
@@ -158,7 +159,7 @@ const getStaffIcon = (role: string, category: string) => {
 };
 
 interface CategoryColors {
-  color: "primary" | "secondary" | "default";
+  color: "primary" | "secondary" | "warning" | "default";
   bgcolor: string;
 }
 
@@ -168,6 +169,8 @@ const getCategoryColors = (category: string): CategoryColors => {
       return { color: "primary", bgcolor: "#e3f2fd" };
     case "TEACHING":
       return { color: "secondary", bgcolor: "#f3e5f5" };
+    case "ADMIN":
+      return { color: "warning", bgcolor: "#fff3e0" };
     case "SUPPORT":
       return { color: "default", bgcolor: "#f5f5f5" };
     default:
@@ -401,6 +404,7 @@ const Staff: React.FC = () => {
   const [groupedStaff, setGroupedStaff] = useState<GroupedStaff>({
     leadership: [],
     teaching: [],
+    admin: [],
     support: [],
   });
   const [loading, setLoading] = useState(true);
@@ -419,6 +423,7 @@ const Staff: React.FC = () => {
           const staffData = response.data.data.groupedStaff ?? {
             leadership: [],
             teaching: [],
+            admin: [],
             support: [],
           };
           
@@ -428,6 +433,7 @@ const Staff: React.FC = () => {
           const allStaff = [
             ...staffData.leadership,
             ...staffData.teaching,
+            ...staffData.admin,
             ...staffData.support
           ];
           
@@ -540,38 +546,165 @@ const Staff: React.FC = () => {
         />
       </Box>
 
-      {/* Leadership */}
+      {/* Principal Section - Horizontal Banner Style */}
       {groupedStaff.leadership.length > 0 && (
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: 8 }}>
           <Typography
             variant="h3"
-            sx={{ color: "#1a237e", fontWeight: 700, mb: 3, textAlign: "center" }}
+            sx={{ color: "#1a237e", fontWeight: 700, mb: 1, textAlign: "center" }}
           >
-            School Leadership
+            Our Principal
           </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(auto-fit, minmax(300px, 1fr))" },
-              gap: 3,
-              maxWidth: 800,
-              mx: "auto",
-            }}
-          >
-            {groupedStaff.leadership.map((member) => (
-              <StaffCardComponent key={member.id} member={member} isLeadership />
+          <Divider sx={{ bgcolor: "#ffd700", height: 3, width: 100, mx: "auto", mb: 4 }} />
+          
+          {/* Principal Banner Card - Horizontal Layout */}
+          {groupedStaff.leadership
+            .filter(member => member.role.toLowerCase().includes('principal'))
+            .map((member) => (
+              <Card
+                key={member.id}
+                elevation={6}
+                sx={{
+                  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  maxWidth: 1000,
+                  mx: 'auto',
+                  '&:before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%)',
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 0 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', md: 'row' },
+                      alignItems: 'center',
+                      gap: 4,
+                      p: 4,
+                    }}
+                  >
+                    {/* Principal Avatar - Left Side */}
+                    <Box sx={{ flexShrink: 0 }}>
+                      <StaffAvatar
+                        src={getStaffImageUrl(member.imageUrl)}
+                        name={member.name}
+                        size={160}
+                        category={member.category}
+                        sx={{
+                          width: 160,
+                          height: 160,
+                          border: '4px solid #ffd700',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                          '& .MuiAvatar-img': {
+                            objectFit: 'cover',
+                            objectPosition: 'center 30%',
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    {/* Principal Info - Right Side */}
+                    <Box sx={{ flex: 1, color: 'white', textAlign: { xs: 'center', md: 'left' } }}>
+                      {/* Badge */}
+                      <Chip
+                        label="SCHOOL LEADER"
+                        sx={{
+                          bgcolor: '#ffd700',
+                          color: '#1a237e',
+                          fontWeight: 700,
+                          mb: 2,
+                          fontSize: '0.75rem',
+                          letterSpacing: 1,
+                        }}
+                        size="small"
+                      />
+
+                      {/* Name */}
+                      <Typography
+                        variant="h3"
+                        sx={{ 
+                          fontWeight: 700, 
+                          mb: 1, 
+                          fontSize: { xs: '1.75rem', md: '2.5rem' },
+                          color: 'white'
+                        }}
+                      >
+                        {member.name}
+                      </Typography>
+
+                      {/* Role */}
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "#ffd700",
+                          fontWeight: 500,
+                          mb: 2,
+                          fontSize: { xs: '1rem', md: '1.25rem' },
+                        }}
+                      >
+                        {member.role}
+                      </Typography>
+
+                      {/* Bio Quote */}
+                      {member.bio && (
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontStyle: 'italic',
+                            opacity: 0.95,
+                            lineHeight: 1.7,
+                            mb: 2,
+                            fontSize: { xs: '0.9rem', md: '1rem' },
+                          }}
+                        >
+                          "{member.bio}"
+                        </Typography>
+                      )}
+
+                      {/* Contact Info - Horizontal */}
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: { xs: 'center', md: 'flex-start' }, mt: 2 }}>
+                        {member.email && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Email sx={{ fontSize: 18 }} />
+                            <Typography variant="body2">
+                              {member.email}
+                            </Typography>
+                          </Box>
+                        )}
+                        {member.phone && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Phone sx={{ fontSize: 18 }} />
+                            <Typography variant="body2">
+                              {member.phone}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Box>
         </Box>
       )}
 
-      {/* Teaching & Support Tabs */}
+      {/* Teaching, Admin & Support Tabs */}
       <Box sx={{ width: "100%" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
             aria-label="staff tabs"
+            centered
             sx={{
               "& .MuiTab-root": {
                 color: "#666",
@@ -588,7 +721,8 @@ const Staff: React.FC = () => {
             }}
           >
             <Tab label="Teaching Staff" id="staff-tab-0" aria-controls="staff-tabpanel-0" />
-            <Tab label="Support Staff" id="staff-tab-1" aria-controls="staff-tabpanel-1" />
+            <Tab label="Administrative Staff" id="staff-tab-1" aria-controls="staff-tabpanel-1" />
+            <Tab label="Support Staff" id="staff-tab-2" aria-controls="staff-tabpanel-2" />
           </Tabs>
         </Box>
 
@@ -601,6 +735,14 @@ const Staff: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
+          {groupedStaff.admin.length > 0 ? (
+            renderStaffGrid(groupedStaff.admin)
+          ) : (
+            <EmptyState category="administrative" />
+          )}
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
           {groupedStaff.support.length > 0 ? (
             renderStaffGrid(groupedStaff.support)
           ) : (

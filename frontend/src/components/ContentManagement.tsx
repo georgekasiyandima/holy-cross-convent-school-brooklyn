@@ -12,7 +12,6 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
-  Grid,
   Paper,
   Alert,
   CircularProgress,
@@ -221,8 +220,8 @@ const ContentManagement: React.FC = () => {
       )}
 
       {/* Action Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} {...({ item: true } as any)} md={4} {...({ item: true } as any)} {...({ item: true } as any)}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+        <Box sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', md: 'calc(33.333% - 16px)' } }}>
           <ActionCard onClick={() => handleDialogOpen('event')}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Event sx={{ fontSize: 48, color: '#9c27b0', mb: 2 }} />
@@ -234,8 +233,8 @@ const ContentManagement: React.FC = () => {
               </Typography>
             </CardContent>
           </ActionCard>
-        </Grid>
-        <Grid item xs={12} {...({ item: true } as any)} md={4} {...({ item: true } as any)}>
+        </Box>
+        <Box sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', md: 'calc(33.333% - 16px)' } }}>
           <ActionCard onClick={() => handleDialogOpen('news')}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Article sx={{ fontSize: 48, color: '#2196f3', mb: 2 }} />
@@ -247,8 +246,8 @@ const ContentManagement: React.FC = () => {
               </Typography>
             </CardContent>
           </ActionCard>
-        </Grid>
-        <Grid item xs={12} {...({ item: true } as any)} md={4} {...({ item: true } as any)}>
+        </Box>
+        <Box sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', md: 'calc(33.333% - 16px)' } }}>
           <ActionCard onClick={() => handleDialogOpen('announcement')}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Announcement sx={{ fontSize: 48, color: '#ff9800', mb: 2 }} />
@@ -260,8 +259,8 @@ const ContentManagement: React.FC = () => {
               </Typography>
             </CardContent>
           </ActionCard>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Content List */}
       <Box>
@@ -282,8 +281,8 @@ const ContentManagement: React.FC = () => {
         </DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12} {...({ item: true } as any)}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
                   label="Title"
@@ -291,8 +290,8 @@ const ContentManagement: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                 />
-              </Grid>
-              <Grid item xs={12} {...({ item: true } as any)} md={6}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <FormControl fullWidth>
                   <InputLabel>Category</InputLabel>
                   <Select
@@ -307,40 +306,42 @@ const ContentManagement: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Box>
               {selectedType === 'event' && (
                 <>
-                  <Grid item xs={12} {...({ item: true } as any)} md={3}>
-                    <TextField
-                      fullWidth
-                      label="Start Date"
-                      type="datetime-local"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} {...({ item: true } as any)} md={3}>
-                    <TextField
-                      fullWidth
-                      label="End Date"
-                      type="datetime-local"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} {...({ item: true } as any)}>
+                  <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+                    <Box sx={{ flex: 1 }}>
+                      <TextField
+                        fullWidth
+                        label="Start Date"
+                        type="datetime-local"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <TextField
+                        fullWidth
+                        label="End Date"
+                        type="datetime-local"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ width: '100%' }}>
                     <TextField
                       fullWidth
                       label="Location"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     />
-                  </Grid>
+                  </Box>
                 </>
               )}
-              <Grid item xs={12} {...({ item: true } as any)}>
+              <Box sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
                   label="Content"
@@ -350,16 +351,16 @@ const ContentManagement: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   required
                 />
-              </Grid>
-              <Grid item xs={12} {...({ item: true } as any)}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
                   label="Image URL"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 />
-              </Grid>
-              <Grid item xs={12} {...({ item: true } as any)}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -369,8 +370,8 @@ const ContentManagement: React.FC = () => {
                   }
                   label="Publish immediately"
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsDialogOpen(false)}>

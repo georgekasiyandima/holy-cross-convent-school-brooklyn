@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Box, Typography, Breadcrumbs, Link } from '@mui/material';
 import { Home, CalendarToday } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import SchoolCalendar from '../components/SchoolCalendar';
+import EnhancedSchoolCalendar from '../components/EnhancedSchoolCalendar';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 
@@ -66,7 +66,7 @@ const Calendar: React.FC = () => {
           </Typography>
         </Box>
 
-        <SchoolCalendar />
+        <EnhancedSchoolCalendar />
       </Container>
     </>
   );
