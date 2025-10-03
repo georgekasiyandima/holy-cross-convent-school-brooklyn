@@ -1,12 +1,12 @@
 import React from 'react';
-import SchoolCalendar from '../components/SchoolCalendar';
+import EnhancedSchoolCalendar from '../components/EnhancedSchoolCalendar';
 import ReturnToHome from '../components/ReturnToHome';
 
 const Events: React.FC = () => {
   return (
     <>
       <ReturnToHome />
-      <SchoolCalendar />
+      <EnhancedSchoolCalendar />
     </>
   );
 };

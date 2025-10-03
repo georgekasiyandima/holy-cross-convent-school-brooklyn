@@ -92,3 +92,4 @@ export const STATISTIC_TYPES = [
   { value: 'percentage', label: 'Percentage' }
 ] as const;
 
+

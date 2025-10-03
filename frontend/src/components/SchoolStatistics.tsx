@@ -234,3 +234,4 @@ const SchoolStatistics: React.FC<SchoolStatisticsProps> = ({ animate = true }) =
 
 export default SchoolStatistics;
 
+

@@ -102,6 +102,13 @@ const CalendarManagement: React.FC = () => {
       setError('Please log in to access calendar management.');
       return;
     }
+    
+    // Check if user has admin token
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      setError('Admin access required. Please log in with admin credentials.');
+      return;
+    }
   }, [isAuthenticated]);
 
   // Form states
@@ -163,8 +170,8 @@ const CalendarManagement: React.FC = () => {
     try {
       setLoading(true);
       const [eventsRes, termsRes] = await Promise.all([
-        fetch('/api/calendar/events'),
-        fetch('/api/calendar/terms')
+        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events`),
+        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms`)
       ]);
 
       if (!eventsRes.ok || !termsRes.ok) {
@@ -187,9 +194,11 @@ const CalendarManagement: React.FC = () => {
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const adminToken = localStorage.getItem('adminToken');
+      
       const url = editingEvent 
-        ? `/api/calendar/events/${editingEvent.id}`
-        : '/api/calendar/events';
+        ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events/${editingEvent.id}`
+        : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events`;
       
       const method = editingEvent ? 'PUT' : 'POST';
       
@@ -197,7 +206,7 @@ const CalendarManagement: React.FC = () => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${adminToken}`
         },
         body: JSON.stringify({
           ...eventForm,
@@ -224,8 +233,8 @@ const CalendarManagement: React.FC = () => {
     e.preventDefault();
     try {
       const url = editingTerm 
-        ? `/api/calendar/terms/${editingTerm.id}`
-        : '/api/calendar/terms';
+        ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms/${editingTerm.id}`
+        : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms`;
       
       const method = editingTerm ? 'PUT' : 'POST';
       
@@ -262,7 +271,7 @@ const CalendarManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/calendar/events/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -283,7 +292,7 @@ const CalendarManagement: React.FC = () => {
 
   const handleActivateTerm = async (id: string) => {
     try {
-      const response = await fetch(`/api/calendar/terms/${id}/activate`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms/${id}/activate`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

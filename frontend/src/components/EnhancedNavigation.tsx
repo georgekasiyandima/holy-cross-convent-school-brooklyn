@@ -119,13 +119,23 @@ const FeatureChip = styled(Chip)(({ theme }) => ({
 const navigationData = {
   pillars: [
     {
-      name: 'Academics',
+      name: 'Academic',
       icon: <School />,
       color: '#1a237e',
       items: [
-        { name: 'Robotics & Computer Room', path: '/robotics', icon: <Science />, featured: true },
         { name: 'Core Subjects', path: '/academics', icon: <School /> },
         { name: 'Learning Support', path: '/learning-support', icon: <EmojiPeople /> },
+        { name: 'Academic Excellence', path: '/academic-excellence', icon: <TrendingUp /> },
+      ],
+    },
+    {
+      name: 'Service',
+      icon: <Groups />,
+      color: '#2e7d32',
+      items: [
+        { name: 'Community Outreach', path: '/community-outreach', icon: <EmojiPeople /> },
+        { name: 'Service Learning', path: '/service-learning', icon: <Groups /> },
+        { name: 'Volunteer Programs', path: '/volunteer', icon: <Groups /> },
       ],
     },
     {
@@ -133,20 +143,9 @@ const navigationData = {
       icon: <Palette />,
       color: '#ff6b35',
       items: [
-        { name: 'Art & Creativity', path: '/art', icon: <Palette /> },
-        { name: 'Music Department', path: '/music', icon: <MusicNote /> },
-        { name: 'Liturgical Dance', path: '/liturgical-dance', icon: <EmojiPeople /> },
-        { name: 'Gardening Club', path: '/gardening', icon: <Science /> },
-      ],
-    },
-    {
-      name: 'Service & Ethos',
-      icon: <Groups />,
-      color: '#2e7d32',
-      items: [
-        { name: 'Religious Education', path: '/religious-education', icon: <Groups /> },
-        { name: 'Community Outreach', path: '/community-outreach', icon: <EmojiPeople /> },
-        { name: 'Spiritual Activities', path: '/spiritual', icon: <Groups /> },
+        { name: 'Arts', path: '/arts', icon: <Palette /> },
+        { name: 'Music', path: '/music', icon: <MusicNote /> },
+        { name: 'Cultural Events', path: '/cultural-events', icon: <EmojiPeople /> },
       ],
     },
     {
@@ -159,6 +158,26 @@ const navigationData = {
         { name: 'Tennis', path: '/tennis', icon: <SportsSoccer /> },
         { name: 'Mini Tennis', path: '/mini-tennis', icon: <SportsSoccer /> },
         { name: 'Karate', path: '/karate', icon: <SportsSoccer /> },
+      ],
+    },
+    {
+      name: 'Robotics/Computers',
+      icon: <Science />,
+      color: '#9c27b0',
+      items: [
+        { name: 'Robotics Program', path: '/robotics', icon: <Science />, featured: true },
+        { name: 'Computer Science', path: '/computer-science', icon: <Science /> },
+        { name: 'Coding Club', path: '/coding-club', icon: <Science /> },
+      ],
+    },
+    {
+      name: 'R/E',
+      icon: <Groups />,
+      color: '#ff9800',
+      items: [
+        { name: 'Religious Education', path: '/religious-education', icon: <Groups /> },
+        { name: 'Spiritual Activities', path: '/spiritual', icon: <Groups /> },
+        { name: 'Liturgical Programs', path: '/liturgical', icon: <Groups /> },
       ],
     },
   ],
@@ -343,7 +362,7 @@ const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({ onNavigate, cur
           >
             <Box sx={{ p: 1 }}>
               <Typography variant="subtitle1" sx={{ color: pillar.color, fontWeight: 600, px: 2, py: 1 }}>
-                {pillar.name} Programs
+                {pillar.name} Pillar
               </Typography>
               {pillar.items.map((item) => (
                 <MenuItemStyled

@@ -3,6 +3,9 @@ import { Box, Container, Typography, Paper, Divider, IconButton, Link } from '@m
 import BackToTop from './BackToTop';
 import { 
   Facebook, 
+  Instagram,
+  YouTube,
+  MusicNote,
   Email, 
   Phone, 
   LocationOn,
@@ -164,6 +167,54 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
                   rel="noopener noreferrer"
                 >
                   <Facebook />
+                </IconButton>
+                <IconButton 
+                  sx={{ 
+                    color: 'white', 
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    '&:hover': { 
+                      backgroundColor: '#ffd700',
+                      color: '#1a237e'
+                    }
+                  }}
+                  component="a"
+                  href="https://www.instagram.com/holycrossbrooklyn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Instagram />
+                </IconButton>
+                <IconButton 
+                  sx={{ 
+                    color: 'white', 
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    '&:hover': { 
+                      backgroundColor: '#ffd700',
+                      color: '#1a237e'
+                    }
+                  }}
+                  component="a"
+                  href="https://www.youtube.com/@holycrossbrooklyn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <YouTube />
+                </IconButton>
+                <IconButton 
+                  sx={{ 
+                    color: 'white', 
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    '&:hover': { 
+                      backgroundColor: '#ffd700',
+                      color: '#1a237e'
+                    }
+                  }}
+                  component="a"
+                  href="https://www.tiktok.com/@holycrossbrooklyn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MusicNote />
                 </IconButton>
               </Box>
 

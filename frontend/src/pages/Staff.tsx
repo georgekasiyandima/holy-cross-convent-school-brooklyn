@@ -13,26 +13,16 @@ import {
   Tab,
   Divider,
   Skeleton,
-  Avatar,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import ReturnToHome from "../components/ReturnToHome";
 import {
-  School,
   Person,
-  Support,
-  AdminPanelSettings,
-  Grade,
-  MusicNote,
-  Computer,
-  LibraryBooks,
-  ChildCare,
-  Business,
   Email,
   Phone,
 } from "@mui/icons-material";
 import axios from "axios";
-import { getStaffImageUrl, getStaffInitials, preloadStaffImages } from "../utils/imageUtils";
+import { getStaffImageUrl, preloadStaffImages } from "../utils/imageUtils";
 import { StaffAvatar } from "../components/OptimizedImage";
 
 /**
@@ -54,6 +44,7 @@ interface StaffMember {
   subjects?: string; // JSON string of array
   qualifications?: string;
   experience?: string;
+  favoriteQuote?: string; // Favorite quote or verse
   order: number;
   isActive: boolean;
   createdAt: string;
@@ -106,11 +97,6 @@ const LeadershipCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const CategoryChip = styled(Chip)(({ theme }) => ({
-  fontWeight: 600,
-  textTransform: "uppercase",
-  fontSize: "0.75rem",
-}));
 
 const LoadingSkeleton = styled(Skeleton)(({ theme }) => ({
   borderRadius: theme.spacing(1),
@@ -135,48 +121,7 @@ const parseSubjects = (subjects?: string | null): string[] | null => {
   return null;
 };
 
-const getStaffIcon = (role: string, category: string) => {
-  const roleLower = role.toLowerCase();
 
-  if (category === "LEADERSHIP") return <School sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("computer") || roleLower.includes("technology"))
-    return <Computer sx={{ color: "#ffd700" }} />;
-  if (roleLower.includes("music")) return <MusicNote sx={{ color: "#ffd700" }} />;
-  if (roleLower.includes("library") || roleLower.includes("librarian"))
-    return <LibraryBooks sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("grade") || roleLower.includes("teacher"))
-    return <Grade sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("support") || roleLower.includes("coordinator"))
-    return <Support sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("secretary") || roleLower.includes("admin"))
-    return <AdminPanelSettings sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("bursar") || roleLower.includes("finance"))
-    return <Business sx={{ color: "#1a237e" }} />;
-  if (roleLower.includes("aftercare") || roleLower.includes("care"))
-    return <ChildCare sx={{ color: "#1a237e" }} />;
-
-  return <Person sx={{ color: "#ffd700" }} />;
-};
-
-interface CategoryColors {
-  color: "primary" | "secondary" | "warning" | "default";
-  bgcolor: string;
-}
-
-const getCategoryColors = (category: string): CategoryColors => {
-  switch (category) {
-    case "LEADERSHIP":
-      return { color: "primary", bgcolor: "#e3f2fd" };
-    case "TEACHING":
-      return { color: "secondary", bgcolor: "#f3e5f5" };
-    case "ADMIN":
-      return { color: "warning", bgcolor: "#fff3e0" };
-    case "SUPPORT":
-      return { color: "default", bgcolor: "#f5f5f5" };
-    default:
-      return { color: "default", bgcolor: "#f5f5f5" };
-  }
-};
 
 const getAvatarStyles = (isLeadership: boolean) => ({
   width: isLeadership ? 140 : 120,
@@ -226,7 +171,6 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 
 const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = false }) => {
   const subjects = parseSubjects(member.subjects);
-  const categoryColors = getCategoryColors(member.category);
   const CardComponent = isLeadership ? LeadershipCard : StaffCard;
 
   return (
@@ -249,25 +193,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           {member.name}
         </Typography>
 
-        {/* Role */}
-        <Typography
-          variant={isLeadership ? "h6" : "body2"}
-          sx={{
-            color: isLeadership ? "#ffd700" : "#666",
-            fontWeight: isLeadership ? 600 : 500,
-            mb: 2,
-          }}
-        >
-          {member.role}
-        </Typography>
 
-        {/* Category */}
-        <CategoryChip
-          label={member.category}
-          color={categoryColors.color}
-          size="small"
-          sx={{ mb: 2, bgcolor: categoryColors.bgcolor, color: "#1a237e" }}
-        />
 
         {/* Grade */}
         {member.grade && (
@@ -288,6 +214,33 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           >
             {member.bio}
           </Typography>
+        )}
+
+        {/* Favorite Quote */}
+        {member.favoriteQuote && (
+          <Box
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: "#f8f9fa",
+              borderRadius: 2,
+              border: "1px solid #e3f2fd",
+              borderLeft: "4px solid #1a237e"
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#1a237e",
+                fontStyle: "italic",
+                fontSize: "0.875rem",
+                lineHeight: 1.6,
+                textAlign: "center"
+              }}
+            >
+              "{member.favoriteQuote}"
+            </Typography>
+          </Box>
         )}
 
         {/* Subjects */}
@@ -549,151 +502,131 @@ const Staff: React.FC = () => {
       {/* Principal Section - Horizontal Banner Style */}
       {groupedStaff.leadership.length > 0 && (
         <Box sx={{ mb: 8 }}>
-          <Typography
-            variant="h3"
-            sx={{ color: "#1a237e", fontWeight: 700, mb: 1, textAlign: "center" }}
-          >
+          <Typography variant="h3" sx={{ color: "#1a237e", fontWeight: 700, mb: 3, textAlign: "center" }}>
             Our Principal
           </Typography>
-          <Divider sx={{ bgcolor: "#ffd700", height: 3, width: 100, mx: "auto", mb: 4 }} />
+          <Divider sx={{ bgcolor: "#ffd700", height: 4, width: 100, mx: "auto", mb: 4 }} />
           
           {/* Principal Banner Card - Horizontal Layout */}
-          {groupedStaff.leadership
-            .filter(member => member.role.toLowerCase().includes('principal'))
-            .map((member) => (
-              <Card
-                key={member.id}
-                elevation={6}
-                sx={{
-                  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  maxWidth: 1000,
-                  mx: 'auto',
-                  '&:before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%)',
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 0 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: { xs: 'column', md: 'row' },
-                      alignItems: 'center',
-                      gap: 4,
-                      p: 4,
-                    }}
-                  >
-                    {/* Principal Avatar - Left Side */}
-                    <Box sx={{ flexShrink: 0 }}>
-                      <StaffAvatar
-                        src={getStaffImageUrl(member.imageUrl)}
-                        name={member.name}
-                        size={160}
-                        category={member.category}
-                        sx={{
-                          width: 160,
-                          height: 160,
-                          border: '4px solid #ffd700',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                          '& .MuiAvatar-img': {
-                            objectFit: 'cover',
-                            objectPosition: 'center 30%',
-                          },
-                        }}
-                      />
-                    </Box>
+          {groupedStaff.leadership.filter(member => member.role.toLowerCase().includes('principal')).map((member) => (
+            <Card
+              key={member.id}
+              sx={{
+                background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+                color: "white",
+                borderRadius: 4,
+                overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(26, 35, 126, 0.3)",
+                mb: 4,
+                position: "relative",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  width: "200px",
+                  height: "200px",
+                  background: "radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)",
+                  borderRadius: "50%",
+                  transform: "translate(50%, -50%)",
+                },
+              }}
+            >
+              <CardContent sx={{ p: 0 }}>
+                <Box sx={{ display: "flex", alignItems: "center", minHeight: 200 }}>
+                  {/* Principal Image */}
+                  <Box sx={{ flex: "0 0 200px", p: 3, display: "flex", justifyContent: "center" }}>
+                    <StaffAvatar
+                      src={getStaffImageUrl(member.imageUrl)}
+                      name={member.name}
+                      size={160}
+                      category={member.category}
+                      sx={{
+                        border: "4px solid #ffd700",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                      }}
+                    />
+                  </Box>
 
-                    {/* Principal Info - Right Side */}
-                    <Box sx={{ flex: 1, color: 'white', textAlign: { xs: 'center', md: 'left' } }}>
-                      {/* Badge */}
-                      <Chip
-                        label="SCHOOL LEADER"
-                        sx={{
-                          bgcolor: '#ffd700',
-                          color: '#1a237e',
-                          fontWeight: 700,
-                          mb: 2,
-                          fontSize: '0.75rem',
-                          letterSpacing: 1,
-                        }}
-                        size="small"
-                      />
-
-                      {/* Name */}
+                  {/* Principal Info */}
+                  <Box sx={{ flex: 1, p: 3, pr: 4 }}>
+                    <Typography variant="h4" sx={{ color: "#ffd700", fontWeight: 700, mb: 1 }}>
+                      {member.name}
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)", mb: 1, fontWeight: 500 }}>
+                      Principal
+                    </Typography>
+                    {member.grade && (
+                      <Typography variant="body1" sx={{ color: "#ffd700", mb: 2, fontWeight: 600, fontSize: "1.1rem" }}>
+                        {member.grade}
+                      </Typography>
+                    )}
+                    
+                    {/* Bio */}
+                    {member.bio && (
                       <Typography
-                        variant="h3"
-                        sx={{ 
-                          fontWeight: 700, 
-                          mb: 1, 
-                          fontSize: { xs: '1.75rem', md: '2.5rem' },
-                          color: 'white'
+                        variant="body1"
+                        sx={{
+                          color: "rgba(255,255,255,0.9)",
+                          mb: 3,
+                          lineHeight: 1.6,
+                          fontSize: "1.1rem",
                         }}
                       >
-                        {member.name}
+                        {member.bio}
                       </Typography>
+                    )}
 
-                      {/* Role */}
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: "#ffd700",
-                          fontWeight: 500,
-                          mb: 2,
-                          fontSize: { xs: '1rem', md: '1.25rem' },
+                    {/* Favorite Quote */}
+                    {member.favoriteQuote && (
+          <Box
+            sx={{
+                          p: 2,
+                          bgcolor: "rgba(255, 215, 0, 0.1)",
+                          borderRadius: 2,
+                          border: "1px solid rgba(255, 215, 0, 0.3)",
                         }}
                       >
-                        {member.role}
-                      </Typography>
-
-                      {/* Bio Quote */}
-                      {member.bio && (
                         <Typography
                           variant="body1"
                           sx={{
-                            fontStyle: 'italic',
-                            opacity: 0.95,
-                            lineHeight: 1.7,
-                            mb: 2,
-                            fontSize: { xs: '0.9rem', md: '1rem' },
+                            color: "#ffd700",
+                            fontStyle: "italic",
+                            fontSize: "1rem",
+                            lineHeight: 1.6,
+                            textAlign: "left",
+                            fontWeight: 500,
                           }}
                         >
-                          "{member.bio}"
+                          "{member.favoriteQuote}"
                         </Typography>
-                      )}
-
-                      {/* Contact Info - Horizontal */}
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: { xs: 'center', md: 'flex-start' }, mt: 2 }}>
-                        {member.email && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Email sx={{ fontSize: 18 }} />
-                            <Typography variant="body2">
-                              {member.email}
-                            </Typography>
-                          </Box>
-                        )}
-                        {member.phone && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Phone sx={{ fontSize: 18 }} />
-                            <Typography variant="body2">
-                              {member.phone}
-                            </Typography>
-                          </Box>
-                        )}
                       </Box>
+                    )}
+
+                    {/* Contact Info */}
+                    <Box sx={{ mt: 3, display: "flex", gap: 3, flexWrap: "wrap" }}>
+                      {member.email && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Email sx={{ color: "#ffd700", fontSize: 20 }} />
+                          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+                            {member.email}
+                          </Typography>
+                        </Box>
+                      )}
+                      {member.phone && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Phone sx={{ color: "#ffd700", fontSize: 20 }} />
+                          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+                            {member.phone}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   </Box>
-                </CardContent>
-              </Card>
-            ))}
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
         </Box>
       )}
 
