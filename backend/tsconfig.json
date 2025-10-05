@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
+    "types": ["node"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
@@ -29,7 +30,7 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*"
+    "src/server.ts"
   ],
   "exclude": [
     "node_modules",
@@ -38,6 +39,8 @@
     "src/services/**/*",
     "src/scripts/**/*",
     "src/middleware/**/*",
-    "src/tests/**/*"
+    "src/tests/**/*",
+    "src/server.minimal.ts",
+    "src/server.clean.ts"
   ]
 }
