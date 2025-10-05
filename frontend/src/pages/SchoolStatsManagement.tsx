@@ -21,3 +21,4 @@ const SchoolStatsManagement: React.FC = () => {
 export default SchoolStatsManagement;
 
 
+
