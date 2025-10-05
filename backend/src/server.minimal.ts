@@ -1,45 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
-import morgan from 'morgan';
-import path from 'path';
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
+const PORT = process.env.PORT || 5000;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-// Middleware
-app.use(helmet());
-app.use(compression());
-app.use(morgan('combined'));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
-// CORS
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+// Basic middleware
+app.use(express.json());
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+}));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -51,112 +24,125 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Staff API
-app.get('/api/staff', async (req, res) => {
-  try {
-    const staff = await prisma.staffMember.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' }
-    });
-    res.json(staff);
-  } catch (error) {
-    console.error('Error fetching staff:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Basic staff endpoint (mock data)
+app.get('/api/staff', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        name: 'Mrs Du Plessis',
+        role: 'Principal',
+        category: 'LEADERSHIP',
+        email: 'admin@holycross.co.za',
+        phone: '+27 21 123 4567',
+        grade: 'Grade 7',
+        subjects: ['Leadership'],
+        favoriteQuote: 'Education is the most powerful weapon which you can use to change the world. - Nelson Mandela',
+        imageUrl: '/api/images/principal.jpg',
+        isActive: true,
+        order: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+  });
 });
 
-// Board Members API
-app.get('/api/board', async (req, res) => {
-  try {
-    const boardMembers = await prisma.boardMember.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' }
-    });
-    res.json(boardMembers);
-  } catch (error) {
-    console.error('Error fetching board members:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Basic board members endpoint (mock data)
+app.get('/api/board', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        name: 'Ms Du Plessis',
+        role: 'Principal',
+        type: 'EXECUTIVE',
+        email: 'admin@holycross.co.za',
+        bio: 'Principal of Holy Cross Convent School Brooklyn',
+        order: 1,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+  });
 });
 
-// News API
-app.get('/api/news', async (req, res) => {
-  try {
-    const news = await prisma.newsArticle.findMany({
-      where: { isPublished: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 10
-    });
-    res.json(news);
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Basic news endpoint (mock data)
+app.get('/api/news', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        title: 'Welcome to Holy Cross Convent School Brooklyn',
+        content: 'We are excited to welcome students and families to our school community.',
+        author: 'Admin',
+        publishedAt: new Date().toISOString(),
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+  });
 });
 
-// Events API
-app.get('/api/events', async (req, res) => {
-  try {
-    const events = await prisma.event.findMany({
-      where: { isPublished: true },
-      orderBy: { startDate: 'asc' },
-      take: 20
-    });
-    res.json(events);
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Basic events endpoint (mock data)
+app.get('/api/events', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        title: 'School Opening Day',
+        description: 'Welcome back to school for the new academic year',
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+        location: 'School Hall',
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+  });
 });
 
-// Calendar API
-app.get('/api/calendar/events', async (req, res) => {
-  try {
-    const events = await prisma.academicCalendar.findMany({
-      orderBy: { startDate: 'asc' },
-      take: 50
-    });
-    res.json(events);
-  } catch (error) {
-    console.error('Error fetching calendar events:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Basic calendar endpoint (mock data)
+app.get('/api/calendar', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        title: 'Academic Year 2025',
+        description: 'Academic calendar for 2025',
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+  });
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-const PORT = process.env.PORT || 5000;
-
+// Start server
 const server = app.listen(PORT, () => {
-  console.log(`
-🚀 Holy Cross Convent School Backend Server
-📡 Server running on port ${PORT}
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
-🔗 Health check: http://localhost:${PORT}/api/health
-📚 API Documentation: http://localhost:${PORT}/
-  `);
+  console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
+  console.log(`📡 Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Frontend URL: ${FRONTEND_URL}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
 });
 
-export default app;
+export { app, server };

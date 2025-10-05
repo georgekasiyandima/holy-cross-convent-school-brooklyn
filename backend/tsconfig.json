@@ -29,7 +29,7 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src/server.ts"
+    "src/server.minimal.ts"
   ],
   "exclude": [
     "node_modules",
@@ -39,7 +39,7 @@
     "src/scripts/**/*",
     "src/middleware/**/*",
     "src/tests/**/*",
-    "src/server.minimal.ts",
+    "src/server.ts",
     "src/server.clean.ts"
   ]
 }

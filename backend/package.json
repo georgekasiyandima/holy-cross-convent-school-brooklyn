@@ -7,7 +7,7 @@
     "dev": "nodemon src/server.ts",
     "build": "tsc --skipLibCheck",
     "build:deploy": "tsc --project tsconfig.deploy.json",
-    "start": "node dist/server.js",
+    "start": "node dist/server.minimal.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
