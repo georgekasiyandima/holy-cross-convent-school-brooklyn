@@ -33,6 +33,10 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/routes/**/*",
+    "src/services/**/*",
+    "src/scripts/**/*",
+    "src/middleware/**/*"
   ]
 }
