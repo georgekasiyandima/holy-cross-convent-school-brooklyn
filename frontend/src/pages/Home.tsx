@@ -310,10 +310,7 @@ const Home: React.FC = () => {
     navigate('/gallery');
   };
 
-  const handleDownloadProspectus = () => {
-    // This would typically download a PDF
-    window.open('/prospectus.pdf', '_blank');
-  };
+  // Removed unused handleDownloadProspectus function
 
   // Trigger stats animation when component mounts
   useEffect(() => {
