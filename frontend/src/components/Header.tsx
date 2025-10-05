@@ -16,37 +16,11 @@ import {
   styled,
   Menu,
   MenuItem,
-  ListItemIcon,
   Fade,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Home,
-  School,
-  Info,
-  Folder,
-  Favorite,
-  ExpandMore,
-  Event,
-  CalendarToday,
-  Newspaper,
-  PhotoLibrary,
-  MusicNote,
-  SportsSoccer,
-  SelfImprovement,
-  People,
-  Description,
-  Link,
-  AdminPanelSettings,
-  History,
-  Image,
-  Book,
-  Psychology,
-  Receipt,
-  ContactMail,
-  VolunteerActivism,
-  AccessTime,
-  Computer
+  ExpandMore
 } from '@mui/icons-material';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
@@ -54,7 +28,6 @@ import {
 interface NavigationItem {
   name: string;
   path?: string;
-  icon: React.ReactNode;
   type: 'single' | 'dropdown';
   items?: NavigationSubItem[];
 }
@@ -62,7 +35,6 @@ interface NavigationItem {
 interface NavigationSubItem {
   name: string;
   path: string;
-  icon: React.ReactNode;
 }
 
 interface HeaderProps {
@@ -134,7 +106,6 @@ const LogoFallback = styled(Box)({
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
 });
 
-
 const NavButton = styled(Button)(({ theme }) => ({
   color: '#ffffff',
   fontWeight: 600,
@@ -189,85 +160,75 @@ const navigationItems: NavigationItem[] = [
   { 
     name: 'Home', 
     path: '/',
-    icon: <Home />,
     type: 'single'
   },
   {
-    name: 'About Us',
-    icon: <Info />,
+    name: 'Our School',
     type: 'dropdown',
     items: [
-      { name: 'History', path: '/history', icon: <History /> },
-      { name: 'Board Members', path: '/school-board', icon: <AdminPanelSettings /> },
-      { name: 'Staff Members', path: '/staff', icon: <People /> },
-      { name: 'Logo Symbolism', path: '/logo-symbolism', icon: <Image /> }
+      { name: 'About Us', path: '/about' },
+      { name: 'Staff', path: '/staff' },
+      { name: 'Board Members', path: '/school-board' },
+      { name: 'History', path: '/history' },
+      { name: 'Policies', path: '/policies' },
+      { name: 'School Info', path: '/info' },
+      { name: 'Aftercare Programme', path: '/aftercare' },
+      { name: 'Vacancies', path: '/vacancies' }
     ]
   },
   {
     name: 'School Hub',
-    icon: <School />,
     type: 'dropdown',
     items: [
-      { name: 'Events', path: '/events', icon: <Event /> },
-      { name: 'Calendar', path: '/calendar', icon: <CalendarToday /> },
-      { name: 'Gallery', path: '/gallery', icon: <PhotoLibrary /> },
-      { name: 'School Announcements', path: '/news', icon: <Newspaper /> },
-      { name: 'Music', path: '/music', icon: <MusicNote /> },
-      { name: 'Extra Murals', path: '/extra-mural', icon: <SportsSoccer /> }
+      { name: 'Events', path: '/events' },
+      { name: 'Calendar', path: '/calendar' },
+      { name: 'Gallery', path: '/gallery' },
+      { name: 'School Announcements', path: '/news' }
     ]
   },
-      {
-        name: 'Programs',
-        icon: <Book />,
-        type: 'dropdown',
-        items: [
-          { name: 'Academics', path: '/academics', icon: <Book /> },
-          { name: 'Robotics', path: '/robotics', icon: <Psychology /> },
-          { name: 'ICT Hub', path: '/ict-hub', icon: <Computer /> },
-          { name: 'Spiritual', path: '/spiritual', icon: <SelfImprovement /> }
-        ]
-      },
   {
-    name: 'Resources',
-    icon: <Description />,
+    name: 'Pillars',
     type: 'dropdown',
     items: [
-      { name: 'Documents', path: '/documents', icon: <Description /> },
-      { name: 'Forms & Fees', path: '/forms', icon: <Receipt /> },
-      { name: 'School Info', path: '/info', icon: <Info /> },
-      { name: 'Mission & Vision', path: '/mission-vision', icon: <School /> },
-      { name: 'Family Statement', path: '/family-statement', icon: <People /> }
+      { name: 'Academic', path: '/academic' },
+      { name: 'Sport', path: '/sport' },
+      { name: 'Cultural', path: '/cultural' },
+      { name: 'Service & Ethos', path: '/service-ethos' }
+    ]
+  },
+  {
+    name: 'Resources',
+    type: 'dropdown',
+    items: [
+      { name: 'Documents', path: '/documents' },
+      { name: 'Forms & Fees', path: '/forms' },
+      { name: 'Mission & Vision', path: '/mission-vision' }
     ]
   },
   {
     name: 'Admissions',
-    icon: <School />,
     type: 'dropdown',
     items: [
-      { name: 'Application Process', path: '/admissions', icon: <School /> },
-      { name: 'Afterschool Programs', path: '/afterschool', icon: <AccessTime /> }
+      { name: 'Application Process', path: '/admissions' }
     ]
   },
   { 
     name: 'Contact', 
     path: '/contact',
-    icon: <ContactMail />,
-    type: 'single'
-  },
-  { 
-    name: 'Donate', 
-    path: '/donate',
-    icon: <VolunteerActivism />,
     type: 'single'
   },
   {
     name: 'Admin',
-    icon: <AdminPanelSettings />,
     type: 'dropdown',
     items: [
-      { name: 'Staff Upload', path: '/admin/staff-upload', icon: <People /> },
-      { name: 'Document Upload', path: '/admin/document-upload', icon: <Description /> }
+      { name: 'Staff Upload', path: '/admin/staff-upload' },
+      { name: 'Document Upload', path: '/admin/document-upload' }
     ]
+  },
+  { 
+    name: 'SUPPORT US', 
+    path: '/donate',
+    type: 'single'
   }
 ];
 
@@ -333,27 +294,30 @@ const MobileDrawer = memo(({
               <ListItem 
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
-                  backgroundColor: currentPage === item.name ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+                  backgroundColor: item.name === 'SUPPORT US' 
+                    ? '#ffd700' 
+                    : currentPage === item.name 
+                      ? 'rgba(255, 215, 0, 0.2)' 
+                      : 'transparent',
                   cursor: 'pointer',
                   borderRadius: '12px',
                   margin: '2px 8px',
-                    transition: 'all 0.3s ease',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
-                      transform: 'translateX(4px)',
+                    backgroundColor: item.name === 'SUPPORT US' 
+                      ? '#ffed4e' 
+                      : 'rgba(255, 215, 0, 0.15)',
+                    transform: 'translateX(4px)',
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
               >
-                <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
-                  {item.icon}
-                </ListItemIcon>
                 <ListItemText 
                   primary={item.name} 
                   sx={{
                     '& .MuiTypography-root': {
-                      fontWeight: currentPage === item.name ? 600 : 400,
-                      color: '#ffffff',
+                      fontWeight: item.name === 'SUPPORT US' ? 700 : (currentPage === item.name ? 600 : 400),
+                      color: item.name === 'SUPPORT US' ? '#1a237e' : '#ffffff',
                     }
                   }}
                 />
@@ -368,9 +332,6 @@ const MobileDrawer = memo(({
                     border: '1px solid rgba(255, 215, 0, 0.3)',
                   }}
                 >
-                  <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
-                    {item.icon}
-                  </ListItemIcon>
                   <ListItemText 
                     primary={item.name} 
                     sx={{
@@ -398,9 +359,6 @@ const MobileDrawer = memo(({
                     }}
                       aria-label={`Navigate to ${subItem.name}`}
                   >
-                    <ListItemIcon sx={{ color: '#ffffff', minWidth: 40 }}>
-                      {subItem.icon}
-                    </ListItemIcon>
                     <ListItemText 
                       primary={subItem.name} 
                       sx={{
@@ -475,11 +433,28 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                           handleNavigation(item.path);
                         }
                       }}
-                    startIcon={item.icon}
                       endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
                     sx={{
-                      backgroundColor: currentPage === item.name ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-                      color: currentPage === item.name ? '#ffffff' : '#1a1a1a',
+                      backgroundColor: item.name === 'SUPPORT US' 
+                        ? '#ffd700' 
+                        : currentPage === item.name 
+                          ? 'rgba(255, 255, 255, 0.2)' 
+                          : 'transparent',
+                      color: item.name === 'SUPPORT US' 
+                        ? '#1a237e' 
+                        : currentPage === item.name 
+                          ? '#ffffff' 
+                          : '#1a1a1a',
+                      fontWeight: item.name === 'SUPPORT US' ? 700 : 600,
+                      '&:hover': {
+                        backgroundColor: item.name === 'SUPPORT US' 
+                          ? '#ffed4e' 
+                          : 'rgba(255, 255, 255, 0.15)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: item.name === 'SUPPORT US' 
+                          ? '0 8px 25px rgba(255, 215, 0, 0.6)' 
+                          : '0 8px 25px rgba(255, 215, 0, 0.4)',
+                      }
                     }}
                   >
                     {item.name}
@@ -535,9 +510,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                               },
                             }}
                           >
-                            <ListItemIcon sx={{ minWidth: 32, color: 'inherit', '& svg': { fontSize: '1.1rem' } }}>
-                              {subItem.icon}
-                            </ListItemIcon>
                             <Typography 
                               variant="body2" 
                               sx={{ 

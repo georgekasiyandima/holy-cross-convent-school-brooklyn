@@ -13,9 +13,8 @@ import {
   DialogTitle,
   Chip,
   Stack,
-  Avatar,
   Fade,
-  Slide
+  Slide,
 } from '@mui/material';
 import { 
   School, 
@@ -25,14 +24,25 @@ import {
   PlayArrow,
   Close,
   Facebook,
-  TrendingUp,
-  EmojiEvents,
-  Psychology,
   LocationOn,
   Phone,
-  Email
+  Email,
+  AutoAwesome,
+  Groups,
+  Security,
+  Favorite,
+  History,
+  Visibility,
+  CheckCircle,
+  Church,
+  Science,
+  MusicNote,
+  SportsSoccer,
+  Computer,
+  Schedule
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import ProgressiveFeaturesCollage from '../components/ProgressiveFeaturesCollage';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
 import LiveFeed from '../components/LiveFeed';
@@ -98,12 +108,13 @@ const VideoThumbnail = styled(Box)(({ theme }) => ({
 }));
 
 const HeroSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
-  color: 'white',
-  padding: theme.spacing(12, 0),
-  textAlign: 'center',
   position: 'relative',
   overflow: 'hidden',
+  minHeight: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  color: 'white',
+  textAlign: 'center',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -111,50 +122,171 @@ const HeroSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'url("/HCLOGO1.png") no-repeat center',
-    backgroundSize: 'contain',
-    opacity: 0.1,
-    animation: 'float 6s ease-in-out infinite'
+    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(57, 73, 171, 0.85) 50%, rgba(92, 107, 192, 0.85) 100%)',
+    zIndex: 1
   },
-  '@keyframes float': {
-    '0%, 100%': { transform: 'translateY(0px)' },
-    '50%': { transform: 'translateY(-20px)' }
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '10%',
+    right: '10%',
+    width: '200px',
+    height: '200px',
+    background: 'radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)',
+    borderRadius: '50%',
+    animation: 'pulse 4s ease-in-out infinite',
+    zIndex: 1
+  },
+  '@keyframes pulse': {
+    '0%, 100%': { transform: 'scale(1)', opacity: 0.3 },
+    '50%': { transform: 'scale(1.1)', opacity: 0.6 }
   }
 }));
 
-const StatCard = styled(Card)(({ theme }) => ({
-  textAlign: 'center',
-  padding: theme.spacing(3),
-  background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)',
-  border: '2px solid transparent',
-  backgroundClip: 'padding-box',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: theme.shadows[12],
-    borderColor: '#ffd700'
-  }
+const HeroBackground = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  transition: 'opacity 1s ease-in-out',
+  zIndex: 0
+});
+
+const HeroContent = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 2,
+  padding: theme.spacing(8, 0),
+  maxWidth: '1200px',
+  margin: '0 auto',
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3)
 }));
 
-const TestimonialCard = styled(Card)(({ theme }) => ({
-  padding: theme.spacing(3),
+const HeritageSection = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-  borderLeft: '4px solid #1a237e',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'scale(1.02)',
-    boxShadow: theme.shadows[8]
+  padding: theme.spacing(8, 0),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #1a237e 100%)'
   }
 }));
+
+const ProgressiveSection = styled(Box)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+  color: 'white',
+  padding: theme.spacing(8, 0),
+  position: 'relative'
+}));
+
+
+
+
+const TimelineCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+  border: '1px solid #e3f2fd',
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(3),
+  position: 'relative',
+  marginLeft: theme.spacing(4),
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    left: '-20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '12px',
+    height: '12px',
+    background: '#ffd700',
+    borderRadius: '50%',
+    border: '3px solid #1a237e'
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    left: '-14px',
+    top: '0',
+    bottom: '0',
+    width: '2px',
+    background: 'linear-gradient(180deg, #1a237e 0%, #ffd700 100%)'
+  }
+}));
+
+
+
+// Hero images that tell the school's story
+const heroImages = [
+  {
+    src: '/HCTEACHERS 34.jpg',
+    title: 'Our Dedicated Teachers',
+    description: 'Inspiring minds and shaping futures'
+  },
+  {
+    src: '/SCIENCEEXPO24.jpg',
+    title: 'Science & Innovation',
+    description: 'Exploring the wonders of STEM education'
+  },
+  {
+    src: '/ATHLECTICS AWARDS25.jpg',
+    title: 'Athletic Excellence',
+    description: 'Celebrating sports achievements and teamwork'
+  },
+  {
+    src: '/MUSIC.jpg',
+    title: 'Musical Arts',
+    description: 'Nurturing creativity through music and performance'
+  },
+  {
+    src: '/SPRITUAL.jpg',
+    title: 'Spiritual Growth',
+    description: 'Building character through faith and values'
+  },
+  {
+    src: '/COMPUTERLAB.jpg',
+    title: 'Technology Hub',
+    description: 'Preparing students for the digital future'
+  },
+  {
+    src: '/Cardinal Visit 2023 WEB 01.jpg',
+    title: 'Community & Faith',
+    description: 'Strengthening our Catholic community bonds'
+  },
+  {
+    src: '/BOOKDAY.jpg',
+    title: 'Love for Learning',
+    description: 'Cultivating a passion for knowledge and reading'
+  }
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [selectedVideo, setSelectedVideo] = useState<SchoolVideo | null>(null);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Get student videos
   const studentVideos = videoManager.getVideosByCategory('students');
+
+  // Hero image carousel effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        (prevIndex + 1) % heroImages.length
+      );
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleVideoClick = (video: SchoolVideo) => {
     setSelectedVideo(video);
@@ -170,11 +302,72 @@ const Home: React.FC = () => {
     navigate('/contact');
   };
 
+  const handleScheduleVisit = () => {
+    navigate('/contact');
+  };
+
+  const handleVirtualTour = () => {
+    navigate('/gallery');
+  };
+
+  const handleDownloadProspectus = () => {
+    // This would typically download a PDF
+    window.open('/prospectus.pdf', '_blank');
+  };
+
   // Trigger stats animation when component mounts
   useEffect(() => {
     const timer = setTimeout(() => setAnimateStats(true), 500);
     return () => clearTimeout(timer);
   }, []);
+
+  // School statistics data
+  const schoolStats = [
+    { number: '65+', label: 'Years of Excellence', icon: <History /> },
+    { number: '500+', label: 'Students', icon: <People /> },
+    { number: '98%', label: 'Pass Rate', icon: <CheckCircle /> },
+    { number: '15+', label: 'Programs', icon: <School /> }
+  ];
+
+  // Heritage timeline data
+  const heritageTimeline = [
+    { year: '1959', title: 'Foundation', description: 'Holy Cross Convent School established in Brooklyn' },
+    { year: '1980s', title: 'Expansion', description: 'New facilities and programs added' },
+    { year: '2000s', title: 'Modernization', description: 'Digital learning and technology integration' },
+    { year: '2024', title: 'Today', description: 'Continuing legacy of excellence and innovation' }
+  ];
+
+  // Progressive features data with images
+  const progressiveFeatures = [
+    { 
+      icon: <Computer />, 
+      title: 'Digital Learning', 
+      description: 'State-of-the-art technology integration in classrooms',
+      images: ['/COMPUTERLAB.jpg', '/COMPUTERLAB01.jpg', '/COMPUTERLAB02.jpg', '/COMPUTERLAB03.jpg'],
+      color: '#9c27b0'
+    },
+    { 
+      icon: <Science />, 
+      title: 'STEM Programs', 
+      description: 'Robotics, coding, and scientific exploration',
+      images: ['/SCIENCEEXPO24.jpg', '/SCIENCEEXPO02.jpg', '/SCIENCEEXPO03.jpg', '/SCIENCEEXPO04.jpg'],
+      color: '#2e7d32'
+    },
+    { 
+      icon: <MusicNote />, 
+      title: 'Arts & Culture', 
+      description: 'Music, drama, and creative expression programs',
+      images: ['/MUSIC.jpg', '/MUSIC03.jpg', '/HCCREATIVEART.jpg', '/HCCREATIVEART01.jpg'],
+      color: '#ff6b35'
+    },
+    { 
+      icon: <SportsSoccer />, 
+      title: 'Sports Excellence', 
+      description: 'Comprehensive sports and physical education',
+      images: ['/ATHLECTICS AWARDS25.jpg', '/Sports01.jpg', '/Sports02.jpg', '/ATHLECTICSAWARDS25 05.jpg'],
+      color: '#d32f2f'
+    }
+  ];
 
   return (
     <>
@@ -183,94 +376,460 @@ const Home: React.FC = () => {
         description="Holy Cross Convent School is a prestigious Catholic school in Brooklyn, Cape Town, offering quality education, character development, and spiritual growth."
         keywords="Holy Cross Convent School, Brooklyn, Cape Town, Catholic school, education, character development, spiritual growth"
       />
-      {/* Enhanced Hero Section */}
+      {/* Enhanced Hero Section with Dynamic Images */}
       <HeroSection>
+        {/* Dynamic Background Images */}
+        {heroImages.map((image, index) => (
+          <HeroBackground
+            key={index}
+            sx={{
+              backgroundImage: `url('${image.src}')`,
+              opacity: index === currentImageIndex ? 1 : 0,
+              zIndex: index === currentImageIndex ? 0 : -1
+            }}
+          />
+        ))}
+        
         <Container maxWidth="lg">
+          <HeroContent>
           <Fade in timeout={1000}>
             <Box>
+                {/* Image Story Indicator */}
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center', gap: 1 }}>
+                  {heroImages.map((_, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: index === currentImageIndex ? '#ffd700' : 'rgba(255, 255, 255, 0.3)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                  ))}
+                </Box>
+
+                {/* Current Image Story */}
+                <Fade in key={currentImageIndex} timeout={800}>
+                  <Box sx={{ mb: 4 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 1,
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                      }}
+                    >
+                      {heroImages[currentImageIndex].title}
+                    </Typography>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        opacity: 0.9,
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                      }}
+                    >
+                      {heroImages[currentImageIndex].description}
+                    </Typography>
+                  </Box>
+                </Fade>
+              {/* Catholic Heritage Badge */}
+              <Chip
+                icon={<Church />}
+                label="Catholic Education Since 1959"
+                sx={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.9)',
+                  color: '#1a237e',
+                  fontWeight: 600,
+                  mb: 3,
+                  px: 2,
+                  py: 1
+                }}
+              />
+              
               <Typography 
                 variant="h1" 
                 component="h1" 
                 gutterBottom
                 sx={{ 
                   fontWeight: 800,
-                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
                   textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-                  mb: 2
+                  mb: 2,
+                  background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
                 }}
               >
-                Welcome to Holy Cross Convent School
+                Holy Cross Convent School
               </Typography>
+              
               <Typography 
-                variant="h4" 
+                variant="h3" 
                 component="h2" 
                 gutterBottom
                 sx={{ 
-                  fontWeight: 300,
-                  mb: 4,
-                  opacity: 0.9
+                  fontWeight: 800,
+                  mb: 3,
+                  opacity: 0.98,
+                  fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
+                  fontFamily: '"Inter", "Segoe UI", "Roboto", sans-serif',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2,
+                  background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  textTransform: 'none'
                 }}
               >
-                Nurturing Excellence, Building Character, Inspiring Faith
+                Where Catholic Heritage Meets Progressive Education
               </Typography>
+              
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  mb: 4,
-                  opacity: 0.8,
-                  maxWidth: '600px',
-                  mx: 'auto'
+                  mb: 5,
+                  opacity: 0.9,
+                  maxWidth: '700px',
+                  mx: 'auto',
+                  lineHeight: 1.6,
+                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
                 }}
               >
-                Since 1959, we've been providing quality Catholic education in Brooklyn, 
-                fostering academic excellence and spiritual growth in a nurturing environment.
+                For over 65 years, we've been nurturing young minds and hearts in Brooklyn, 
+                Cape Town. Our commitment to academic excellence, spiritual growth, and 
+                character development creates leaders for tomorrow's world.
               </Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+              
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                spacing={3} 
+                justifyContent="center"
+                sx={{ mb: 4 }}
+              >
                 <Button
                   variant="contained"
                   size="large"
-                  onClick={() => navigate('/gallery')}
+                  onClick={handleScheduleVisit}
+                  startIcon={<Schedule />}
                   sx={{
                     backgroundColor: '#ffd700',
                     color: '#1a237e',
-                    px: 4,
-                    py: 1.5,
+                    px: 5,
+                    py: 2,
                     fontSize: '1.1rem',
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    borderRadius: 3,
+                    boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)',
                     '&:hover': {
                       backgroundColor: '#ffed4e',
-                      transform: 'translateY(-2px)'
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 12px 35px rgba(255, 215, 0, 0.4)'
                     },
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
-                  Explore Our School
+                  Schedule a Visit
                 </Button>
+                
                 <Button
                   variant="outlined"
                   size="large"
-                  onClick={handleContactClick}
+                  onClick={handleVirtualTour}
+                  startIcon={<Visibility />}
                   sx={{
                     borderColor: 'white',
                     color: 'white',
-                    px: 4,
-                    py: 1.5,
+                    px: 5,
+                    py: 2,
                     fontSize: '1.1rem',
                     fontWeight: 600,
+                    borderRadius: 3,
+                    borderWidth: 2,
                     '&:hover': {
                       borderColor: '#ffd700',
-                      backgroundColor: 'rgba(255, 215, 0, 0.1)'
+                      backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                      transform: 'translateY(-3px)'
                     },
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
-                  Contact Us
+                  Virtual Tour
                 </Button>
               </Stack>
+
+              {/* Quick Stats */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
+                {schoolStats.map((stat, index) => (
+                  <Box key={index} sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ffd700' }}>
+                      {stat.number}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
             </Box>
           </Fade>
+          </HeroContent>
         </Container>
       </HeroSection>
+
+      {/* Heritage Section */}
+      <HeritageSection>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<History />}
+              label="Our Heritage"
+              sx={{
+                backgroundColor: '#1a237e',
+                color: 'white',
+                fontWeight: 600,
+                mb: 3,
+                px: 2,
+                py: 1
+              }}
+            />
+            <Typography variant="h3" component="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
+              A Legacy of Excellence
+            </Typography>
+            <Typography variant="h6" sx={{ color: '#666', maxWidth: '600px', mx: 'auto' }}>
+              From our founding in 1959 to today, we've maintained our commitment to 
+              Catholic values while embracing educational innovation.
+            </Typography>
+          </Box>
+
+          {/* Then & Now: Simple Side-by-Side Comparison */}
+          <Box sx={{ mb: 6 }}>
+            <Typography 
+              variant="h4" 
+              component="h3" 
+              sx={{ 
+                color: '#1a237e', 
+                fontWeight: 700, 
+                mb: 3, 
+                textAlign: 'center' 
+              }}
+            >
+              Then & Now: Our Journey
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#666', 
+                mb: 4, 
+                textAlign: 'center',
+                maxWidth: '600px',
+                mx: 'auto'
+              }}
+            >
+              From our founding to today, we've grown while staying true to our mission
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {/* Then - Early Years */}
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                    border: '2px solid #1a237e',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 40px rgba(26, 35, 126, 0.2)',
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 300,
+                      backgroundImage: 'url("/Philomena.jpg")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.7) 0%, rgba(26, 35, 126, 0.3) 100%)',
+                      }
+                    }}
+                  />
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        color: '#1a237e', 
+                        fontWeight: 700, 
+                        mb: 2,
+                        textAlign: 'center'
+                      }}
+                    >
+                      1959 - Our Foundation
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#666', textAlign: 'center', lineHeight: 1.6 }}>
+                      Established with a vision to provide quality Catholic education 
+                      in Brooklyn, Cape Town. Our founding principles of faith, 
+                      excellence, and community service remain our cornerstone today.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+
+              {/* Now - Today */}
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+                    border: '2px solid #ffd700',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 40px rgba(255, 215, 0, 0.3)',
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 300,
+                      backgroundImage: 'url("/HCTEACHERS 34.jpg")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.7) 0%, rgba(255, 215, 0, 0.3) 100%)',
+                      }
+                    }}
+                  />
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        color: '#1a237e', 
+                        fontWeight: 700, 
+                        mb: 2,
+                        textAlign: 'center'
+                      }}
+                    >
+                      2025 - Today's Excellence
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#666', textAlign: 'center', lineHeight: 1.6 }}>
+                      A modern, progressive Catholic school that embraces technology 
+                      while maintaining our rich traditions. We continue to nurture 
+                      young minds and hearts with the same dedication and love.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+            </Box>
+            
+            <Box sx={{ mt: 4, textAlign: 'center' }}>
+              <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
+                Our Unchanging Commitment
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', fontStyle: 'italic', maxWidth: '800px', mx: 'auto' }}>
+                "While our facilities and methods have modernized, our commitment to Catholic education 
+                and student excellence remains unchanged since 1959. Every student who walks through our doors 
+                becomes part of our extended family, carrying forward our legacy of faith, learning, and service."
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
+              <Box sx={{ pr: { md: 4 } }}>
+                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
+                  Our Catholic Foundation
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
+                  Rooted in Catholic tradition, we provide a values-based education that 
+                  nurtures both academic excellence and spiritual growth. Our students 
+                  learn to serve others and make a positive impact in their communities.
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Chip icon={<Favorite />} label="Faith-Based Learning" color="primary" />
+                  <Chip icon={<Groups />} label="Community Service" color="secondary" />
+                  <Chip icon={<Security />} label="Moral Development" color="primary" />
+                </Box>
+              </Box>
+            </Box>
+            
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
+              <Box>
+                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
+                  Our Journey Through Time
+                </Typography>
+                {heritageTimeline.map((item, index) => (
+                  <TimelineCard key={index} sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <Typography variant="h6" sx={{ color: '#ffd700', fontWeight: 600 }}>
+                        {item.year}
+                      </Typography>
+                      <Typography variant="subtitle1" sx={{ color: '#1a237e', fontWeight: 600 }}>
+                        {item.title}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {item.description}
+                    </Typography>
+                  </TimelineCard>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Container>
+      </HeritageSection>
+
+      {/* Progressive Education Section */}
+      <ProgressiveSection>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<AutoAwesome />}
+              label="Progressive Education"
+              sx={{
+                backgroundColor: '#ffd700',
+                color: '#1a237e',
+                fontWeight: 600,
+                mb: 3,
+                px: 2,
+                py: 1
+              }}
+            />
+            <Typography variant="h3" component="h2" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+              Preparing Students for Tomorrow
+            </Typography>
+            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', maxWidth: '600px', mx: 'auto' }}>
+              We combine time-honored Catholic values with cutting-edge educational 
+              approaches to prepare students for success in a rapidly changing world.
+            </Typography>
+          </Box>
+
+          <ProgressiveFeaturesCollage features={progressiveFeatures} />
+        </Container>
+      </ProgressiveSection>
 
       {/* Live Feed Section */}
       <Box sx={{ py: 6, background: 'white' }}>
@@ -281,6 +840,7 @@ const Home: React.FC = () => {
 
       {/* Dynamic Statistics Section */}
       <SchoolStatistics animate={animateStats} />
+
 
       {/* Enhanced Features Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -343,52 +903,6 @@ const Home: React.FC = () => {
         </Box>
       </Container>
 
-      {/* Testimonials Section */}
-      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
-        <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, mb: 6 }}>
-            What Parents Say
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 4 }}>
-            <TestimonialCard>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: '#1a237e', mr: 2 }}>M</Avatar>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Mrs. Johnson</Typography>
-                  <Typography variant="body2" color="text.secondary">Parent of Grade 5 Student</Typography>
-                </Box>
-              </Box>
-              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                "Holy Cross has provided my child with an excellent education and strong moral foundation. The teachers are dedicated and caring."
-              </Typography>
-            </TestimonialCard>
-            <TestimonialCard>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: '#1a237e', mr: 2 }}>D</Avatar>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Mr. Davis</Typography>
-                  <Typography variant="body2" color="text.secondary">Parent of Grade 3 Student</Typography>
-                </Box>
-              </Box>
-              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                "The school's commitment to academic excellence and character development is outstanding. My child loves coming to school every day."
-              </Typography>
-            </TestimonialCard>
-            <TestimonialCard>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: '#1a237e', mr: 2 }}>S</Avatar>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Mr. Kasiyandima</Typography>
-                  <Typography variant="body2" color="text.secondary">Parent of Grade 2 Student</Typography>
-                </Box>
-              </Box>
-              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                "The spiritual guidance and academic preparation my child has received will serve them well in high school and beyond."
-              </Typography>
-            </TestimonialCard>
-          </Box>
-        </Container>
-      </Box>
 
       {/* Student Showcase Section */}
       {studentVideos.length > 0 && (

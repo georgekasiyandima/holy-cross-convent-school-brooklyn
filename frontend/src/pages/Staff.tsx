@@ -74,26 +74,59 @@ interface StaffApiResponse {
 
 const StaffCard = styled(Card)(({ theme }) => ({
   height: "100%",
-  background: "linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)",
-  border: "1px solid #e0e0e0",
-  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+  background: "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
+  border: "none",
+  borderRadius: theme.spacing(3),
+  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+  position: "relative",
+  overflow: "hidden",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "4px",
+    background: "linear-gradient(90deg, #1a237e 0%, #ffd700 100%)",
+    transform: "scaleX(0)",
+    transition: "transform 0.4s ease",
+  },
   "&:hover": {
-    transform: "translateY(-4px)",
-    boxShadow: theme.shadows[8],
+    transform: "translateY(-12px) scale(1.02)",
+    boxShadow: "0 24px 48px rgba(26, 35, 126, 0.2)",
+    "&::before": {
+      transform: "scaleX(1)",
+    },
   },
 }));
 
 const LeadershipCard = styled(Card)(({ theme }) => ({
   height: "100%",
-  background: "linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%)",
-  borderLeft: `6px solid #ffd700`,
-  boxShadow: theme.shadows[3],
-  transition: "all 0.3s ease",
-  cursor: "pointer",
+  background: "linear-gradient(145deg, #e3f2fd 0%, #ffffff 100%)",
+  border: "none",
+  borderRadius: theme.spacing(3),
+  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+  position: "relative",
+  overflow: "hidden",
+  boxShadow: "0 12px 40px rgba(26, 35, 126, 0.15)",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "6px",
+    background: "linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)",
+    transform: "scaleX(1)",
+    transition: "transform 0.4s ease",
+  },
   "&:hover": {
-    transform: "translateY(-4px)",
-    boxShadow: theme.shadows[10],
-    borderLeftColor: "#1a237e",
+    transform: "translateY(-12px) scale(1.02)",
+    boxShadow: "0 28px 56px rgba(26, 35, 126, 0.25)",
+    "&::before": {
+      transform: "scaleX(1.1)",
+    },
   },
 }));
 
@@ -474,30 +507,98 @@ const Staff: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 6 }}>
-      {/* Return to Home */}
-      <ReturnToHome />
-      
-      {/* Header */}
-      <Box sx={{ textAlign: "center", mb: 6 }}>
-        <Typography
-          variant="h2"
-          sx={{ color: "#1a237e", fontWeight: 700, mb: 2, fontSize: { xs: "2rem", md: "2.5rem" } }}
-        >
-          Our Staff
-        </Typography>
-        <Divider sx={{ bgcolor: "#ffd700", height: 4, width: 80, mx: "auto", mb: 3 }} />
-        <Typography variant="h6" sx={{ color: "#555", maxWidth: 800, mx: "auto", mb: 4 }}>
-          Meet our dedicated team of educators and support staff who are committed to nurturing
-          excellence, building character, and inspiring faith in our students.
-        </Typography>
-        <Chip
-          label="2025 Academic Year"
-          color="primary"
-          variant="outlined"
-          sx={{ fontWeight: 600, borderColor: "#ffd700" }}
-        />
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+      {/* Modern Header Section */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%)',
+        color: 'white',
+        py: 8,
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          {/* Return to Home */}
+          <ReturnToHome />
+          
+          {/* Modern Header Content */}
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                fontWeight: 800,
+                mb: 3,
+                background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              Our Staff
+            </Typography>
+            
+            <Typography
+              variant="h5"
+              sx={{
+                maxWidth: '600px',
+                mx: 'auto',
+                opacity: 0.9,
+                fontWeight: 400,
+                fontSize: { xs: '1.1rem', sm: '1.3rem' },
+                lineHeight: 1.6
+              }}
+            >
+              Meet the dedicated educators and support staff who are committed to nurturing 
+              excellence, building character, and inspiring faith in our students.
+            </Typography>
+            
+            {/* Decorative Elements */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              mt: 4,
+              gap: 2
+            }}>
+              <Box sx={{ 
+                width: 60, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
+                borderRadius: 2
+              }} />
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                background: '#ffd700',
+                borderRadius: '50%'
+              }} />
+              <Box sx={{ 
+                width: 60, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #ffed4e 0%, #ffd700 100%)',
+                borderRadius: 2
+              }} />
+            </Box>
+          </Box>
+        </Container>
       </Box>
+
+    <Container maxWidth="xl" sx={{ py: 6 }}>
 
       {/* Principal Section - Horizontal Banner Style */}
       {groupedStaff.leadership.length > 0 && (
@@ -684,6 +785,7 @@ const Staff: React.FC = () => {
         </TabPanel>
       </Box>
     </Container>
+    </Box>
   );
 };
 

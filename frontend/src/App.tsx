@@ -4,7 +4,6 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
-import PerformanceMonitor from './components/PerformanceMonitor';
 import Analytics from './components/Analytics';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
@@ -30,13 +29,21 @@ import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
 import MissionVision from './pages/MissionVision';
 import FamilyStatementPage from './pages/FamilyStatement';
-import Academics from './pages/Academics';
-import Robotics from './pages/Robotics';
-import ICTHub from './pages/ICTHub';
+// import Academics from './pages/Academics'; // File doesn't exist
+// import Robotics from './pages/Robotics'; // File doesn't exist  
+// import ICTHub from './pages/ICTHub'; // File doesn't exist
 import Calendar from './pages/Calendar';
 import CalendarManagement from './pages/CalendarManagement';
 import GalleryManagement from './pages/GalleryManagement';
 import NewsletterManagement from './pages/NewsletterManagement';
+import Academic from './pages/Academic';
+import Sport from './pages/Sport';
+import Cultural from './pages/Cultural';
+import ServiceEthos from './pages/ServiceEthos';
+import Aftercare from './pages/Aftercare';
+import Vacancies from './pages/Vacancies';
+import ApplicationProcess from './pages/ApplicationProcess';
+import Policies from './pages/Policies';
 
 // Create a theme with school colors (navy blue and gold)
 const theme = createTheme({
@@ -120,6 +127,22 @@ const NavigationWrapper: React.FC = () => {
         return 'Robotics';
       case '/ict-hub':
         return 'ICT Hub';
+      case '/academic':
+        return 'Academic';
+      case '/sport':
+        return 'Sport';
+      case '/cultural':
+        return 'Cultural';
+      case '/service-ethos':
+        return 'Service & Ethos';
+      case '/aftercare':
+        return 'Aftercare Programme';
+      case '/vacancies':
+        return 'Vacancies';
+      case '/policies':
+        return 'Policies';
+      case '/admissions':
+        return 'Application Process';
       default:
         return 'Home';
     }
@@ -159,10 +182,23 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
         <Route path="/mission-vision" element={<MissionVision />} />
         <Route path="/family-statement" element={<FamilyStatementPage />} />
-        <Route path="/academics" element={<Academics />} />
-        <Route path="/robotics" element={<Robotics />} />
-        <Route path="/ict-hub" element={<ICTHub />} />
+        {/* 
+        <Route path="/academics" element={<Academics />} /> // File doesn't exist
+        <Route path="/robotics" element={<Robotics />} /> // File doesn't exist
+        <Route path="/ict-hub" element={<ICTHub />} /> // File doesn't exist
+        */}
         <Route path="/calendar" element={<Calendar />} />
+        {/* Pillars Section */}
+        <Route path="/academic" element={<Academic />} />
+        <Route path="/sport" element={<Sport />} />
+        <Route path="/cultural" element={<Cultural />} />
+        <Route path="/service-ethos" element={<ServiceEthos />} />
+        {/* Our School Section */}
+        <Route path="/aftercare" element={<Aftercare />} />
+        <Route path="/vacancies" element={<Vacancies />} />
+        <Route path="/policies" element={<Policies />} />
+        {/* Admissions Section */}
+        <Route path="/admissions" element={<ApplicationProcess />} />
         {/* Add more routes as we create more pages */}
         <Route path="*" element={<Home />} />
       </Routes>
@@ -191,7 +227,6 @@ function App() {
       <CssBaseline />
       <HelmetProvider>
         <AuthProvider>
-          <PerformanceMonitor />
           <Analytics />
           <Router>
             <NavigationWrapper />

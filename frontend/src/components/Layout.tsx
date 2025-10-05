@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Divider, IconButton, Link } from '@mui/material';
-import BackToTop from './BackToTop';
 import { 
   Facebook, 
   Instagram,
@@ -262,8 +261,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
         </Container>
       </Paper>
       
-      {/* Back to Top and Home Buttons */}
-      <BackToTop />
+      {/* Back to Top functionality removed */}
     </Box>
   );
 };

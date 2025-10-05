@@ -13,7 +13,6 @@ import {
 import {
   School as SchoolIcon,
   People as PeopleIcon,
-  Star as StarIcon,
   Church as ChurchIcon
 } from '@mui/icons-material';
 import { boardService, BoardMember } from '../services/boardService';
@@ -45,7 +44,7 @@ const SchoolBoard: React.FC = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'EXECUTIVE':
-        return <StarIcon sx={{ color: '#1a237e', fontSize: 40 }} />;
+        return <SchoolIcon sx={{ color: '#1a237e', fontSize: 40 }} />;
       case 'REPRESENTATIVE':
         return <ChurchIcon sx={{ color: '#1a237e', fontSize: 40 }} />;
       case 'MEMBER':
@@ -154,7 +153,7 @@ const SchoolBoard: React.FC = () => {
                 gap: 1
               }}
             >
-              <StarIcon /> Executive Leadership
+              <SchoolIcon /> Executive Leadership
             </Typography>
             <Divider sx={{ mb: 4, borderColor: '#ffc107', borderWidth: 2 }} />
             
