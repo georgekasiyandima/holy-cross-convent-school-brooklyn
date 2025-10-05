@@ -37,6 +37,7 @@
     "src/routes/**/*",
     "src/services/**/*",
     "src/scripts/**/*",
-    "src/middleware/**/*"
+    "src/middleware/**/*",
+    "src/tests/**/*"
   ]
 }
