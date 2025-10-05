@@ -319,8 +319,6 @@ router.post('/documents/upload',
             data: {
               title,
               content: description || '',
-              pdfUrl: processedDoc.url,
-              isPublished: isPublished === 'true',
               authorId
             }
           });

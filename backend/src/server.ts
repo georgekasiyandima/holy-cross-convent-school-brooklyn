@@ -25,6 +25,9 @@ import uploadRoutes from './routes/upload'; // Enhanced upload service
 import simpleUploadRoutes from './routes/simpleUpload';
 import schoolRoutes from './routes/schoolInfo';
 import schoolStatsRoutes from './routes/schoolStats';
+import calendarRoutes from './routes/calendar';
+import newsletterRoutes from './routes/newsletters';
+import boardRoutes from './routes/board';
 // import analyticsRoutes from './routes/analytics'; // Commented out - route doesn't exist yet
 
 // Load environment variables
@@ -94,6 +97,16 @@ if (NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: NODE_ENV,
+    version: '1.0.0'
+  });
+});
+
 // Static file serving for uploads with CORS headers
 app.use('/uploads', (req, res, next) => {
   // Set CORS headers for static files
@@ -152,6 +165,9 @@ app.use('/api/upload', uploadRoutes); // Enhanced upload service
 app.use('/api/simple-upload', simpleUploadRoutes);
 app.use('/api/school', schoolRoutes);
 app.use('/api/school-stats', schoolStatsRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/newsletters', newsletterRoutes);
+app.use('/api/board', boardRoutes);
 // app.use('/api/analytics', analyticsRoutes); // Commented out - route doesn't exist yet
 
 // Welcome route

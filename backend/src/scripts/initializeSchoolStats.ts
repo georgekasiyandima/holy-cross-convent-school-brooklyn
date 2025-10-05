@@ -32,3 +32,4 @@ async function initializeSchoolStats() {
 // Run the initialization
 initializeSchoolStats();
 
+

@@ -1,176 +1,234 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { createError } from '../middleware/errorHandler';
-import { AuthRequest, requireEditor } from '../middleware/auth';
+import { authMiddleware, requireRole } from '../middleware/auth';
+import { NewsletterService } from '../services/newsletterService';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get all published newsletters (public)
-router.get('/', async (req, res, next) => {
+// Newsletter status enum
+enum NewsletterStatus {
+  DRAFT = 'DRAFT',
+  SCHEDULED = 'SCHEDULED',
+  SENDING = 'SENDING',
+  SENT = 'SENT',
+  FAILED = 'FAILED'
+}
+
+// Newsletter priority enum
+enum NewsletterPriority {
+  LOW = 'LOW',
+  NORMAL = 'NORMAL',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT'
+}
+
+// Get all newsletters
+router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const { status, priority, authorId, page = 1, limit = 20 } = req.query;
+    
+    const result = await NewsletterService.getNewsletters({
+      status: status as string,
+      priority: priority as string,
+      authorId: authorId as string,
+      limit: Number(limit),
+      offset: (Number(page) - 1) * Number(limit),
+    });
 
-    const [newsletters, total] = await Promise.all([
-      prisma.newsletter.findMany({
-        where: { isPublished: true },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        },
-        orderBy: { publishedAt: 'desc' },
-        skip,
-        take: Number(limit)
-      }),
-      prisma.newsletter.count({ where: { isPublished: true } })
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        newsletters,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          total,
-          pages: Math.ceil(total / Number(limit))
-        }
+    return res.json({
+      newsletters: result.newsletters,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: result.total,
+        pages: Math.ceil(result.total / Number(limit))
       }
     });
   } catch (error) {
-    next(error);
+    console.error('Error fetching newsletters:', error);
+    return res.status(500).json({ error: 'Failed to fetch newsletters' });
   }
 });
 
-// Get single newsletter (public)
-router.get('/:id', async (req, res, next) => {
+// Get single newsletter
+router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const newsletter = await prisma.newsletter.findFirst({
-      where: { 
-        id,
-        isPublished: true 
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      }
-    });
+    const newsletter = await NewsletterService.getNewsletterById(req.params.id);
 
     if (!newsletter) {
-      throw createError('Newsletter not found', 404);
+      return res.status(404).json({ error: 'Newsletter not found' });
     }
 
-    res.json({
-      success: true,
-      data: { newsletter }
-    });
+    return res.json(newsletter);
   } catch (error) {
-    next(error);
+    console.error('Error fetching newsletter:', error);
+    return res.status(500).json({ error: 'Failed to fetch newsletter' });
   }
 });
 
-// Create newsletter (admin/editor only)
-router.post('/', requireEditor, async (req: AuthRequest, res, next) => {
-  try {
-    const { title, content, summary, pdfUrl, isPublished } = req.body;
+// Create new newsletter
+router.post('/',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const {
+        title,
+        content,
+        priority = NewsletterPriority.NORMAL,
+        scheduledFor,
+        targetAudience = 'ALL', // ALL, SPECIFIC_GRADES, SPECIFIC_PARENTS
+        gradeLevels = [],
+        attachments = []
+      } = req.body;
 
-    if (!title || !content) {
-      throw createError('Title and content are required', 400);
+      const newsletter = await NewsletterService.createNewsletter({
+        title,
+        content,
+        priority,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
+        targetAudience,
+        gradeLevels,
+        attachments,
+        authorId: (req as any).user?.id || 'unknown',
+      });
+
+      return res.status(201).json(newsletter);
+    } catch (error) {
+      console.error('Error creating newsletter:', error);
+      return res.status(500).json({ error: 'Failed to create newsletter' });
+    }
+  }
+);
+
+// Update newsletter
+router.put('/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const { title, content, priority, scheduledFor, status, targetAudience, gradeLevels, attachments } = req.body;
+
+      const newsletter = await NewsletterService.updateNewsletter(req.params.id, {
+        title,
+        content,
+        priority,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
+        status,
+        targetAudience,
+        gradeLevels,
+        attachments,
+      });
+
+      return res.json(newsletter);
+    } catch (error) {
+      console.error('Error updating newsletter:', error);
+      return res.status(500).json({ error: 'Failed to update newsletter' });
+    }
+  }
+);
+
+// Send newsletter
+router.post('/:id/send',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const result = await NewsletterService.sendNewsletter(req.params.id);
+      return res.json({ message: 'Newsletter sent successfully', ...result });
+    } catch (error) {
+      console.error('Error sending newsletter:', error);
+      return res.status(500).json({ error: 'Failed to send newsletter' });
+    }
+  }
+);
+
+// Delete newsletter
+router.delete('/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      await NewsletterService.deleteNewsletter(req.params.id);
+      return res.json({ message: 'Newsletter deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting newsletter:', error);
+      return res.status(500).json({ error: 'Failed to delete newsletter' });
+    }
+  }
+);
+
+// Get newsletter statistics
+router.get('/stats/overview', async (req, res) => {
+  try {
+    const totalNewsletters = await prisma.newsletter.count();
+    const sentNewsletters = await prisma.newsletter.count({ where: { status: NewsletterStatus.SENT } });
+    const draftNewsletters = await prisma.newsletter.count({ where: { status: NewsletterStatus.DRAFT } });
+    const scheduledNewsletters = await prisma.newsletter.count({ where: { status: NewsletterStatus.SCHEDULED } });
+
+    const totalRecipients = await prisma.newsletterRecipient.count();
+    const sentRecipients = await prisma.newsletterRecipient.count({ where: { status: 'SENT' } });
+    const failedRecipients = await prisma.newsletterRecipient.count({ where: { status: 'FAILED' } });
+
+    return res.json({
+      newsletters: {
+        total: totalNewsletters,
+        sent: sentNewsletters,
+        draft: draftNewsletters,
+        scheduled: scheduledNewsletters
+      },
+      recipients: {
+        total: totalRecipients,
+        sent: sentRecipients,
+        failed: failedRecipients,
+        successRate: totalRecipients > 0 ? (sentRecipients / totalRecipients) * 100 : 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching newsletter stats:', error);
+    return res.status(500).json({ error: 'Failed to fetch newsletter statistics' });
+  }
+});
+
+// Get parent email list for targeting
+router.get('/parents/list', async (req, res) => {
+  try {
+    const { grade, active } = req.query;
+    
+    const where: any = {};
+    if (grade) {
+      where.students = {
+        some: { grade }
+      };
+    }
+    if (active !== undefined) {
+      where.isActive = active === 'true';
     }
 
-    const newsletter = await prisma.newsletter.create({
-      data: {
-        title,
-        content,
-        summary,
-        pdfUrl,
-        isPublished: isPublished || false,
-        publishedAt: isPublished ? new Date() : null,
-        authorId: req.user!.id
-      },
-      include: {
-        author: {
+    const parents = await prisma.parent.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        students: {
           select: {
-            id: true,
-            name: true
+            name: true,
+            grade: true
           }
         }
-      }
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Newsletter created successfully',
-      data: { newsletter }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Update newsletter (admin/editor only)
-router.put('/:id', requireEditor, async (req: AuthRequest, res, next) => {
-  try {
-    const { id } = req.params;
-    const { title, content, summary, pdfUrl, isPublished } = req.body;
-
-    const newsletter = await prisma.newsletter.update({
-      where: { id },
-      data: {
-        title,
-        content,
-        summary,
-        pdfUrl,
-        isPublished,
-        publishedAt: isPublished ? new Date() : null
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      }
+      orderBy: { name: 'asc' }
     });
 
-    res.json({
-      success: true,
-      message: 'Newsletter updated successfully',
-      data: { newsletter }
-    });
+    return res.json(parents);
   } catch (error) {
-    next(error);
+    console.error('Error fetching parent list:', error);
+    return res.status(500).json({ error: 'Failed to fetch parent list' });
   }
 });
 
-// Delete newsletter (admin/editor only)
-router.delete('/:id', requireEditor, async (req: AuthRequest, res, next) => {
-  try {
-    const { id } = req.params;
-
-    await prisma.newsletter.delete({
-      where: { id }
-    });
-
-    res.json({
-      success: true,
-      message: 'Newsletter deleted successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router; 
+export default router;

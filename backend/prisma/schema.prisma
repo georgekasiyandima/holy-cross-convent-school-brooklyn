@@ -31,6 +31,7 @@ model User {
   contactMessages ContactMessage[]
   policies        Policy[]
   announcements   Announcement[]
+  galleryItems    GalleryItem[]
 
   @@map("users")
 }
@@ -105,25 +106,6 @@ enum EventCategory {
   HOLIDAY
 }
 
-// Newsletter Management
-model Newsletter {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  summary     String?
-  pdfUrl      String?
-  isPublished Boolean  @default(false)
-  publishedAt DateTime?
-  sentAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  authorId String
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  @@map("newsletters")
-}
 
 // Reports Management
 model Report {
@@ -207,6 +189,7 @@ model StaffMember {
   subjects    String? // JSON array of subjects taught
   qualifications String?
   experience  String?
+  favoriteQuote String? // Favorite quote or verse
   isActive    Boolean  @default(true)
   order       Int      @default(0)
   category    StaffCategory @default(TEACHING)
@@ -219,6 +202,7 @@ model StaffMember {
 enum StaffCategory {
   LEADERSHIP
   TEACHING
+  ADMIN
   SUPPORT
 }
 
@@ -252,6 +236,131 @@ enum PolicyCategory {
   TECHNOLOGY
   HEALTH
   OTHER
+}
+
+// Gallery Management
+model GalleryItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    GalleryCategory
+  type        GalleryItemType
+  filePath    String
+  fileName    String
+  originalName String
+  fileSize    Int
+  mimeType    String
+  tags        String?  // JSON string of tags
+  isPublished Boolean  @default(true)
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  uploader    User?    @relation(fields: [uploadedBy], references: [id])
+
+  @@map("gallery_items")
+}
+
+enum GalleryCategory {
+  EVENTS
+  SPORTS
+  ACADEMIC
+  CULTURAL
+  GENERAL
+}
+
+enum GalleryItemType {
+  IMAGE
+  VIDEO
+}
+
+// Newsletter Management
+model Newsletter {
+  id            String   @id @default(cuid())
+  title         String
+  content       String
+  priority      NewsletterPriority @default(NORMAL)
+  status        NewsletterStatus   @default(DRAFT)
+  scheduledFor  DateTime?
+  sentAt        DateTime?
+  targetAudience String  @default("ALL") // ALL, SPECIFIC_GRADES, SPECIFIC_PARENTS
+  gradeLevels   String?  // JSON string of grade levels for targeting
+  attachments   String?  // JSON string of attachment URLs
+  authorId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  author      User                  @relation(fields: [authorId], references: [id])
+  recipients  NewsletterRecipient[]
+
+  @@map("newsletters")
+}
+
+model NewsletterRecipient {
+  id           String   @id @default(cuid())
+  newsletterId String
+  parentId     String
+  status       String   @default("PENDING") // PENDING, SENT, FAILED
+  sentAt       DateTime?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  parent       Parent     @relation(fields: [parentId], references: [id])
+
+  @@unique([newsletterId, parentId])
+  @@map("newsletter_recipients")
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum NewsletterPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// Parent Management
+model Parent {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  students           Student[]
+  newsletterRecipients NewsletterRecipient[]
+
+  @@map("parents")
+}
+
+model Student {
+  id       String @id @default(cuid())
+  name     String
+  grade    String
+  parentId String
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  parent Parent @relation(fields: [parentId], references: [id])
+
+  @@map("students")
 }
 
 // School Information Management
@@ -289,6 +398,26 @@ model Announcement {
   @@map("announcements")
 }
 
+// School Terms
+model Term {
+  id          String   @id @default(cuid())
+  year        Int
+  termNumber  Int
+  name        String   // e.g., "Term 1", "Term 2"
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  events      AcademicCalendar[]
+
+  @@unique([year, termNumber])
+  @@map("terms")
+}
+
 // Academic Calendar
 model AcademicCalendar {
   id          String   @id @default(cuid())
@@ -299,9 +428,18 @@ model AcademicCalendar {
   type        CalendarEventType
   isHoliday   Boolean  @default(false)
   isExam      Boolean  @default(false)
+  isPublicHoliday Boolean @default(false)
   grade       String? // Specific grade or "all"
+  category    String? // academic, spiritual, cultural, sports, community
+  location    String?
+  time        String?
+  facebookLink String?
+  termId      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Relations
+  term        Term?    @relation(fields: [termId], references: [id])
 
   @@map("academic_calendar")
 }
@@ -461,4 +599,28 @@ model MaintenanceLog {
   metadata    String? // JSON string for additional data
 
   @@map("maintenance_logs")
+}
+
+// School Board
+model BoardMember {
+  id          String          @id @default(cuid())
+  name        String
+  role        String          // e.g., "Chairperson", "Board Member", "Holy Cross Sisters Representative"
+  position    String?         // Additional position details
+  type        BoardMemberType @default(MEMBER)
+  email       String?
+  phone       String?
+  bio         String?
+  isActive    Boolean         @default(true)
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("board_members")
+}
+
+enum BoardMemberType {
+  EXECUTIVE  // Chairperson, Principal
+  REPRESENTATIVE // Holy Cross Sisters Representative
+  MEMBER     // Regular board members
 }

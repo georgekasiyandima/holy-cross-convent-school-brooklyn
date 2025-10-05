@@ -51,6 +51,7 @@ const parseSubjects = (subjects: any): string | null => {
 const groupStaffByCategory = (staff: any[]) => ({
   leadership: staff.filter(s => s.category === 'LEADERSHIP'),
   teaching: staff.filter(s => s.category === 'TEACHING'),
+  admin: staff.filter(s => s.category === 'ADMIN'),
   support: staff.filter(s => s.category === 'SUPPORT')
 });
 
@@ -351,7 +352,7 @@ router.get('/category/:category', async (req, res, next) => {
     const { category } = req.params;
     
     // Validate category
-    const validCategories = ['LEADERSHIP', 'TEACHING', 'SUPPORT'];
+    const validCategories = ['LEADERSHIP', 'TEACHING', 'ADMIN', 'SUPPORT'];
     if (!validCategories.includes(category.toUpperCase())) {
       throw createError('Invalid category', 400);
     }
