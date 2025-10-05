@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const PORT = 5000;
+const FRONTEND_URL = 'http://localhost:3000';
 
 // Basic middleware
 app.use(express.json());
@@ -19,7 +19,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
+    environment: 'production',
     version: '1.0.0'
   });
 });
@@ -140,7 +140,7 @@ app.use((req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
   console.log(`📡 Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Environment: production`);
   console.log(`Frontend URL: ${FRONTEND_URL}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
 });
