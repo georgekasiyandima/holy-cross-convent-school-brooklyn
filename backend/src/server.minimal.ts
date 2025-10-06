@@ -7,12 +7,17 @@ const FRONTEND_URL = 'http://localhost:3000';
 
 // Basic middleware
 app.use(express.json());
+
+// CORS configuration - allow all origins for now
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: '*', // Allow all origins temporarily
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: false,
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Root endpoint
 app.get('/', (req, res) => {
