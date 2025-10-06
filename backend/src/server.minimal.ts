@@ -54,7 +54,7 @@ app.get('/api/staff', (req, res) => {
             email: 'admin@holycross.co.za',
             phone: '+27 21 123 4567',
             grade: 'Grade 7',
-            subjects: ['Leadership'],
+            subjects: '["Leadership"]',
             favoriteQuote: 'Education is the most powerful weapon which you can use to change the world. - Nelson Mandela',
             imageUrl: '/api/images/principal.jpg',
             isActive: true,
@@ -72,7 +72,7 @@ app.get('/api/staff', (req, res) => {
             email: 'wilson@holycross.co.za',
             phone: '+27 21 123 4568',
             grade: 'Grade R',
-            subjects: ['Grade R'],
+            subjects: '["Grade R"]',
             favoriteQuote: 'Every child is a different kind of flower, and all together, they make this world a beautiful garden.',
             imageUrl: '/api/images/teacher1.jpg',
             isActive: true,
@@ -80,7 +80,9 @@ app.get('/api/staff', (req, res) => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }
-        ]
+        ],
+        admin: [],
+        support: []
       }
     }
   });
@@ -159,6 +161,74 @@ app.get('/api/calendar', (req, res) => {
       startDate: new Date().toISOString(),
       endDate: new Date().toISOString(),
       isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]);
+});
+
+// Calendar events endpoint
+app.get('/api/calendar/events', (req, res) => {
+  res.status(200).json([
+    {
+      id: '1',
+      title: 'School Opening Day',
+      description: 'Welcome back to school for the new academic year',
+      start: new Date().toISOString(),
+      end: new Date().toISOString(),
+      location: 'School Hall',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]);
+});
+
+// Calendar terms endpoint
+app.get('/api/calendar/terms', (req, res) => {
+  res.status(200).json([
+    {
+      id: '1',
+      name: 'Term 1',
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]);
+});
+
+// School statistics endpoint
+app.get('/api/school-stats', (req, res) => {
+  res.status(200).json([
+    {
+      id: '1',
+      title: 'Total Students',
+      value: 250,
+      description: 'Enrolled students',
+      isVisible: true,
+      order: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '2',
+      title: 'Teaching Staff',
+      value: 15,
+      description: 'Qualified educators',
+      isVisible: true,
+      order: 2,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '3',
+      title: 'Years of Excellence',
+      value: 65,
+      description: 'Since 1959',
+      isVisible: true,
+      order: 3,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
