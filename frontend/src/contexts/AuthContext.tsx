@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async (): Promise<boolean> => {
     try {
-      const response = await axios.get('http://localhost:5000/api/auth/me');
+      const response = await axios.get('https://holy-cross-convent-school-brooklyn.onrender.com/api/auth/me');
       return response.data.success;
     } catch (error) {
       return false;

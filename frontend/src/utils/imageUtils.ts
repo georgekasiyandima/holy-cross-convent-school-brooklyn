@@ -8,7 +8,7 @@ import ImageService from '../services/imageService';
 const imageService = ImageService.getInstance();
 
 // Base URL for static images
-const STATIC_IMAGE_BASE = 'http://localhost:5000/uploads/staff/';
+const STATIC_IMAGE_BASE = 'https://holy-cross-convent-school-brooklyn.onrender.com/uploads/staff/';
 
 /**
  * Get image URL for staff member

@@ -42,7 +42,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('https://holy-cross-convent-school-brooklyn.onrender.com/api/auth/login', {
         email: formData.email,
         password: formData.password
       });

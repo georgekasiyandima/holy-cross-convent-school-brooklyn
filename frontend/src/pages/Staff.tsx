@@ -403,7 +403,7 @@ const Staff: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get<StaffApiResponse>("http://localhost:5000/api/staff");
+        const response = await axios.get<StaffApiResponse>("https://holy-cross-convent-school-brooklyn.onrender.com/api/staff");
 
         if (response.data.success) {
           const staffData = response.data.data.groupedStaff ?? {
