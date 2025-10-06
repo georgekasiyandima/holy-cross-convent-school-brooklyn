@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://holy-cross-convent-school-brooklyn.onrender.com/api';
+// Updated to use deployed backend
 
 export interface BoardMember {
   id: string;
