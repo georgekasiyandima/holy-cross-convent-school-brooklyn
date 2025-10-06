@@ -5,6 +5,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import path from 'path';
+import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 
@@ -12,7 +13,39 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
+
+// Fix database file permissions before creating Prisma client
+const dbPath = path.join(__dirname, '../prisma/dev.db');
+const dbDir = path.dirname(dbPath);
+
+// Ensure database directory exists and has proper permissions
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+// Check if database file exists and is readable
+if (fs.existsSync(dbPath)) {
+  try {
+    // Try to set proper permissions
+    fs.chmodSync(dbPath, 0o666);
+    console.log('Database file permissions set successfully');
+  } catch (error) {
+    console.log('Could not set database permissions:', error);
+  }
+} else {
+  console.log('Database file not found at:', dbPath);
+  console.log('Available files in prisma directory:');
+  try {
+    const files = fs.readdirSync(path.join(__dirname, '../prisma'));
+    console.log(files);
+  } catch (error) {
+    console.log('Could not read prisma directory:', error);
+  }
+}
+
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 // Middleware
 app.use(helmet());
@@ -74,6 +107,9 @@ app.get('/api/health', (req, res) => {
 app.get('/api/staff', async (req, res) => {
   try {
     console.log('Fetching staff from database...');
+    console.log('Database path:', dbPath);
+    console.log('Database exists:', fs.existsSync(dbPath));
+    
     const staff = await prisma.staffMember.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' }
@@ -100,7 +136,9 @@ app.get('/api/staff', async (req, res) => {
     console.error('Error fetching staff:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      databasePath: dbPath,
+      databaseExists: fs.existsSync(dbPath)
     });
   }
 });
@@ -331,6 +369,8 @@ const server = app.listen(PORT, () => {
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'production'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Database path: ${dbPath}`);
+  console.log(`Database exists: ${fs.existsSync(dbPath)}`);
 });
 
 export { app, server };
