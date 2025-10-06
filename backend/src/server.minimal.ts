@@ -14,6 +14,16 @@ app.use(cors({
   credentials: true,
 }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Holy Cross Convent School Backend API',
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -128,11 +138,18 @@ app.get('/api/calendar', (req, res) => {
   });
 });
 
+// Debug middleware - log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 // Error handling middleware
 app.use((req, res) => {
+  console.log(`404 - Route not found: ${req.method} ${req.path}`);
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: `Route not found: ${req.method} ${req.path}`
   });
 });
 
