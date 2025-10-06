@@ -73,10 +73,13 @@ app.get('/api/health', (req, res) => {
  */
 app.get('/api/staff', async (req, res) => {
   try {
+    console.log('Fetching staff from database...');
     const staff = await prisma.staffMember.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' }
     });
+
+    console.log(`Found ${staff.length} staff members`);
 
     // Group staff by category
     const groupedStaff = {
@@ -95,7 +98,10 @@ app.get('/api/staff', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching staff:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -106,14 +112,20 @@ app.get('/api/staff', async (req, res) => {
  */
 app.get('/api/board', async (req, res) => {
   try {
+    console.log('Fetching board members from database...');
     const boardMembers = await prisma.boardMember.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' }
     });
+    
+    console.log(`Found ${boardMembers.length} board members`);
     res.status(200).json(boardMembers);
   } catch (error) {
     console.error('Error fetching board members:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -124,15 +136,21 @@ app.get('/api/board', async (req, res) => {
  */
 app.get('/api/news', async (req, res) => {
   try {
+    console.log('Fetching news from database...');
     const news = await prisma.newsArticle.findMany({
       where: { isPublished: true },
       orderBy: { publishedAt: 'desc' },
       take: 10
     });
+    
+    console.log(`Found ${news.length} news articles`);
     res.status(200).json(news);
   } catch (error) {
     console.error('Error fetching news:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -143,15 +161,21 @@ app.get('/api/news', async (req, res) => {
  */
 app.get('/api/events', async (req, res) => {
   try {
+    console.log('Fetching events from database...');
     const events = await prisma.event.findMany({
       where: { isPublished: true },
       orderBy: { startDate: 'asc' },
       take: 20
     });
+    
+    console.log(`Found ${events.length} events`);
     res.status(200).json(events);
   } catch (error) {
     console.error('Error fetching events:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -162,6 +186,7 @@ app.get('/api/events', async (req, res) => {
  */
 app.get('/api/calendar/events', async (req, res) => {
   try {
+    console.log('Fetching calendar events from database...');
     const events = await prisma.academicCalendar.findMany({
       where: { 
         startDate: {
@@ -170,25 +195,36 @@ app.get('/api/calendar/events', async (req, res) => {
       },
       orderBy: { startDate: 'asc' }
     });
+    
+    console.log(`Found ${events.length} calendar events`);
     res.status(200).json(events);
   } catch (error) {
     console.error('Error fetching calendar events:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
 app.get('/api/calendar/terms', async (req, res) => {
   try {
+    console.log('Fetching calendar terms from database...');
     const terms = await prisma.academicCalendar.findMany({
       where: { 
         type: 'TERM_START'
       },
       orderBy: { startDate: 'asc' }
     });
+    
+    console.log(`Found ${terms.length} calendar terms`);
     res.status(200).json(terms);
   } catch (error) {
     console.error('Error fetching calendar terms:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -199,6 +235,8 @@ app.get('/api/calendar/terms', async (req, res) => {
  */
 app.get('/api/school-stats', async (req, res) => {
   try {
+    console.log('Fetching school statistics from database...');
+    
     // Get basic stats from database
     const staffCount = await prisma.staffMember.count({
       where: { isActive: true }
@@ -212,7 +250,9 @@ app.get('/api/school-stats', async (req, res) => {
       where: { isPublished: true }
     });
 
-    // Return mock stats for now (you can create a SchoolStats model later)
+    console.log(`Staff: ${staffCount}, News: ${newsCount}, Events: ${eventsCount}`);
+
+    // Return stats with real data
     const stats = [
       {
         id: '1',
@@ -249,7 +289,10 @@ app.get('/api/school-stats', async (req, res) => {
     res.status(200).json(stats);
   } catch (error) {
     console.error('Error fetching school statistics:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
