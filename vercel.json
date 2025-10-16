@@ -18,5 +18,15 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "public": true,
+  "github": {
+    "enabled": true,
+    "autoAlias": false
+  },
+  "functions": {
+    "frontend/build/**/*.js": {
+      "maxDuration": 30
+    }
+  }
 }

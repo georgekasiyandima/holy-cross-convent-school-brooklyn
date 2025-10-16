@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from './apiConfig';
 import { 
   staticDocuments, 
   getDocumentsByType, 
@@ -52,10 +53,10 @@ export interface DocumentResponse {
 //---------------------------------------------------------
 // API CONFIGURATION
 //---------------------------------------------------------
-const API_BASE_URL = 'https://holy-cross-convent-school-brooklyn.onrender.com';
+const BASE = API_BASE_URL;
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: BASE,
   timeout: 30000, // 30 seconds for file uploads
   headers: {
     'Content-Type': 'application/json',

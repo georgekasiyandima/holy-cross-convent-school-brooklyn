@@ -1,6 +1,7 @@
 import { SchoolStatsDisplay } from '../types/schoolStats';
+import { API_BASE_URL_WITH_PREFIX } from './apiConfig';
 
-const API_BASE_URL = 'https://holy-cross-convent-school-brooklyn.onrender.com/api';
+const API_BASE_URL = API_BASE_URL_WITH_PREFIX;
 
 export interface SchoolStatistic {
   id: string;

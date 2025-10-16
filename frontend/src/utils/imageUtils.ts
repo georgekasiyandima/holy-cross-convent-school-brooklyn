@@ -4,11 +4,12 @@
  */
 
 import ImageService from '../services/imageService';
+import { API_BASE_URL } from '../services/apiConfig';
 
 const imageService = ImageService.getInstance();
 
-// Base URL for static images
-const STATIC_IMAGE_BASE = 'https://holy-cross-convent-school-brooklyn.onrender.com/uploads/staff/';
+// Base URL for static images (env-aware)
+const STATIC_IMAGE_BASE = `${API_BASE_URL.replace(/\/$/, '')}/uploads/staff/`;
 
 /**
  * Get image URL for staff member

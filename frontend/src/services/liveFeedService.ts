@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from './apiConfig';
 
-const API_BASE_URL = 'https://holy-cross-convent-school-brooklyn.onrender.com';
+const BASE = API_BASE_URL;
 
 export interface LiveFeedItem {
   id: string;
@@ -140,7 +141,7 @@ class LiveFeedService {
    */
   async getUpcomingEvents(limit: number = 5): Promise<EventItem[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/events`, {
+      const response = await axios.get(`${BASE}/api/events`, {
         params: {
           upcoming: 'true',
           limit
@@ -162,7 +163,7 @@ class LiveFeedService {
    */
   async getLatestNews(limit: number = 5): Promise<NewsItem[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/news`, {
+      const response = await axios.get(`${BASE}/api/news`, {
         params: {
           limit
         }
@@ -183,7 +184,7 @@ class LiveFeedService {
    */
   async getEvents(page: number = 1, limit: number = 10): Promise<EventItem[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/events`, {
+      const response = await axios.get(`${BASE}/api/events`, {
         params: {
           page,
           limit
@@ -205,7 +206,7 @@ class LiveFeedService {
    */
   async getNews(page: number = 1, limit: number = 10): Promise<NewsItem[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/news`, {
+      const response = await axios.get(`${BASE}/api/news`, {
         params: {
           page,
           limit
@@ -227,7 +228,7 @@ class LiveFeedService {
    */
   async getEventById(id: string): Promise<EventItem> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/events/${id}`);
+      const response = await axios.get(`${BASE}/api/events/${id}`);
       
       if (response.data.success) {
         return response.data.data.event;
@@ -244,7 +245,7 @@ class LiveFeedService {
    */
   async getNewsById(id: string): Promise<NewsItem> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/news/${id}`);
+      const response = await axios.get(`${BASE}/api/news/${id}`);
       
       if (response.data.success) {
         return response.data.data.article;
@@ -262,10 +263,10 @@ class LiveFeedService {
   async searchLiveFeed(query: string, page: number = 1, limit: number = 20): Promise<LiveFeedItem[]> {
     try {
       const [eventsResponse, newsResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/events`, {
+        axios.get(`${BASE}/api/events`, {
           params: { search: query, page, limit }
         }),
-        axios.get(`${API_BASE_URL}/api/news`, {
+        axios.get(`${BASE}/api/news`, {
           params: { search: query, page, limit }
         })
       ]);

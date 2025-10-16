@@ -48,7 +48,10 @@ const prisma = new PrismaClient({
 });
 
 // Middleware
-app.use(helmet());
+// Allow cross-origin resource embedding for static assets (images)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 app.use(compression());
 app.use(morgan('combined'));
 

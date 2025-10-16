@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from './apiConfig';
 
-const API_BASE_URL = 'https://holy-cross-convent-school-brooklyn.onrender.com';
+const BASE = API_BASE_URL;
 
 export interface CalendarEvent {
   id: string;
@@ -78,7 +79,7 @@ class EnhancedCalendarService {
   // Get all terms
   async getTerms(year?: number): Promise<Term[]> {
     try {
-      const url = year ? `${API_BASE_URL}/api/calendar/terms?year=${year}` : `${API_BASE_URL}/api/calendar/terms`;
+      const url = year ? `${BASE}/api/calendar/terms?year=${year}` : `${BASE}/api/calendar/terms`;
       const response = await axios.get(url);
       return response.data;
     } catch (error) {
@@ -90,7 +91,7 @@ class EnhancedCalendarService {
   // Get active term
   async getActiveTerm(): Promise<Term | null> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/calendar/terms/active`);
+      const response = await axios.get(`${BASE}/api/calendar/terms/active`);
       return response.data;
     } catch (error) {
       console.error('Error fetching active term:', error);
@@ -108,7 +109,7 @@ class EnhancedCalendarService {
         }
       });
 
-      const url = `${API_BASE_URL}/api/calendar/events${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${BASE}/api/calendar/events${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await axios.get(url);
       return response.data;
     } catch (error) {
@@ -120,7 +121,7 @@ class EnhancedCalendarService {
   // Get upcoming events
   async getUpcomingEvents(limit: number = 10): Promise<CalendarEvent[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/calendar/events/upcoming?limit=${limit}`);
+      const response = await axios.get(`${BASE}/api/calendar/events/upcoming?limit=${limit}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching upcoming events:', error);
@@ -131,7 +132,7 @@ class EnhancedCalendarService {
   // Get events by date range
   async getEventsByDateRange(startDate: string, endDate: string): Promise<CalendarEvent[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`);
+      const response = await axios.get(`${BASE}/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching events by date range:', error);
@@ -162,7 +163,7 @@ class EnhancedCalendarService {
   // Create a new event
   async createEvent(eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/calendar/events`, eventData, {
+      const response = await axios.post(`${BASE}/api/calendar/events`, eventData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -177,7 +178,7 @@ class EnhancedCalendarService {
   // Update an event
   async updateEvent(id: string, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/calendar/events/${id}`, eventData, {
+      const response = await axios.put(`${BASE}/api/calendar/events/${id}`, eventData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -192,7 +193,7 @@ class EnhancedCalendarService {
   // Delete an event
   async deleteEvent(id: string): Promise<void> {
     try {
-      await axios.delete(`${API_BASE_URL}/api/calendar/events/${id}`, {
+      await axios.delete(`${BASE}/api/calendar/events/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -206,7 +207,7 @@ class EnhancedCalendarService {
   // Create a new term
   async createTerm(termData: Partial<Term>): Promise<Term> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/calendar/terms`, termData, {
+      const response = await axios.post(`${BASE}/api/calendar/terms`, termData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -221,7 +222,7 @@ class EnhancedCalendarService {
   // Update a term
   async updateTerm(id: string, termData: Partial<Term>): Promise<Term> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/calendar/terms/${id}`, termData, {
+      const response = await axios.put(`${BASE}/api/calendar/terms/${id}`, termData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
@@ -236,7 +237,7 @@ class EnhancedCalendarService {
   // Activate a term
   async activateTerm(id: string): Promise<Term> {
     try {
-      const response = await axios.patch(`${API_BASE_URL}/api/calendar/terms/${id}/activate`, {}, {
+      const response = await axios.patch(`${BASE}/api/calendar/terms/${id}/activate`, {}, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }

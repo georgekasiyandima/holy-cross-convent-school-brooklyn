@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL_WITH_PREFIX } from './apiConfig';
 
-const API_URL = 'https://holy-cross-convent-school-brooklyn.onrender.com/api';
-// Updated to use deployed backend
+const API_URL = API_BASE_URL_WITH_PREFIX;
 
 export interface BoardMember {
   id: string;

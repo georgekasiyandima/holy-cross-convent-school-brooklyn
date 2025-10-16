@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Send, Phone, Email, LocationOn, School, CheckCircle, Error } from '@mui/icons-material';
+import ReturnToHome from './ReturnToHome';
 
 // TypeScript interfaces for type safety
 interface ContactFormData {
@@ -323,60 +324,99 @@ const ContactFormComponent: React.FC = () => {
   }, [formData, validateField]);
 
   return (
-    <Box sx={{ py: 4 }} role="main" aria-label="Contact form">
-      {/* Enhanced Header */}
-      <Fade in timeout={500}>
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              color: '#1a237e', 
-              fontWeight: 700, 
-              mb: 2, 
-              fontSize: { xs: '2rem', md: '2.5rem' } 
-            }}
-          >
-            Get in Touch
-          </Typography>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              color: '#555', 
-              maxWidth: 800, 
-              mx: 'auto', 
-              mb: 4 
-            }}
-          >
-            We'd love to hear from you! Whether you have questions about enrollment, want to schedule a visit, 
-            or need information about our programs, our team is here to help.
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <Chip 
-              label="Quick Response" 
-              color="primary" 
-              variant="outlined"
-              sx={{ borderColor: '#ffca28', color: '#1a237e' }}
-            />
-            <Chip 
-              label="Professional Staff" 
-              color="primary" 
-              variant="outlined"
-              sx={{ borderColor: '#ffca28', color: '#1a237e' }}
-            />
-            <Chip 
-              label="24/7 Support" 
-              color="primary" 
-              variant="outlined"
-              sx={{ borderColor: '#ffca28', color: '#1a237e' }}
-            />
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }} role="main" aria-label="Contact form">
+      {/* Hero section matching Staff page style */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%)',
+        color: 'white',
+        py: 8,
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+
+        <Box sx={{ position: 'relative', zIndex: 1, maxWidth: '1200px', mx: 'auto', px: 2 }}>
+          <ReturnToHome />
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                fontWeight: 800,
+                mb: 3,
+                background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              Contact Us
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{
+                maxWidth: '700px',
+                mx: 'auto',
+                opacity: 0.9,
+                fontWeight: 400,
+                fontSize: { xs: '1.1rem', sm: '1.3rem' },
+                lineHeight: 1.6
+              }}
+            >
+              We'd love to hear from you. For admissions, general enquiries or to schedule a visit, our team is ready to help.
+            </Typography>
+            {/* Decorative Elements */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              mt: 4,
+              gap: 2
+            }}>
+              <Box sx={{ 
+                width: 60, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
+                borderRadius: 2
+              }} />
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                background: '#ffd700',
+                borderRadius: '50%'
+              }} />
+              <Box sx={{ 
+                width: 60, 
+                height: 4, 
+                background: 'linear-gradient(90deg, #ffed4e 0%, #ffd700 100%)',
+                borderRadius: 2
+              }} />
+            </Box>
           </Box>
         </Box>
-      </Fade>
-      
+      </Box>
+
       <Box sx={{ 
         display: 'grid', 
         gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' },
-        gap: 4 
+        gap: 4,
+        maxWidth: '1200px',
+        mx: 'auto',
+        px: 2,
+        py: 6
       }}>
         {/* Contact Information */}
         <Slide direction="right" in timeout={600}>

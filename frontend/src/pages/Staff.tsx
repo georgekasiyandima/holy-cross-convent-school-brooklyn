@@ -22,6 +22,7 @@ import {
   Phone,
 } from "@mui/icons-material";
 import axios from "axios";
+import { API_BASE_URL_WITH_PREFIX } from "../services/apiConfig";
 import { getStaffImageUrl, preloadStaffImages } from "../utils/imageUtils";
 import { StaffAvatar } from "../components/OptimizedImage";
 
@@ -403,15 +404,44 @@ const Staff: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get<StaffApiResponse>("https://holy-cross-convent-school-brooklyn.onrender.com/api/staff");
+        const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`);
 
-        if (response.data.success) {
-          const staffData = response.data.data.groupedStaff ?? {
-            leadership: [],
-            teaching: [],
-            admin: [],
-            support: [],
+        // Support both shapes:
+        // 1) { success: true, data: { groupedStaff } }
+        // 2) [array of StaffMember]
+        let staffData: GroupedStaff = {
+          leadership: [],
+          teaching: [],
+          admin: [],
+          support: [],
+        };
+
+        const body = response.data as any;
+        if (Array.isArray(body)) {
+          // shape 2: array of staff -> group by category
+          const allStaff = body as StaffMember[];
+          staffData = {
+            leadership: allStaff.filter(m => m.category === 'LEADERSHIP'),
+            teaching: allStaff.filter(m => m.category === 'TEACHING'),
+            admin: allStaff.filter(m => m.category === 'ADMIN'),
+            support: allStaff.filter(m => m.category === 'SUPPORT'),
           };
+        } else if (body && typeof body === 'object') {
+          const maybeSuccess = (body as any).success;
+          if (maybeSuccess && (body as any).data?.groupedStaff) {
+            staffData = (body as any).data.groupedStaff as GroupedStaff;
+          } else if ((body as any).groupedStaff) {
+            staffData = (body as any).groupedStaff as GroupedStaff;
+          } else if ((body as any).data && Array.isArray((body as any).data)) {
+            const allStaff = (body as any).data as StaffMember[];
+            staffData = {
+              leadership: allStaff.filter(m => m.category === 'LEADERSHIP'),
+              teaching: allStaff.filter(m => m.category === 'TEACHING'),
+              admin: allStaff.filter(m => m.category === 'ADMIN'),
+              support: allStaff.filter(m => m.category === 'SUPPORT'),
+            };
+          }
+        }
           
           setGroupedStaff(staffData);
           
@@ -430,9 +460,6 @@ const Staff: React.FC = () => {
           if (imageUrls.length > 0) {
             preloadStaffImages(imageUrls).catch(console.warn);
           }
-        } else {
-          throw new Error("Failed to fetch staff data");
-        }
       } catch (err) {
         const message = axios.isAxiosError(err) ? err.message : "Unknown error";
         console.error("Failed to fetch staff:", err);
