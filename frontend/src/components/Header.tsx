@@ -49,7 +49,7 @@ const schoolLogo = '/HCLOGO1.png';
 // Modern styled components with improved design
 const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }) => ({
   background: scrolled 
-    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.95) 0%, rgba(57, 73, 171, 0.95) 50%, rgba(92, 107, 192, 0.95) 100%)'
+    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.92) 0%, rgba(57, 73, 171, 0.92) 50%, rgba(92, 107, 192, 0.92) 100%)'
     : 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
   boxShadow: scrolled ? '0 4px 20px rgba(26, 35, 126, 0.4)' : '0 8px 32px rgba(26, 35, 126, 0.3)',
   position: 'sticky',
@@ -57,7 +57,7 @@ const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }
   zIndex: theme.zIndex.drawer + 1,
   backdropFilter: 'blur(20px)',
   borderBottom: scrolled ? '2px solid #ffd700' : '3px solid #ffd700',
-  transition: 'all 0.3s ease-in-out',
+  transition: 'all 0.4s ease-in-out',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -66,7 +66,7 @@ const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }
     right: 0,
     height: scrolled ? '1px' : '2px',
     background: 'linear-gradient(90deg, transparent 0%, #ffd700 25%, #d32f2f 50%, #ffd700 75%, transparent 100%)',
-    transition: 'height 0.3s ease-in-out',
+    transition: 'height 0.4s ease-in-out',
   },
   '&::after': {
     content: '""',
@@ -409,9 +409,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
     const handleScroll = () => {
       const isScrolled = window.scrollY > 50;
       setScrolled(isScrolled);
+      console.log('Scroll Y:', window.scrollY, 'Scrolled:', isScrolled);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    // Set initial scroll state
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
