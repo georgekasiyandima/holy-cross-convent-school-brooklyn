@@ -52,6 +52,8 @@ import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
 import LiveFeed from '../components/LiveFeed';
 import SchoolStatistics from '../components/SchoolStatistics';
+import FloatingSocialIcons from '../components/FloatingSocialIcons';
+import BackToTop from '../components/BackToTop';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -497,7 +499,18 @@ const Home: React.FC = () => {
                   background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  animation: 'fadeInUp 1.5s ease-out forwards',
+                  '@keyframes fadeInUp': {
+                    '0%': {
+                      opacity: 0,
+                      transform: 'translateY(30px)'
+                    },
+                    '100%': {
+                      opacity: 1,
+                      transform: 'translateY(0)'
+                    }
+                  }
                 }}
               >
                 Holy Cross Convent School
@@ -1386,6 +1399,12 @@ const Home: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Floating Social Icons */}
+      <FloatingSocialIcons />
+      
+      {/* Back to Top Button */}
+      <BackToTop />
     </>
   );
 };

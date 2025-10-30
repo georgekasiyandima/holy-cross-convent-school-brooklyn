@@ -5,7 +5,6 @@ import {
   Box,
   Card,
   CardContent,
-  GridLegacy as Grid,
   Paper,
   useTheme,
   useMediaQuery,
@@ -45,6 +44,14 @@ const MissionVision: React.FC = () => {
           >
             Our Mission & Vision
           </Typography>
+          <Box sx={{ 
+            width: 80, 
+            height: 4, 
+            background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+            mx: 'auto',
+            mb: 3,
+            borderRadius: 2
+          }} />
           <Typography 
             variant="h6" 
             color="text.secondary" 
@@ -66,14 +73,26 @@ const MissionVision: React.FC = () => {
             p: 4, 
             mb: 4, 
             background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-            borderRadius: 3
+            borderRadius: 3,
+            border: '2px solid #d32f2f',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+              borderRadius: '12px 12px 0 0',
+            }
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <Visibility 
               sx={{ 
                 fontSize: '2.5rem', 
-                color: '#1976d2', 
+                color: '#d32f2f', 
                 mr: 2 
               }} 
             />
@@ -146,8 +165,8 @@ const MissionVision: React.FC = () => {
             </Typography>
           </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Card sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
@@ -158,9 +177,9 @@ const MissionVision: React.FC = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Card sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
@@ -171,9 +190,9 @@ const MissionVision: React.FC = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Card sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
@@ -184,9 +203,9 @@ const MissionVision: React.FC = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Card sx={{ height: '100%', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
@@ -197,8 +216,8 @@ const MissionVision: React.FC = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
       </Container>
     </>
@@ -206,6 +225,12 @@ const MissionVision: React.FC = () => {
 };
 
 export default MissionVision;
+
+
+
+
+
+
 
 
 

@@ -32,7 +32,8 @@ import {
   Settings,
   Home,
   PhotoLibrary,
-  Email
+  Email,
+  Assignment
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -88,6 +89,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           icon: <Dashboard />,
           path: '/admin',
           description: 'Overview and analytics'
+        },
+        {
+          text: 'Application Management',
+          icon: <Assignment />,
+          path: '/admin/applications',
+          description: 'Review student applications'
         },
         {
           text: 'Calendar Management',

@@ -13,6 +13,7 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String
   name      String?
   role      String   @default("VIEWER") // ADMIN, EDITOR, VIEWER
   isActive  Boolean  @default(true)
@@ -105,4 +106,186 @@ model AcademicCalendar {
   updatedAt   DateTime @updatedAt
 
   @@map("academic_calendar")
+}
+
+// Gallery and Albums
+model Album {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  albumType    String       @default("GENERAL") // GENERAL, CLASS
+  classGrade   String?      // Only for CLASS albums, e.g., "Grade 1"
+  coverImageId String?      @unique
+  isPublished  Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  items        GalleryItem[]
+  coverImage   GalleryItem? @relation("AlbumCoverImage", fields: [coverImageId], references: [id])
+
+  @@map("albums")
+}
+
+model GalleryItem {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  category     String
+  type         String   // IMAGE | VIDEO
+  filePath     String
+  fileName     String
+  originalName String
+  fileSize     Int
+  mimeType     String
+  tags         String?
+  isPublished  Boolean  @default(true)
+  uploadedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Album relation
+  albumId      String?
+  album        Album?   @relation(fields: [albumId], references: [id])
+
+  // Reverse relation for coverImage
+  coverOfAlbum Album?   @relation("AlbumCoverImage")
+
+  @@map("gallery_items")
+}
+
+model Application {
+  id              Int      @id @default(autoincrement())
+  
+  // Learner Information
+  surname         String
+  christianName   String
+  dateOfBirth     DateTime
+  placeOfBirth    String
+  gradeApplying   String
+  year            String
+  lastGradePassed String?
+  hasRepeated     Boolean  @default(false)
+  repeatedGrade   String?
+  
+  // Mother's Information
+  motherFullName     String
+  motherAddress      String
+  motherHomePhone    String?
+  motherWorkPhone    String?
+  motherCellPhone    String
+  
+  // Father's Information
+  fatherFullName     String
+  fatherAddress      String
+  fatherHomePhone    String?
+  fatherWorkPhone    String?
+  fatherCellPhone    String
+  
+  // Responsible Party (if not parents)
+  responsiblePartyName         String?
+  responsiblePartyAddress      String?
+  responsiblePartyRelationship String?
+  responsiblePartyHomePhone    String?
+  responsiblePartyWorkPhone    String?
+  responsiblePartyCellPhone    String?
+  
+  // Learner Address (if different from parents)
+  learnerAddress String?
+  
+  // Religious Information
+  religiousDenomination String?
+  isBaptised           Boolean @default(false)
+  parishChurch         String?
+  refugeeStatus        Boolean @default(false)
+  homeLanguage         String?
+  
+  // Family Information
+  numberOfChildren     String?
+  childrenAges         String?
+  siblingsAtHolyCross  Boolean @default(false)
+  siblingName          String?
+  siblingGrade         String?
+  
+  // Employment Details
+  motherOccupation         String?
+  motherPlaceOfEmployment  String?
+  motherWorkTel            String?
+  motherWorkCell           String?
+  motherEmail              String?
+  
+  fatherOccupation         String?
+  fatherPlaceOfEmployment  String?
+  fatherWorkTel            String?
+  fatherWorkCell           String?
+  fatherEmail              String?
+  
+  responsiblePartyOccupation         String?
+  responsiblePartyPlaceOfEmployment  String?
+  responsiblePartyWorkTel            String?
+  responsiblePartyWorkCell           String?
+  responsiblePartyEmail              String?
+  
+  selfEmployedDetails String?
+  maritalStatus       String?
+  
+  // Current School Information
+  currentSchool         String?
+  currentSchoolAddress  String?
+  currentSchoolTel      String?
+  currentSchoolContact  String?
+  
+  // Payment Method
+  paymentMethod String?
+  
+  // Application Status
+  status String @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED, ENROLLED
+  notes  String?
+  
+  // Timestamps
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Document references
+  documents ApplicationDocument[]
+
+  @@map("applications")
+}
+
+model ApplicationDocument {
+  id            Int      @id @default(autoincrement())
+  applicationId Int
+  fileName      String
+  originalName  String
+  filePath      String
+  fileType      String
+  fileSize      Int
+  documentType  String   // BIRTH_CERTIFICATE, BAPTISM_CERTIFICATE, SCHOOL_REPORT, ID_COPY, etc.
+  uploadedAt    DateTime @default(now())
+  
+  // Relations
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_documents")
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  type        String?
+  tags        String?  // JSON string for tags array
+  isPublished Boolean  @default(false)
+  filePath    String?
+  fileSize    Int?
+  mimeType    String?
+  fileName    String?
+  fileUrl     String?
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("documents")
 }

@@ -7,7 +7,6 @@ import {
   CircularProgress,
   Paper,
   Button,
-  Grid,
   Card,
   CardContent,
   CardActions,
@@ -309,9 +308,9 @@ const SchoolDocuments: React.FC = () => {
         </Box>
 
         {/* Documents Grid */}
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {filteredDocuments.map((document) => (
-            <Grid key={document.id} item xs={12} sm={6} md={4} {...({ item: true } as any)}>
+            <Box key={document.id} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 16px)' } }}>
               <Card 
                 sx={{ 
                   height: '100%',
@@ -371,9 +370,9 @@ const SchoolDocuments: React.FC = () => {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         {filteredDocuments.length === 0 && (
           <Box sx={{ textAlign: 'center', py: 4 }}>

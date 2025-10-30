@@ -60,11 +60,12 @@ enum GalleryCategory {
 // Get all gallery items
 router.get('/', async (req, res) => {
   try {
-    const { category, type, page = 1, limit = 20 } = req.query;
+    const { category, type, albumId, page = 1, limit = 20 } = req.query;
     
     const result = await GalleryService.getGalleryItems({
       category: category as string,
       type: type as string,
+      albumId: albumId as string,
       limit: Number(limit),
       offset: (Number(page) - 1) * Number(limit),
     });
@@ -111,7 +112,7 @@ router.post('/upload',
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const { title, description, category, tags } = req.body;
+      const { title, description, category, tags, albumId } = req.body;
       
       // Determine file type
       const fileExtension = path.extname(req.file.originalname).toLowerCase();
@@ -129,6 +130,7 @@ router.post('/upload',
         mimeType: req.file.mimetype,
         tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
         uploadedBy: (req as any).user?.id,
+        ...(albumId ? { albumId } : {}),
       });
 
       return res.status(201).json(item);
@@ -185,6 +187,83 @@ router.delete('/:id',
     } catch (error) {
       console.error('Error deleting gallery item:', error);
       return res.status(500).json({ error: 'Failed to delete gallery item' });
+    }
+  }
+);
+
+// Albums endpoints
+router.get('/albums', async (req, res) => {
+  try {
+    const { albumType, classGrade, isPublished } = req.query as any;
+    const albums = await GalleryService.listAlbums({
+      albumType,
+      classGrade,
+      isPublished: isPublished !== undefined ? isPublished === 'true' : undefined,
+    });
+    return res.json(albums);
+  } catch (error) {
+    console.error('Error fetching albums:', error);
+    return res.status(500).json({ error: 'Failed to fetch albums' });
+  }
+});
+
+router.get('/albums/:id', async (req, res) => {
+  try {
+    const album = await GalleryService.getAlbumById(req.params.id);
+    if (!album) return res.status(404).json({ error: 'Album not found' });
+    return res.json(album);
+  } catch (error) {
+    console.error('Error fetching album:', error);
+    return res.status(500).json({ error: 'Failed to fetch album' });
+  }
+});
+
+router.post('/albums',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const { title, description, albumType, classGrade, isPublished, coverImageId } = req.body;
+      const album = await GalleryService.createAlbum({
+        title,
+        description,
+        albumType,
+        classGrade,
+        isPublished,
+        coverImageId,
+      });
+      return res.status(201).json(album);
+    } catch (error) {
+      console.error('Error creating album:', error);
+      return res.status(500).json({ error: 'Failed to create album' });
+    }
+  }
+);
+
+router.put('/albums/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const album = await GalleryService.updateAlbum(req.params.id, req.body);
+      return res.json(album);
+    } catch (error) {
+      console.error('Error updating album:', error);
+      return res.status(500).json({ error: 'Failed to update album' });
+    }
+  }
+);
+
+router.delete('/albums/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      await GalleryService.deleteAlbum(req.params.id);
+      return res.json({ message: 'Album deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting album:', error);
+      return res.status(500).json({ error: 'Failed to delete album' });
     }
   }
 );

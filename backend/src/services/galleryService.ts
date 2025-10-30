@@ -23,9 +23,73 @@ export interface UpdateGalleryItemData {
   category?: string;
   tags?: string[];
   isPublished?: boolean;
+  albumId?: string | null;
 }
 
 export class GalleryService {
+  // Album APIs
+  static async createAlbum(data: {
+    title: string;
+    description?: string;
+    albumType?: 'GENERAL' | 'CLASS';
+    classGrade?: string;
+    isPublished?: boolean;
+    coverImageId?: string;
+  }) {
+    return await prisma.album.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        albumType: data.albumType || 'GENERAL',
+        classGrade: data.classGrade,
+        isPublished: data.isPublished ?? true,
+        coverImageId: data.coverImageId,
+      }
+    });
+  }
+
+  static async listAlbums(filters?: {
+    albumType?: 'GENERAL' | 'CLASS';
+    classGrade?: string;
+    isPublished?: boolean;
+  }) {
+    const where: any = {};
+    if (filters?.albumType) where.albumType = filters.albumType;
+    if (filters?.classGrade) where.classGrade = filters.classGrade;
+    if (filters?.isPublished !== undefined) where.isPublished = filters.isPublished;
+
+    return await prisma.album.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: { coverImage: true, _count: { select: { items: true } } }
+    });
+  }
+
+  static async getAlbumById(id: string) {
+    return await prisma.album.findUnique({
+      where: { id },
+      include: { items: true, coverImage: true }
+    });
+  }
+
+  static async updateAlbum(id: string, data: {
+    title?: string;
+    description?: string;
+    albumType?: 'GENERAL' | 'CLASS';
+    classGrade?: string | null;
+    isPublished?: boolean;
+    coverImageId?: string | null;
+  }) {
+    return await prisma.album.update({
+      where: { id },
+      data
+    });
+  }
+
+  static async deleteAlbum(id: string) {
+    return await prisma.album.delete({ where: { id } });
+  }
+
   static async createGalleryItem(data: CreateGalleryItemData) {
     const tagsJson = data.tags ? JSON.stringify(data.tags) : null;
     const { uploadedBy, ...createData } = data;
@@ -36,6 +100,7 @@ export class GalleryService {
         category: data.category as any, // Cast to enum type
         tags: tagsJson,
         uploader: uploadedBy ? { connect: { id: uploadedBy } } : undefined,
+        album: (data as any).albumId ? { connect: { id: (data as any).albumId } } : undefined,
       },
     });
   }
@@ -44,6 +109,7 @@ export class GalleryService {
     category?: string;
     type?: string;
     isPublished?: boolean;
+    albumId?: string;
     limit?: number;
     offset?: number;
   }) {
@@ -61,12 +127,17 @@ export class GalleryService {
       where.isPublished = filters.isPublished;
     }
 
+    if (filters?.albumId) {
+      where.albumId = filters.albumId;
+    }
+
     const [items, total] = await Promise.all([
       prisma.galleryItem.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         take: filters?.limit || 50,
         skip: filters?.offset || 0,
+        include: { album: true }
       }),
       prisma.galleryItem.count({ where }),
     ]);

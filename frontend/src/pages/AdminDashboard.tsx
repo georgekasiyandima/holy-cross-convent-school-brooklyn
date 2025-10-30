@@ -66,6 +66,13 @@ const AdminDashboard: React.FC = () => {
 
   const quickActions = [
     {
+      title: 'Application Management',
+      description: 'Review and manage student applications',
+      icon: <Assignment sx={{ fontSize: 40, color: '#d32f2f' }} />,
+      color: '#d32f2f',
+      onClick: () => navigate('/admin/applications')
+    },
+    {
       title: 'Calendar Management',
       description: 'Manage school calendar and events',
       icon: <CalendarToday sx={{ fontSize: 40, color: '#1a237e' }} />,

@@ -6,6 +6,10 @@ import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import authRoutes from './routes/auth';
+import admissionsRoutes from './routes/admissions';
+import applicationDocumentsRoutes from './routes/applicationDocuments';
+import staffRoutes from './routes/staff';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -44,6 +48,18 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Auth routes
+app.use('/api/auth', authRoutes);
+
+// Admissions routes
+app.use('/api/admissions', admissionsRoutes);
+
+// Application documents routes
+app.use('/api/application-documents', applicationDocumentsRoutes);
+
+// Staff routes
+app.use('/api/staff', staffRoutes);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -54,19 +70,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Staff API
-app.get('/api/staff', async (req, res) => {
-  try {
-    const staff = await prisma.staffMember.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' }
-    });
-    res.json(staff);
-  } catch (error) {
-    console.error('Error fetching staff:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // Board Members API
 app.get('/api/board', async (req, res) => {

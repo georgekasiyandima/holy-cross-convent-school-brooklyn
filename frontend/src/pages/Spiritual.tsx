@@ -8,7 +8,6 @@ import {
   CardContent, 
   Divider, 
   useTheme,
-  Grid,
   IconButton,
   Dialog,
   DialogContent,
@@ -30,17 +29,41 @@ import { videoManager, SchoolVideo } from '../utils/videoManager';
 const SpiritualSection = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(8),
   padding: theme.spacing(4, 0),
-  background: 'rgba(255, 247, 205, 0.2)', // gentle gold background
+  background: 'linear-gradient(135deg, rgba(255, 247, 205, 0.2) 0%, rgba(255, 235, 238, 0.2) 100%)', // gentle gold to red background
   borderRadius: theme.spacing(2),
+  border: '2px solid #d32f2f',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    borderRadius: '8px 8px 0 0',
+  }
 }));
 
 const QuoteBox = styled(Box)(({ theme }) => ({
-  backgroundColor: 'rgba(26, 35, 126, 0.05)',
-  borderLeft: `4px solid #ffd700`,
+  backgroundColor: 'linear-gradient(135deg, rgba(26, 35, 126, 0.05) 0%, rgba(255, 235, 238, 0.1) 100%)',
+  borderLeft: `4px solid #d32f2f`,
+  borderRight: `2px solid #ffd700`,
   padding: theme.spacing(3),
   margin: theme.spacing(3, 0),
   borderRadius: theme.spacing(1),
   fontStyle: 'italic',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    borderRadius: '4px 4px 0 0',
+  }
 }));
 
 const VideoContainer = styled(Box)(({ theme }) => ({

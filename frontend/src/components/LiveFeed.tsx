@@ -9,7 +9,6 @@ import {
   Avatar,
   Paper,
   useTheme,
-  Grid,
   Button,
   TextField,
   InputAdornment,
@@ -274,9 +273,9 @@ const LiveFeed: React.FC = () => {
       </Box>
 
       {/* Content Grid */}
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {/* Main Feed */}
-        <Grid item xs={12} lg={8} {...({ item: true } as any)}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(66.666% - 12px)' } }}>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
               Latest Updates
@@ -366,10 +365,10 @@ const LiveFeed: React.FC = () => {
               </Stack>
             )}
           </Box>
-        </Grid>
+        </Box>
 
         {/* Sidebar */}
-        <Grid item xs={12} lg={4} {...({ item: true } as any)}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.333% - 12px)' } }}>
           <Stack spacing={3}>
             {/* Upcoming Events */}
             <Box>
@@ -434,8 +433,8 @@ const LiveFeed: React.FC = () => {
               )}
             </Box>
           </Stack>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </LiveFeedContainer>
   );
 };

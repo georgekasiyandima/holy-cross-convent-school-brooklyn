@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
+import authRoutes from './routes/auth';
+import admissionsRoutes from './routes/admissions';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -81,6 +83,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Auth routes
+app.use('/api/auth', authRoutes);
+
+// Admissions routes
+app.use('/api/admissions', admissionsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

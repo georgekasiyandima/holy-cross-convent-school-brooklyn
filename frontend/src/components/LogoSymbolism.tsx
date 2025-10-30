@@ -7,7 +7,6 @@ import {
   Accordion, 
   AccordionSummary, 
   AccordionDetails,
-  GridLegacy as Grid,
   Card,
   CardContent,
   IconButton,
@@ -207,9 +206,9 @@ const LogoSymbolism: React.FC = () => {
             Symbolic Elements
           </Typography>
           
-          <Grid container spacing={3}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
             {logoElements.map((element, index) => (
-              <Grid item xs={12} md={6} lg={4} key={element.id}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)', lg: '1 1 calc(33.333% - 16px)' } }} key={element.id}>
                 <Accordion 
                   elevation={2}
                   sx={{
@@ -255,9 +254,9 @@ const LogoSymbolism: React.FC = () => {
                     </Typography>
                   </AccordionDetails>
                 </Accordion>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Box>
 
         {/* Mission Connection */}

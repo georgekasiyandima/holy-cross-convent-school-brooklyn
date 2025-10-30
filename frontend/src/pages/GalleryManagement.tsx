@@ -114,7 +114,11 @@ const GalleryManagement: React.FC = () => {
     description: '',
     category: 'GENERAL' as GalleryItem['category'],
     tags: '',
+    albumId: '',
   });
+  const [albums, setAlbums] = useState<{ id: string; title: string; albumType: string; classGrade?: string }[]>([]);
+  const [albumType, setAlbumType] = useState<'GENERAL' | 'CLASS'>('GENERAL');
+  const [classGrade, setClassGrade] = useState<string>('');
 
   const categories = [
     { value: 'EVENTS', label: 'Events', color: '#2196f3' },
@@ -126,6 +130,7 @@ const GalleryManagement: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
+    fetchAlbums();
   }, [filterCategory, searchTerm]);
 
   const fetchItems = async () => {
@@ -145,6 +150,20 @@ const GalleryManagement: React.FC = () => {
       console.error('Error fetching items:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAlbums = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (albumType) params.append('albumType', albumType);
+      if (classGrade) params.append('classGrade', classGrade);
+      const response = await fetch(`/api/gallery/albums?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch albums');
+      const data = await response.json();
+      setAlbums(data || []);
+    } catch (err) {
+      console.error('Error fetching albums:', err);
     }
   };
 
@@ -172,6 +191,7 @@ const GalleryManagement: React.FC = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('tags', formData.tags);
+      if (formData.albumId) formDataToSend.append('albumId', formData.albumId);
 
       const response = await fetch('/api/gallery/upload', {
         method: 'POST',
@@ -186,7 +206,7 @@ const GalleryManagement: React.FC = () => {
       setSuccess('File uploaded successfully');
       setUploadDialogOpen(false);
       setSelectedFile(null);
-      setFormData({ title: '', description: '', category: 'GENERAL', tags: '' });
+      setFormData({ title: '', description: '', category: 'GENERAL', tags: '', albumId: '' });
       fetchItems();
     } catch (err) {
       setError('Failed to upload file');
@@ -464,6 +484,67 @@ const GalleryManagement: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                  <FormControl sx={{ minWidth: 160 }}>
+                    <InputLabel>Album Type</InputLabel>
+                    <Select
+                      value={albumType}
+                      label="Album Type"
+                      onChange={(e) => { setAlbumType(e.target.value as any); fetchAlbums(); }}
+                    >
+                      <MenuItem value="GENERAL">General</MenuItem>
+                      <MenuItem value="CLASS">Class</MenuItem>
+                    </Select>
+                  </FormControl>
+                  {albumType === 'CLASS' && (
+                    <TextField
+                      label="Class/Grade"
+                      value={classGrade}
+                      onChange={(e) => setClassGrade(e.target.value)}
+                      placeholder="e.g., Grade 1"
+                    />
+                  )}
+                  <FormControl sx={{ minWidth: 220 }}>
+                    <InputLabel>Album</InputLabel>
+                    <Select
+                      value={formData.albumId}
+                      label="Album"
+                      onChange={(e) => setFormData(prev => ({ ...prev, albumId: e.target.value }))}
+                    >
+                      <MenuItem value="">No album</MenuItem>
+                      {albums.map(a => (
+                        <MenuItem key={a.id} value={a.id}>
+                          {a.title}{a.classGrade ? ` - ${a.classGrade}` : ''}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    variant="outlined"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/gallery/albums', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                          },
+                          body: JSON.stringify({
+                            title: formData.title || 'New Album',
+                            albumType,
+                            classGrade: albumType === 'CLASS' ? classGrade : undefined,
+                          })
+                        });
+                        if (!response.ok) throw new Error('Failed to create album');
+                        await fetchAlbums();
+                      } catch (e) {
+                        console.error('Create album failed', e);
+                      }
+                    }}
+                  >
+                    New Album
+                  </Button>
+                </Box>
                 <TextField
                   fullWidth
                   label="Tags (comma separated)"

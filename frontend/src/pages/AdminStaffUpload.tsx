@@ -29,12 +29,13 @@ import ReturnToHome from '../components/ReturnToHome';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { StaffAvatar } from '../components/OptimizedImage';
+import { API_BASE_URL_WITH_PREFIX } from '../services/apiConfig';
 
 interface StaffMember {
   id: string;
   name: string;
   role: string;
-  category: 'LEADERSHIP' | 'TEACHING' | 'SUPPORT';
+  category: 'LEADERSHIP' | 'TEACHING' | 'SUPPORT' | 'ADMIN';
   imageUrl?: string;
 }
 
@@ -57,13 +58,13 @@ const AdminStaffUpload: React.FC = () => {
   const loadStaff = async () => {
     try {
       setLoading(true);
-      // Use direct backend URL to bypass proxy issues
-      const response = await axios.get('http://localhost:5000/api/staff');
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`);
       if (response.data.success) {
         setStaff(response.data.data.staff);
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to load staff members' });
+      console.error('Error loading staff:', error);
+      setMessage({ type: 'error', text: 'Failed to load staff members. Please check if the backend server is running.' });
     } finally {
       setLoading(false);
     }
@@ -98,13 +99,24 @@ const AdminStaffUpload: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('name', staffMember.name);
-      formData.append('role', staffMember.role);
+      formData.append('role', staffMember.role || '');
       formData.append('category', staffMember.category);
 
-      // Upload to enhanced upload endpoint (using direct backend URL)
-      const response = await axios.put(`http://localhost:5000/api/upload/staff/${staffMember.id}`, formData, {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
+      console.log('🔍 Upload - Token:', token ? 'Present' : 'Missing');
+      console.log('🔍 Upload - Staff Member:', staffMember);
+      
+      // Upload to staff endpoint
+      const response = await axios.put(`${API_BASE_URL_WITH_PREFIX}/staff/${staffMember.id}`, formData, {
         headers: {
+          ...axios.defaults.headers.common,
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
         },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
@@ -117,20 +129,41 @@ const AdminStaffUpload: React.FC = () => {
       if (response.data.success) {
         setMessage({ type: 'success', text: `Image uploaded successfully for ${staffMember.name}` });
         // Update the staff member with new image URL
-        const newImageUrl = response.data.data.staff.imageUrl;
-        setStaff(prev => prev.map(s => 
-          s.id === staffMember.id 
-            ? { ...s, imageUrl: newImageUrl }
-            : s
-        ));
-        setSelectedStaff(prev => prev ? { ...prev, imageUrl: newImageUrl } : null);
+        const updatedStaff = response.data.data?.data || response.data.data;
+        const newImageUrl = updatedStaff?.imageUrl || updatedStaff?.staff?.imageUrl;
+        if (newImageUrl) {
+          setStaff(prev => prev.map(s => 
+            s.id === staffMember.id 
+              ? { ...s, imageUrl: newImageUrl }
+              : s
+          ));
+          setSelectedStaff(prev => prev ? { ...prev, imageUrl: newImageUrl } : null);
+        }
+        // Reload staff list to get updated data
+        await loadStaff();
       } else {
-        throw new Error(response.data.error || 'Upload failed');
+        throw new Error(response.data.error || response.data.message || 'Upload failed');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      console.error('Upload error response:', error.response?.data);
+      const errorData = error.response?.data;
+      console.error('Full error data:', JSON.stringify(errorData, null, 2));
+      
+      let errorMessage = 'Upload failed. Please check your connection and try again.';
+      
+      if (errorData) {
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          errorMessage = `Validation failed: ${errorData.errors.join(', ')}`;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
       setMessage({ 
         type: 'error', 
-        text: error instanceof Error ? error.message : 'Upload failed'
+        text: errorMessage
       });
     } finally {
       setUploading(false);

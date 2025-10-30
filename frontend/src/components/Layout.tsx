@@ -12,6 +12,8 @@ import {
   Verified
 } from '@mui/icons-material';
 import Header from './Header';
+import BackToTop from './BackToTop';
+import FloatingSocialIcons from './FloatingSocialIcons';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -270,7 +272,11 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
         </Container>
       </Paper>
       
-      {/* Back to Top functionality removed */}
+      {/* Back to Top Button */}
+      <BackToTop />
+      
+      {/* Floating Social Icons */}
+      <FloatingSocialIcons />
     </Box>
   );
 };

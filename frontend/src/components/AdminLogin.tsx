@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, AdminPanelSettings } from '@mui/icons-material';
 import axios from 'axios';
+import { API_BASE_URL_WITH_PREFIX } from '../services/apiConfig';
 
 interface AdminLoginProps {
   onLogin: (token: string, user: any) => void;
@@ -42,7 +43,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await axios.post('https://holy-cross-convent-school-brooklyn.onrender.com/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL_WITH_PREFIX}/auth/login`, {
         email: formData.email,
         password: formData.password
       });

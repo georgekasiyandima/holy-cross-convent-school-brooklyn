@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Box, Card, CardContent, Divider, Grid, useTheme, Stack, Button } from '@mui/material';
+import { Container, Typography, Box, Card, CardContent, Divider, useTheme, Stack, Button } from '@mui/material';
 import { TheaterComedy, SportsSoccer, SportsHandball, SportsMartialArts, Palette, EmojiPeople, Email, Phone } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 

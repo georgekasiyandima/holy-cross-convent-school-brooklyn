@@ -5,7 +5,6 @@ import {
   Box,
   Card,
   CardContent,
-  GridLegacy as Grid,
   Button,
   Paper,
   Stepper,
@@ -55,6 +54,7 @@ const HeroCard = styled(Card)(({ theme }) => ({
   borderRadius: '20px',
   overflow: 'hidden',
   position: 'relative',
+  border: '3px solid #d32f2f',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -65,17 +65,38 @@ const HeroCard = styled(Card)(({ theme }) => ({
     background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
     opacity: 0.3,
   },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '6px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    borderRadius: '20px 20px 0 0',
+  },
 }));
 
 const FeatureCard = styled(Card)(({ theme }) => ({
   height: '100%',
   borderRadius: '16px',
   background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
-  border: '1px solid rgba(26, 35, 126, 0.1)',
+  border: '2px solid #d32f2f',
   transition: 'all 0.3s ease',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    borderRadius: '16px 16px 0 0',
+  },
   '&:hover': {
     transform: 'translateY(-4px)',
-    boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+    boxShadow: '0 8px 32px rgba(211, 47, 47, 0.2)',
   },
 }));
 
@@ -320,9 +341,9 @@ const Admissions: React.FC = () => {
           Admission Requirements
         </Typography>
         
-        <Grid container spacing={3} sx={{ mb: 6 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 6 }}>
           {requirements.map((req, index) => (
-            <Grid item xs={12} md={4} key={index}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }} key={index}>
               <FeatureCard>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
@@ -343,9 +364,9 @@ const Admissions: React.FC = () => {
                   </List>
                 </CardContent>
               </FeatureCard>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         {/* Fee Structure */}
         <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 4, textAlign: 'center' }}>
@@ -353,9 +374,9 @@ const Admissions: React.FC = () => {
         </Typography>
         
         <Paper elevation={3} sx={{ p: 4, borderRadius: '20px', mb: 6 }}>
-          <Grid container spacing={3}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
             {fees.map((fee, index) => (
-              <Grid item xs={12} md={4} key={index}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }} key={index}>
                 <Card
                   sx={{
                     height: '100%',
@@ -397,9 +418,9 @@ const Admissions: React.FC = () => {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
           
           <Alert severity="info" sx={{ mt: 3 }}>
             <Typography variant="body2">
@@ -422,8 +443,8 @@ const Admissions: React.FC = () => {
             Contact Admissions
           </Typography>
           
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Phone sx={{ color: '#1a237e', mr: 2 }} />
                 <Typography variant="body1">
@@ -442,9 +463,9 @@ const Admissions: React.FC = () => {
                   <strong>Address:</strong> Brooklyn, Cape Town, South Africa
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
                   Ready to Apply?
@@ -482,8 +503,8 @@ const Admissions: React.FC = () => {
                   </Button>
                 </Stack>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
       </Container>
     </>
