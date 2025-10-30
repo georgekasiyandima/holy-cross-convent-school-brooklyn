@@ -11,7 +11,7 @@ import ReturnToHome from '../components/ReturnToHome';
 
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
-  { icon: <SchoolIcon color="primary" />, label: 'Grades', value: 'Grade 0 – Grade 7' },
+  { icon: <SchoolIcon color="primary" />, label: 'Grades', value: 'Grade R – Grade 7' },
   { icon: <EmailIcon color="primary" />, label: 'Email', value: 'info@holycrossbrooklyn.co.za' },
   { icon: <PhoneIcon color="primary" />, label: 'Phone', value: '+27 21 123 4567' },
   { icon: <LocationOnIcon color="primary" />, label: 'Address', value: '123 Brooklyn Rd, Cape Town' },

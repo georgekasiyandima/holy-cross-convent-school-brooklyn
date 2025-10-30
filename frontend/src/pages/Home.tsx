@@ -51,7 +51,6 @@ import ProgressiveFeaturesCollage from '../components/ProgressiveFeaturesCollage
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
 import LiveFeed from '../components/LiveFeed';
-import DynamicLiveChat from '../components/DynamicLiveChat';
 import SchoolStatistics from '../components/SchoolStatistics';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
@@ -1284,10 +1283,10 @@ const Home: React.FC = () => {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4, justifyContent: 'center', mb: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <LocationOn sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
                 Visit Us
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: 'white' }}>
                 162 Koeberg Road<br />
                 Brooklyn, Cape Town<br />
                 7405 South Africa
@@ -1295,19 +1294,19 @@ const Home: React.FC = () => {
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Phone sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
                 Call Us
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: 'white' }}>
                 +27 21 511 4337
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Email sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
                 Email Us
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: 'white' }}>
                 admin@holycrossbrooklyn.co.za
               </Typography>
             </Box>
@@ -1387,9 +1386,6 @@ const Home: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Dynamic Live Chat */}
-      <DynamicLiveChat />
     </>
   );
 };

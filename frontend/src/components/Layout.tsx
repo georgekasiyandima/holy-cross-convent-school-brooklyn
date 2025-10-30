@@ -129,7 +129,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <School sx={{ color: '#ffd700', mr: 1, fontSize: 20 }} />
                 <Typography variant="body2">
-                  Primary School (Grade 0 - Grade 7)
+                  Primary School (Grade R - Grade 7)
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
