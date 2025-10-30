@@ -11,7 +11,7 @@ const Hero = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'url("/AC2.jpg") center/cover no-repeat',
+  background: 'url("/MUSIC.jpg") center/cover no-repeat',
   textAlign: 'center',
   '& > *': { position: 'relative', zIndex: 1 }
 }));
