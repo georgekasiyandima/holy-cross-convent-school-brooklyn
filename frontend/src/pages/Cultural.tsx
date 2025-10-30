@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Palette, MusicNote, TheaterComedy, Wheat, EmojiEvents, Groups, SentimentVerySatisfied, MonitorHeart } from '@mui/icons-material';
+import { Palette, MusicNote, TheaterComedy, LocalFlorist, EmojiEvents, Groups, SentimentVerySatisfied, MonitorHeart } from '@mui/icons-material';
 import SEO from '../components/SEO';
 
 const Hero = styled(Box)(({ theme }) => ({
@@ -54,7 +54,7 @@ const Cultural: React.FC = () => {
     { name: 'Liturgical Dance', icon: <Groups sx={{ fontSize: 40 }} /> },
     { name: 'Drama', icon: <TheaterComedy sx={{ fontSize: 40 }} /> },
     { name: 'Chess', icon: <EmojiEvents sx={{ fontSize: 40 }} /> },
-    { name: 'Garden Club', icon: <Wheat sx={{ fontSize: 40 }} /> },
+    { name: 'Garden Club', icon: <LocalFlorist sx={{ fontSize: 40 }} /> },
   ];
 
   return (
