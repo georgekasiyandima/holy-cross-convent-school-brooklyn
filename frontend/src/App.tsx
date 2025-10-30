@@ -24,6 +24,7 @@ import AdminDocumentUpload from './pages/AdminDocumentUpload';
 import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminApplicationManagement from './pages/AdminApplicationManagement';
 import SchoolStatsManagement from './pages/SchoolStatsManagement';
 import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
@@ -37,6 +38,7 @@ import CalendarManagement from './pages/CalendarManagement';
 import GalleryManagement from './pages/GalleryManagement';
 import NewsletterManagement from './pages/NewsletterManagement';
 import Academic from './pages/Academic';
+import Robotics from './pages/Robotics';
 import Sport from './pages/Sport';
 import Cultural from './pages/Cultural';
 import ServiceEthos from './pages/ServiceEthos';
@@ -45,28 +47,114 @@ import Vacancies from './pages/Vacancies';
 import ApplicationProcess from './pages/ApplicationProcess';
 import Policies from './pages/Policies';
 
-// Create a theme with school colors (navy blue and gold)
+// Extend Material-UI theme to include custom school colors
+declare module '@mui/material/styles' {
+  interface Palette {
+    school: {
+      navy: string;
+      gold: string;
+      red: string;
+      lightRed: string;
+      darkRed: string;
+    };
+  }
+
+  interface PaletteOptions {
+    school?: {
+      navy: string;
+      gold: string;
+      red: string;
+      lightRed: string;
+      darkRed: string;
+    };
+  }
+}
+
+// Create a theme with school colors (navy blue, gold, and red)
 const theme = createTheme({
   palette: {
     primary: {
       main: '#1a237e', // Deep navy blue
+      light: '#3949ab',
+      dark: '#0d1458',
     },
     secondary: {
       main: '#ffd700', // Gold
+      light: '#ffed4e',
+      dark: '#e6c200',
+    },
+    error: {
+      main: '#d32f2f', // Red
+      light: '#f44336',
+      dark: '#b71c1c',
+    },
+    warning: {
+      main: '#ff9800', // Orange
+      light: '#ffb74d',
+      dark: '#f57c00',
+    },
+    info: {
+      main: '#1976d2', // Blue
+      light: '#42a5f5',
+      dark: '#1565c0',
+    },
+    success: {
+      main: '#388e3c', // Green
+      light: '#66bb6a',
+      dark: '#2e7d32',
     },
     background: {
       default: '#f5f5f5',
+      paper: '#ffffff',
+    },
+    // Custom school colors
+    school: {
+      navy: '#1a237e',
+      gold: '#ffd700',
+      red: '#d32f2f',
+      lightRed: '#ffebee',
+      darkRed: '#b71c1c',
     },
   },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        typography: {
+          fontFamily: '"Kalam", "Schoolbell", "Inter", "Source Sans Pro", "Open Sans", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 700,
+      color: '#1a237e',
+    },
+    h2: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 600,
+      color: '#1a237e',
+    },
     h3: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
       fontWeight: 600,
       color: '#1a237e',
     },
     h4: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
+    },
+    h5: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 500,
+      color: '#1a237e',
+    },
+    h6: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 500,
+      color: '#1a237e',
+    },
+    body1: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 400,
+    },
+    body2: {
+      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontWeight: 400,
     },
   },
 });
@@ -171,7 +259,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/donate" element={<Donate />} />
         <Route path="/contact" element={<ContactForm />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/applications" element={<AdminApplicationManagement />} />
         <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
         <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
         <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
@@ -190,6 +280,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/calendar" element={<Calendar />} />
         {/* Pillars Section */}
         <Route path="/academic" element={<Academic />} />
+        <Route path="/robotics" element={<Robotics />} />
         <Route path="/sport" element={<Sport />} />
         <Route path="/cultural" element={<Cultural />} />
         <Route path="/service-ethos" element={<ServiceEthos />} />

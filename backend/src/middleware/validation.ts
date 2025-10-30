@@ -176,9 +176,9 @@ export const validateStaffMember = (req: Request, res: Response, next: NextFunct
   }
 
   // Category validation
-  const validStaffCategories = ["LEADERSHIP", "TEACHING", "SUPPORT"];
+  const validStaffCategories = ["LEADERSHIP", "TEACHING", "SUPPORT", "ADMIN"];
   if (category && !validStaffCategories.includes(category)) {
-    errors.push("Invalid staff category. Must be one of: LEADERSHIP, TEACHING, SUPPORT");
+    errors.push("Invalid staff category. Must be one of: LEADERSHIP, TEACHING, SUPPORT, ADMIN");
   }
 
   // Subjects validation (JSON array)

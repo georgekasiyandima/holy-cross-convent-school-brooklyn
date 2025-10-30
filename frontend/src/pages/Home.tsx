@@ -39,7 +39,12 @@ import {
   MusicNote,
   SportsSoccer,
   Computer,
-  Schedule
+  Schedule,
+  ChildCare,
+  Star,
+  Group,
+  School as SchoolIcon,
+  AutoAwesome as Sparkles
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import ProgressiveFeaturesCollage from '../components/ProgressiveFeaturesCollage';
@@ -140,6 +145,16 @@ const HeroSection = styled(Box)(({ theme }) => ({
   '@keyframes pulse': {
     '0%, 100%': { transform: 'scale(1)', opacity: 0.3 },
     '50%': { transform: 'scale(1.1)', opacity: 0.6 }
+  },
+  '@keyframes textPulse': {
+    '0%': {
+      transform: 'scale(1)',
+      textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
+    },
+    '100%': {
+      transform: 'scale(1.02)',
+      textShadow: '3px 3px 6px rgba(0,0,0,0.8)'
+    }
   }
 }));
 
@@ -178,6 +193,32 @@ const HeritageSection = styled(Box)(({ theme }) => ({
     right: 0,
     height: '4px',
     background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #1a237e 100%)'
+  }
+}));
+
+const GradeRSection = styled(Box)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
+  padding: theme.spacing(8, 0),
+  position: 'relative',
+  borderTop: '4px solid #d32f2f',
+  borderBottom: '4px solid #d32f2f',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, #d32f2f 0%, #ffd700 50%, #d32f2f 100%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, #d32f2f 0%, #ffd700 50%, #d32f2f 100%)',
   }
 }));
 
@@ -463,28 +504,42 @@ const Home: React.FC = () => {
                 Holy Cross Convent School
               </Typography>
               
+              {/* School Mantra - "Small School with a Big Heart" */}
+              <Box sx={{ mb: 4 }}>
               <Typography 
-                variant="h3" 
+                  variant="h2" 
                 component="h2" 
-                gutterBottom
                 sx={{ 
-                  fontWeight: 800,
-                  mb: 3,
-                  opacity: 0.98,
-                  fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
-                  fontFamily: '"Inter", "Segoe UI", "Roboto", sans-serif',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.2,
-                  background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  textTransform: 'none'
+                    fontWeight: 700,
+                    fontSize: { xs: '2rem', sm: '2.8rem', md: '3.5rem' },
+                    fontFamily: '"Kalam", cursive',
+                    color: '#ffd700',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                    mb: 2,
+                    animation: 'textPulse 2s ease-in-out infinite alternate'
+                  }}
+                >
+                  "Small School with a Big Heart"
+                </Typography>
+                
+                <Typography 
+                  variant="h4" 
+                  component="h3" 
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: '1.2rem', sm: '1.6rem', md: '2rem' },
+                    fontFamily: '"Inter", sans-serif',
+                    color: 'white',
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+                    opacity: 0.95,
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                    lineHeight: 1.3
                 }}
               >
                 Where Catholic Heritage Meets Progressive Education
               </Typography>
+              </Box>
               
               <Typography 
                 variant="h6" 
@@ -501,6 +556,60 @@ const Home: React.FC = () => {
                 Cape Town. Our commitment to academic excellence, spiritual growth, and 
                 character development creates leaders for tomorrow's world.
               </Typography>
+              
+              {/* Pillars Preview */}
+              <Box sx={{ mb: 5 }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#ffd700',
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                    fontFamily: '"Inter", sans-serif'
+                  }}
+                >
+                  Our Five Pillars of Excellence
+                </Typography>
+                
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  justifyContent: 'center', 
+                  gap: 2,
+                  maxWidth: '900px',
+                  mx: 'auto'
+                }}>
+                  {[
+                    { icon: <Book />, label: 'Academics', color: '#1a237e' },
+                    { icon: <Church />, label: 'Spiritual', color: '#d32f2f' },
+                    { icon: <Computer />, label: 'Robotics', color: '#ff9800' },
+                    { icon: <MusicNote />, label: 'Cultural', color: '#9c27b0' },
+                    { icon: <Groups />, label: 'Service', color: '#4caf50' }
+                  ].map((pillar, index) => (
+                    <Chip
+                      key={index}
+                      icon={pillar.icon}
+                      label={pillar.label}
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        color: 'white',
+                        border: `2px solid ${pillar.color}`,
+                        fontWeight: 600,
+                        px: 2,
+                        py: 1,
+                        fontSize: '0.9rem',
+                        backdropFilter: 'blur(10px)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                          transform: 'scale(1.05)'
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
               
               <Stack 
                 direction={{ xs: 'column', sm: 'row' }} 
@@ -798,6 +907,181 @@ const Home: React.FC = () => {
           </Box>
         </Container>
       </HeritageSection>
+
+      {/* Grade R Promotion Section */}
+      <GradeRSection>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<ChildCare />}
+              label="Special Focus: Grade R Learners"
+              sx={{
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                fontWeight: 600,
+                mb: 3,
+                px: 2,
+                py: 1,
+                fontSize: '1.1rem'
+              }}
+            />
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              sx={{ 
+                color: '#d32f2f', 
+                fontWeight: 700, 
+                mb: 3,
+                fontSize: { xs: '2rem', md: '2.5rem' }
+              }}
+            >
+              We're Actively Seeking Grade R Learners!
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#666', 
+                mb: 4, 
+                maxWidth: '800px', 
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                lineHeight: 1.6
+              }}
+            >
+              Join our nurturing early childhood education program designed to provide the perfect foundation 
+              for your child's educational journey. Our Grade R program focuses on holistic development 
+              in a caring, faith-based environment.
+            </Typography>
+          </Box>
+
+          {/* Grade R Features Grid */}
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
+            gap: 4, 
+            mb: 6 
+          }}>
+            {/* Feature 1 */}
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              border: '2px solid #d32f2f',
+              borderRadius: 3,
+              p: 3,
+              textAlign: 'center',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
+              }
+            }}>
+              <Star sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
+              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
+                Holistic Development
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
+                Focus on cognitive, emotional, social, and physical development through 
+                play-based learning and structured activities.
+              </Typography>
+            </Card>
+
+            {/* Feature 2 */}
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              border: '2px solid #d32f2f',
+              borderRadius: 3,
+              p: 3,
+              textAlign: 'center',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
+              }
+            }}>
+              <Group sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
+              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
+                Small Class Sizes
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
+                Individual attention and personalized learning with experienced teachers 
+                who understand early childhood development.
+              </Typography>
+            </Card>
+
+            {/* Feature 3 */}
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              border: '2px solid #d32f2f',
+              borderRadius: 3,
+              p: 3,
+              textAlign: 'center',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
+              }
+            }}>
+              <Schedule sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
+              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
+                Flexible Schedule
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
+                Half-day and full-day options available to accommodate different 
+                family needs and preferences.
+              </Typography>
+            </Card>
+          </Box>
+
+          {/* Call to Action */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: '#d32f2f', 
+                fontWeight: 600, 
+                mb: 3 
+              }}
+            >
+              Ready to Start Your Child's Educational Journey?
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: '#666', 
+                mb: 4, 
+                maxWidth: '600px', 
+                mx: 'auto' 
+              }}
+            >
+              Apply now and give your child the best start to their educational journey. 
+              Our Grade R program is designed to prepare them for success in Grade 1 and beyond.
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/admissions')}
+              startIcon={<SchoolIcon />}
+              sx={{
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                px: 6,
+                py: 2,
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                borderRadius: 3,
+                boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
+                '&:hover': {
+                  backgroundColor: '#b71c1c',
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 12px 35px rgba(211, 47, 47, 0.4)'
+                },
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+              Apply for Grade R
+            </Button>
+          </Box>
+        </Container>
+      </GradeRSection>
 
       {/* Progressive Education Section */}
       <ProgressiveSection>

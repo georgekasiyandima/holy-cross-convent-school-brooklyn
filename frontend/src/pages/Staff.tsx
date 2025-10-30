@@ -18,8 +18,6 @@ import { styled } from "@mui/material/styles";
 import ReturnToHome from "../components/ReturnToHome";
 import {
   Person,
-  Email,
-  Phone,
 } from "@mui/icons-material";
 import axios from "axios";
 import { API_BASE_URL_WITH_PREFIX } from "../services/apiConfig";
@@ -89,13 +87,13 @@ const StaffCard = styled(Card)(({ theme }) => ({
     left: 0,
     right: 0,
     height: "4px",
-    background: "linear-gradient(90deg, #1a237e 0%, #ffd700 100%)",
+    background: "linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)",
     transform: "scaleX(0)",
     transition: "transform 0.4s ease",
   },
   "&:hover": {
     transform: "translateY(-12px) scale(1.02)",
-    boxShadow: "0 24px 48px rgba(26, 35, 126, 0.2)",
+    boxShadow: "0 24px 48px rgba(211, 47, 47, 0.2)",
     "&::before": {
       transform: "scaleX(1)",
     },
@@ -118,13 +116,13 @@ const LeadershipCard = styled(Card)(({ theme }) => ({
     left: 0,
     right: 0,
     height: "6px",
-    background: "linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)",
+    background: "linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)",
     transform: "scaleX(1)",
     transition: "transform 0.4s ease",
   },
   "&:hover": {
     transform: "translateY(-12px) scale(1.02)",
-    boxShadow: "0 28px 56px rgba(26, 35, 126, 0.25)",
+    boxShadow: "0 28px 56px rgba(211, 47, 47, 0.25)",
     "&::before": {
       transform: "scaleX(1.1)",
     },
@@ -227,16 +225,23 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           {member.name}
         </Typography>
 
-
+        {/* Role */}
+        {member.role && (
+          <Typography
+            variant="body2"
+            sx={{ color: "#666", mb: 1.5, fontWeight: 500 }}
+          >
+            {member.role}
+          </Typography>
+        )}
 
         {/* Grade */}
-        {member.grade && (
+        {member.grade && member.grade !== 'All' && member.grade !== 'All Grades' && (
           <Chip
             label={member.grade}
-            color="secondary"
             variant="outlined"
             size="small"
-            sx={{ mb: 2, borderColor: "#1a237e" }}
+            sx={{ mb: 2, borderColor: "#d32f2f", color: "#d32f2f", fontWeight: 600 }}
           />
         )}
 
@@ -299,32 +304,6 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
             ))}
           </Box>
         )}
-
-        {/* Contact Info */}
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, flexWrap: "wrap" }}>
-          {member.email && (
-            <Chip
-              component="a"
-              href={`mailto:${member.email}`}
-              icon={<Email sx={{ fontSize: 16 }} />}
-              label={member.email}
-              size="small"
-              variant="outlined"
-              sx={{ borderColor: "#ffd700", color: "#1a237e" }}
-            />
-          )}
-          {member.phone && (
-            <Chip
-              component="a"
-              href={`tel:${member.phone}`}
-              icon={<Phone sx={{ fontSize: 16 }} />}
-              label={member.phone}
-              size="small"
-              variant="outlined"
-              sx={{ borderColor: "#ffd700", color: "#1a237e" }}
-            />
-          )}
-        </Box>
       </CardContent>
     </CardComponent>
   );
@@ -535,15 +514,32 @@ const Staff: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      {/* Modern Header Section */}
+      {/* Modern Header Section with Background Image */}
       <Box sx={{ 
-        background: 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%)',
+        backgroundImage: 'url("/HCCS25.jpeg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         color: 'white',
         py: 8,
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: '400px',
+        display: 'flex',
+        alignItems: 'center'
       }}>
-        {/* Background Pattern */}
+        {/* Dark Overlay for Text Readability */}
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(57, 73, 171, 0.75) 50%, rgba(211, 47, 47, 0.7) 100%)',
+          zIndex: 0
+        }} />
+        
+        {/* Additional Pattern Overlay */}
         <Box sx={{
           position: 'absolute',
           top: 0,
@@ -551,15 +547,31 @@ const Staff: React.FC = () => {
           right: 0,
           bottom: 0,
           backgroundImage: `
-            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%)
+            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.15) 0%, transparent 50%)
           `,
-          zIndex: 0
+          zIndex: 1
         }} />
         
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
           {/* Return to Home */}
-          <ReturnToHome />
+          <Box sx={{ 
+            '& .MuiTypography-root': {
+              color: 'white !important',
+              textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              backdropFilter: 'blur(10px)',
+              display: 'inline-block',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                transform: 'translateX(-2px)',
+              }
+            }
+          }}>
+            <ReturnToHome />
+          </Box>
           
           {/* Modern Header Content */}
           <Box sx={{ textAlign: 'center', mt: 4 }}>
@@ -569,11 +581,8 @@ const Staff: React.FC = () => {
                 fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
                 fontWeight: 800,
                 mb: 3,
-                background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                color: 'white',
+                textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)',
               }}
             >
               Our Staff
@@ -584,10 +593,15 @@ const Staff: React.FC = () => {
               sx={{
                 maxWidth: '600px',
                 mx: 'auto',
-                opacity: 0.9,
                 fontWeight: 400,
                 fontSize: { xs: '1.1rem', sm: '1.3rem' },
-                lineHeight: 1.6
+                lineHeight: 1.6,
+                color: 'white',
+                textShadow: '1px 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5)',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                padding: '16px 24px',
+                borderRadius: '8px',
+                backdropFilter: 'blur(10px)'
               }}
             >
               Meet the dedicated educators and support staff who are committed to nurturing 
@@ -605,14 +619,16 @@ const Staff: React.FC = () => {
               <Box sx={{ 
                 width: 60, 
                 height: 4, 
-                background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
-                borderRadius: 2
+                background: 'linear-gradient(90deg, #ffd700 0%, #d32f2f 100%)',
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
               }} />
               <Box sx={{ 
                 width: 8, 
                 height: 8, 
                 background: '#ffd700',
-                borderRadius: '50%'
+                borderRadius: '50%',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
               }} />
               <Box sx={{ 
                 width: 60, 
@@ -684,7 +700,7 @@ const Staff: React.FC = () => {
                     <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)", mb: 1, fontWeight: 500 }}>
                       Principal
                     </Typography>
-                    {member.grade && (
+                    {member.grade && member.grade !== 'All' && member.grade !== 'All Grades' && (
                       <Typography variant="body1" sx={{ color: "#ffd700", mb: 2, fontWeight: 600, fontSize: "1.1rem" }}>
                         {member.grade}
                       </Typography>
@@ -730,26 +746,6 @@ const Staff: React.FC = () => {
                         </Typography>
                       </Box>
                     )}
-
-                    {/* Contact Info */}
-                    <Box sx={{ mt: 3, display: "flex", gap: 3, flexWrap: "wrap" }}>
-                      {member.email && (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Email sx={{ color: "#ffd700", fontSize: 20 }} />
-                          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
-                            {member.email}
-                          </Typography>
-                        </Box>
-                      )}
-                      {member.phone && (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Phone sx={{ color: "#ffd700", fontSize: 20 }} />
-                          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
-                            {member.phone}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
                   </Box>
                 </Box>
               </CardContent>

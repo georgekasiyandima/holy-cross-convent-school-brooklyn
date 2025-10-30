@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Box, Divider, Card, CardContent, Grid, Button, Paper, Avatar } from '@mui/material';
+import { Container, Typography, Box, Divider, Card, CardContent, Button, Paper, Avatar } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -31,7 +31,27 @@ const Info: React.FC = () => (
     <ReturnToHome />
     
     {/* Hero Section */}
-    <Paper elevation={3} sx={{ p: 4, mb: 5, textAlign: 'center', background: '#e3eafc' }}>
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: 4, 
+        mb: 5, 
+        textAlign: 'center', 
+        background: 'linear-gradient(135deg, #e3eafc 0%, #ffebee 100%)',
+        border: '2px solid #d32f2f',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+          borderRadius: '12px 12px 0 0',
+        }
+      }}
+    >
       <Avatar
         src="/HCLOGO1.png"
         alt="School Logo"
@@ -40,7 +60,7 @@ const Info: React.FC = () => (
       <Typography variant="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
         Holy Cross Convent Primary School
       </Typography>
-      <Typography variant="h6" sx={{ color: '#3949ab', mb: 2 }}>
+      <Typography variant="h6" sx={{ color: '#d32f2f', mb: 2, fontWeight: 600 }}>
         Brooklyn, Cape Town
       </Typography>
       <Typography variant="body1" sx={{ fontSize: '1.15rem', mb: 1 }}>
@@ -62,16 +82,11 @@ const Info: React.FC = () => (
     </Box>
 
     {/* Quick Facts */}
-    <Grid container spacing={2} sx={{ mb: 5 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 5 }}>
       {quickFacts.map((fact) => (
-        <Grid
-          component="div"
-          item
-          xs={12}
-          sm={6}
-          md={4}
+        <Box
           key={fact.label}
-          {...({ item: true } as any)}
+          sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }}
         >
           <Card sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
             <Box sx={{ mr: 2 }}>{fact.icon}</Box>
@@ -82,36 +97,48 @@ const Info: React.FC = () => (
               <Typography variant="body2">{fact.value}</Typography>
             </Box>
           </Card>
-        </Grid>
+        </Box>
       ))}
-    </Grid>
+    </Box>
 
     {/* Mission & Values */}
     <Box sx={{ mb: 5 }}>
       <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
         Our Mission & Values
       </Typography>
-      <Divider sx={{ mb: 2 }} />
+      <Box sx={{ 
+        width: 60, 
+        height: 3, 
+        background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+        mb: 2,
+        borderRadius: 2
+      }} />
       <Typography variant="body1" sx={{ mb: 2 }}>
         Our mission is to provide a holistic education rooted in Catholic values, fostering academic excellence, spiritual growth, and compassionate service.
       </Typography>
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         {values.map((val) => (
-          <Grid
-            component="div"
-            item
-            xs={6}
-            sm={4}
+          <Box
             key={val}
-            {...({ item: true } as any)}
+            sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: '1 1 calc(33.333% - 12px)' } }}
           >
-            <Card sx={{ p: 2, textAlign: 'center', background: '#f5f7fa' }}>
-              <EmojiObjectsIcon color="primary" sx={{ mb: 1 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>{val}</Typography>
+            <Card sx={{ 
+              p: 2, 
+              textAlign: 'center', 
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #ffebee 100%)',
+              border: '1px solid #d32f2f',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(211, 47, 47, 0.2)'
+              },
+              transition: 'all 0.3s ease'
+            }}>
+              <EmojiObjectsIcon sx={{ color: '#d32f2f', mb: 1 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500, color: '#1a237e' }}>{val}</Typography>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
 
     {/* Gallery */}
@@ -119,15 +146,11 @@ const Info: React.FC = () => (
       <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
         School Gallery
       </Typography>
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         {['BOOKDAY.jpg', 'Sports01.jpg', 'Garden Club 04.jpg', 'COMPUTERLAB02.jpg'].map((img, idx) => (
-          <Grid
-            component="div"
-            item
-            xs={6}
-            sm={3}
+          <Box
             key={img}
-            {...({ item: true } as any)}
+            sx={{ flex: { xs: '1 1 calc(50% - 8px)', sm: '1 1 calc(25% - 12px)' } }}
           >
             <Card>
               <Box
@@ -143,9 +166,9 @@ const Info: React.FC = () => (
                 }}
               />
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
 
     {/* Map & Directions */}

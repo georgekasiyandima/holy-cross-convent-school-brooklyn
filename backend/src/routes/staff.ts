@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { createError } from '../middleware/errorHandler';
-import { AuthRequest, requireEditor } from '../middleware/auth';
+import { AuthRequest, requireEditor, authMiddleware } from '../middleware/auth';
 import { validateStaffMember } from '../middleware/validation';
 import { uploadImage } from '../middleware/upload';
 import uploadService from '../services/uploadService';
@@ -157,11 +157,8 @@ router.post(
         role: req.body.role,
         email: req.body.email,
         phone: req.body.phone,
-        bio: req.body.bio,
         grade: req.body.grade,
         subjects: req.body.subjects ? JSON.parse(req.body.subjects) : undefined,
-        qualifications: req.body.qualifications,
-        experience: req.body.experience,
         category: req.body.category,
         order: req.body.order ? parseInt(req.body.order) : undefined
       };
@@ -191,24 +188,28 @@ router.post(
  */
 router.put(
   "/:id",
+  authMiddleware,
   requireEditor,
   uploadImage.single("image"),
   validateStaffMember,
   async (req: AuthRequest, res, next) => {
     try {
+      console.log('🔍 Staff PUT route: Starting request');
+      console.log('🔍 Staff PUT route: Params:', req.params);
+      console.log('🔍 Staff PUT route: Body:', req.body);
+      console.log('🔍 Staff PUT route: File:', req.file);
+      console.log('🔍 Staff PUT route: User:', req.user);
+      
       const { id } = req.params;
       const {
         name,
         role,
         email,
         phone,
-        bio,
         grade,
         order,
         category,
         subjects,
-        qualifications,
-        experience,
         isActive
       } = req.body;
 
@@ -223,19 +224,18 @@ router.put(
 
       // Use enhanced upload service if image is provided
       if (req.file) {
+        console.log('🔍 Staff PUT route: Category from body:', category);
         const staffData = {
           name,
           role,
           email,
           phone,
-          bio,
           grade,
-          subjects: parsedSubjects ? JSON.parse(parsedSubjects) : undefined,
-          qualifications,
-          experience,
+          subjects: parsedSubjects ? JSON.parse(parsedSubjects) : null,
           category,
           order: order ? parseInt(order, 10) : undefined
         };
+        console.log('🔍 Staff PUT route: StaffData being sent to upload service:', staffData);
 
         const result = await uploadService.updateStaffImage(id, req.file, staffData);
 
@@ -256,12 +256,9 @@ router.put(
         role,
         email,
         phone,
-        bio,
         grade,
         order: order ? parseInt(order, 10) : 0,
         subjects: parsedSubjects,
-        qualifications,
-        experience,
         isActive,
         category,
       };
@@ -277,6 +274,8 @@ router.put(
         data: { staff } 
       });
     } catch (error) {
+      console.error('🔍 Staff PUT route error:', error);
+      console.error('🔍 Staff PUT route error stack:', error instanceof Error ? error.stack : 'No stack trace');
       return next(error);
     }
   }

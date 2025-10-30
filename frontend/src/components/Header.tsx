@@ -62,7 +62,16 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '2px',
-    background: 'linear-gradient(90deg, transparent 0%, #ffd700 50%, transparent 100%)',
+    background: 'linear-gradient(90deg, transparent 0%, #ffd700 25%, #d32f2f 50%, #ffd700 75%, transparent 100%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: 'linear-gradient(90deg, transparent 0%, #d32f2f 50%, transparent 100%)',
   },
 }));
 
@@ -191,6 +200,7 @@ const navigationItems: NavigationItem[] = [
     type: 'dropdown',
     items: [
       { name: 'Academic', path: '/academic' },
+      { name: 'Robotics', path: '/robotics' },
       { name: 'Sport', path: '/sport' },
       { name: 'Cultural', path: '/cultural' },
       { name: 'Service & Ethos', path: '/service-ethos' }

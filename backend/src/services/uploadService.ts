@@ -20,11 +20,8 @@ export interface StaffUploadData {
   role: string;
   email?: string;
   phone?: string;
-  bio?: string;
   grade?: string;
   subjects?: string[];
-  qualifications?: string;
-  experience?: string;
   category?: string;
   order?: number;
 }
@@ -269,11 +266,8 @@ class UploadService {
           role: staffData.role,
           email: staffData.email,
           phone: staffData.phone,
-          bio: staffData.bio,
           grade: staffData.grade,
           subjects: staffData.subjects ? JSON.stringify(staffData.subjects) : null,
-          qualifications: staffData.qualifications,
-          experience: staffData.experience,
           category: (staffData.category as any) || 'TEACHING',
           order: staffData.order || 0,
           imageUrl: processedFile.url
@@ -315,19 +309,28 @@ class UploadService {
     staffData: Partial<StaffUploadData>
   ): Promise<UploadResult> {
     try {
+      console.log('🔍 updateStaffImage: Starting with staffId:', staffId);
+      console.log('🔍 updateStaffImage: File info:', { path: file.path, size: file.size, mimetype: file.mimetype });
+      console.log('🔍 updateStaffImage: Staff data:', staffData);
+      
       // Validate file
       const validation = this.validateFile(file, this.allowedImageTypes);
       if (!validation.success) {
+        console.log('🔍 updateStaffImage: File validation failed:', validation.error);
         await this.cleanupFile(file.path);
         return validation;
       }
+      console.log('🔍 updateStaffImage: File validation passed');
 
       // Get existing staff member
+      console.log('🔍 updateStaffImage: Looking for staff member with ID:', staffId);
       const existingStaff = await prisma.staffMember.findUnique({
         where: { id: staffId }
       });
+      console.log('🔍 updateStaffImage: Found staff member:', existingStaff ? 'Yes' : 'No');
 
       if (!existingStaff) {
+        console.log('🔍 updateStaffImage: Staff member not found, cleaning up file');
         await this.cleanupFile(file.path);
         return {
           success: false,
@@ -341,7 +344,7 @@ class UploadService {
       }
 
       // Optimize new image
-      console.log('🔍 UploadService: Starting image optimization for file:', file.path);
+      console.log('🔍 updateStaffImage: Starting image optimization for file:', file.path);
       const processedFile = await this.optimizeImage(file.path, {
         width: 800,
         height: 800,
@@ -349,9 +352,10 @@ class UploadService {
         createThumbnail: true,
         thumbnailSize: 200
       });
-      console.log('🔍 UploadService: Image optimization completed:', processedFile);
+      console.log('🔍 updateStaffImage: Image optimization completed:', processedFile);
 
       // Update staff member
+      console.log('🔍 updateStaffImage: Updating staff member in database');
       const updatedStaff = await prisma.staffMember.update({
         where: { id: staffId },
         data: {
@@ -359,16 +363,14 @@ class UploadService {
           ...(staffData.role && { role: staffData.role }),
           ...(staffData.email !== undefined && { email: staffData.email }),
           ...(staffData.phone !== undefined && { phone: staffData.phone }),
-          ...(staffData.bio !== undefined && { bio: staffData.bio }),
           ...(staffData.grade !== undefined && { grade: staffData.grade }),
-          ...(staffData.subjects && { subjects: JSON.stringify(staffData.subjects) }),
-          ...(staffData.qualifications !== undefined && { qualifications: staffData.qualifications }),
-          ...(staffData.experience !== undefined && { experience: staffData.experience }),
-          ...(staffData.category && { category: staffData.category as any }),
+          ...(staffData.subjects ? { subjects: JSON.stringify(staffData.subjects) } : { subjects: null }),
+          ...(staffData.category !== undefined && { category: staffData.category as any }),
           ...(staffData.order !== undefined && { order: staffData.order }),
           imageUrl: processedFile.url
         }
       });
+      console.log('🔍 updateStaffImage: Database update completed');
 
       // Clean up original file
       await this.cleanupFile(file.path);
@@ -501,7 +503,7 @@ class UploadService {
     try {
       const [staffCount, documentCount] = await Promise.all([
         prisma.staffMember.count(),
-        prisma.fileUpload.count()
+        prisma.applicationDocument.count()
       ]);
 
       // Calculate total upload directory size

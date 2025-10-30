@@ -46,7 +46,16 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
           left: 0,
           right: 0,
           height: '4px',
-          background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%)',
+          background: 'linear-gradient(90deg, #ffd700 0%, #d32f2f 25%, #ffd700 50%, #d32f2f 75%, #ffd700 100%)',
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '2px',
+          background: 'linear-gradient(90deg, transparent 0%, #d32f2f 50%, transparent 100%)',
         }
       }}>
         <Container maxWidth="lg">
