@@ -50,15 +50,17 @@ const FloatingSocialIcons: React.FC = () => {
     <FloatingContainer>
       {socialLinks.map((social, index) => (
         <Tooltip key={index} title={social.label} placement="right" arrow>
-          <StyledIconButton
-            component="a"
+          <a
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={social.label}
+            style={{ textDecoration: 'none' }}
           >
-            {social.icon}
-          </StyledIconButton>
+            <StyledIconButton>
+              {social.icon}
+            </StyledIconButton>
+          </a>
         </Tooltip>
       ))}
     </FloatingContainer>
