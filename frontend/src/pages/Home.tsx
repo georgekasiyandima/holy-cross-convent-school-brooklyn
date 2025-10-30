@@ -581,11 +581,11 @@ const Home: React.FC = () => {
                   mx: 'auto'
                 }}>
                   {[
-                    { icon: <Book />, label: 'Academics', color: '#1a237e' },
-                    { icon: <Church />, label: 'Spiritual', color: '#d32f2f' },
+                    { icon: <Book />, label: 'Academic', color: '#1a237e' },
                     { icon: <Computer />, label: 'Robotics', color: '#ff9800' },
+                    { icon: <SportsSoccer />, label: 'Sport', color: '#4caf50' },
                     { icon: <MusicNote />, label: 'Cultural', color: '#9c27b0' },
-                    { icon: <Groups />, label: 'Service', color: '#4caf50' }
+                    { icon: <Groups />, label: 'Service & Ethos', color: '#d32f2f' }
                   ].map((pillar, index) => (
                     <Chip
                       key={index}
