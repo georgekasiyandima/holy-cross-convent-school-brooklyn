@@ -11,7 +11,7 @@ const Hero = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'url("/ethosmain.png") center/cover no-repeat',
+  background: 'url("/ethomain.png") center/cover no-repeat',
   textAlign: 'center',
   '& > *': { position: 'relative', zIndex: 1 }
 }));
