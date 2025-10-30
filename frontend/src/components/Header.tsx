@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -47,22 +47,26 @@ interface HeaderProps {
 const schoolLogo = '/HCLOGO1.png';
 
 // Modern styled components with improved design
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
-  boxShadow: '0 8px 32px rgba(26, 35, 126, 0.3)',
+const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }) => ({
+  background: scrolled 
+    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.95) 0%, rgba(57, 73, 171, 0.95) 50%, rgba(92, 107, 192, 0.95) 100%)'
+    : 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
+  boxShadow: scrolled ? '0 4px 20px rgba(26, 35, 126, 0.4)' : '0 8px 32px rgba(26, 35, 126, 0.3)',
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.drawer + 1,
   backdropFilter: 'blur(20px)',
-  borderBottom: '3px solid #ffd700',
+  borderBottom: scrolled ? '2px solid #ffd700' : '3px solid #ffd700',
+  transition: 'all 0.3s ease-in-out',
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '2px',
+    height: scrolled ? '1px' : '2px',
     background: 'linear-gradient(90deg, transparent 0%, #ffd700 25%, #d32f2f 50%, #ffd700 75%, transparent 100%)',
+    transition: 'height 0.3s ease-in-out',
   },
   '&::after': {
     content: '""',
@@ -396,8 +400,20 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
   const [logoError] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50;
+      setScrolled(isScrolled);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -424,7 +440,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
 
   return (
     <>
-      <StyledAppBar role="banner" aria-label="School navigation">
+      <StyledAppBar role="banner" aria-label="School navigation" scrolled={scrolled}>
         <Container maxWidth="xl">
           <Toolbar sx={{ px: { xs: 1, sm: 1 }, py: 1 }}>
             {/* Logo and School Name */}
