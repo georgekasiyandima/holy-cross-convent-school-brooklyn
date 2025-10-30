@@ -581,16 +581,17 @@ const Home: React.FC = () => {
                   mx: 'auto'
                 }}>
                   {[
-                    { icon: <Book />, label: 'Academic', color: '#1a237e' },
-                    { icon: <Computer />, label: 'Robotics', color: '#ff9800' },
-                    { icon: <SportsSoccer />, label: 'Sport', color: '#4caf50' },
-                    { icon: <MusicNote />, label: 'Cultural', color: '#9c27b0' },
-                    { icon: <Groups />, label: 'Service & Ethos', color: '#d32f2f' }
+                    { icon: <Book />, label: 'Academic', color: '#1a237e', path: '/academic' },
+                    { icon: <Computer />, label: 'Robotics', color: '#ff9800', path: '/robotics' },
+                    { icon: <SportsSoccer />, label: 'Sport', color: '#4caf50', path: '/sport' },
+                    { icon: <MusicNote />, label: 'Cultural', color: '#9c27b0', path: '/cultural' },
+                    { icon: <Groups />, label: 'Service & Ethos', color: '#d32f2f', path: '/service-ethos' }
                   ].map((pillar, index) => (
                     <Chip
                       key={index}
                       icon={pillar.icon}
                       label={pillar.label}
+                      onClick={() => navigate(pillar.path)}
                       sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.15)',
                         color: 'white',
@@ -600,6 +601,7 @@ const Home: React.FC = () => {
                         py: 1,
                         fontSize: '0.9rem',
                         backdropFilter: 'blur(10px)',
+                        cursor: 'pointer',
                         '&:hover': {
                           backgroundColor: 'rgba(255, 255, 255, 0.25)',
                           transform: 'scale(1.05)'
