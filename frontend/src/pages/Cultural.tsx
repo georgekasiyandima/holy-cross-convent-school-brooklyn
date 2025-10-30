@@ -13,13 +13,6 @@ const Hero = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   background: 'url("/AC2.jpg") center/cover no-repeat',
   textAlign: 'center',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    inset: 0,
-    backdropFilter: 'blur(8px)',
-    zIndex: 0
-  },
   '& > *': { position: 'relative', zIndex: 1 }
 }));
 
@@ -256,7 +249,7 @@ const Cultural: React.FC = () => {
                 component="img" 
                 image="/ac003.jpg" 
                 alt="Cultural Activity"
-                sx={{ height: 400, objectFit: 'cover' }}
+                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
               />
               <CardContent>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
@@ -275,7 +268,7 @@ const Cultural: React.FC = () => {
                 component="img" 
                 image="/cultra001.jpg" 
                 alt="Cultural Activity"
-                sx={{ height: 400, objectFit: 'cover' }}
+                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
               />
               <CardContent>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
@@ -294,7 +287,7 @@ const Cultural: React.FC = () => {
                 component="img" 
                 image="/AC3.jpg" 
                 alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
+                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
               />
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
@@ -313,7 +306,7 @@ const Cultural: React.FC = () => {
                 component="img" 
                 image="/cultra002.jpg" 
                 alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
+                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
               />
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
@@ -332,7 +325,7 @@ const Cultural: React.FC = () => {
                 component="img" 
                 image="/cultra004.jpg" 
                 alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
+                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
               />
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
