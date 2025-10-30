@@ -49,14 +49,14 @@ const schoolLogo = '/HCLOGO1.png';
 // Modern styled components with improved design
 const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }) => ({
   background: scrolled 
-    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.92) 0%, rgba(57, 73, 171, 0.92) 50%, rgba(92, 107, 192, 0.92) 100%)'
+    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.35) 0%, rgba(57, 73, 171, 0.35) 50%, rgba(92, 107, 192, 0.35) 100%)'
     : 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
-  boxShadow: scrolled ? '0 4px 20px rgba(26, 35, 126, 0.4)' : '0 8px 32px rgba(26, 35, 126, 0.3)',
+  boxShadow: scrolled ? '0 2px 10px rgba(26, 35, 126, 0.2)' : '0 8px 32px rgba(26, 35, 126, 0.3)',
   position: 'sticky',
   top: 0,
   zIndex: theme.zIndex.drawer + 1,
-  backdropFilter: 'blur(20px)',
-  borderBottom: scrolled ? '2px solid #ffd700' : '3px solid #ffd700',
+  backdropFilter: scrolled ? 'blur(40px)' : 'blur(20px)',
+  borderBottom: scrolled ? '1px solid rgba(255, 215, 0, 0.3)' : '3px solid #ffd700',
   transition: 'all 0.4s ease-in-out',
   '&::before': {
     content: '""',
@@ -64,7 +64,7 @@ const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }
     top: 0,
     left: 0,
     right: 0,
-    height: scrolled ? '1px' : '2px',
+    height: scrolled ? '0px' : '2px',
     background: 'linear-gradient(90deg, transparent 0%, #ffd700 25%, #d32f2f 50%, #ffd700 75%, transparent 100%)',
     transition: 'height 0.4s ease-in-out',
   },
@@ -74,8 +74,9 @@ const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }
     bottom: 0,
     left: 0,
     right: 0,
-    height: '1px',
+    height: scrolled ? '0px' : '1px',
     background: 'linear-gradient(90deg, transparent 0%, #d32f2f 50%, transparent 100%)',
+    transition: 'height 0.4s ease-in-out',
   },
 }));
 
@@ -409,7 +410,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
     const handleScroll = () => {
       const isScrolled = window.scrollY > 50;
       setScrolled(isScrolled);
-      console.log('Scroll Y:', window.scrollY, 'Scrolled:', isScrolled);
     };
 
     // Set initial scroll state

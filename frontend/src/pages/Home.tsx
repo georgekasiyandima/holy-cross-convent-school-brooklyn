@@ -294,7 +294,7 @@ const heroImages = [
   {
     src: '/COMPUTERLAB.jpg',
     title: 'Technology Hub',
-    description: 'Preparing students for the digital future'
+    description: 'Preparing learners for the digital future'
   },
   {
     src: '/Cardinal Visit 2023 WEB 01.jpg',
@@ -315,8 +315,8 @@ const Home: React.FC = () => {
   const [animateStats, setAnimateStats] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Get student videos
-  const studentVideos = videoManager.getVideosByCategory('students');
+  // Get learner videos
+  const learnerVideos = videoManager.getVideosByCategory('students');
 
   // Hero image carousel effect
   useEffect(() => {
@@ -362,7 +362,7 @@ const Home: React.FC = () => {
   // School statistics data
   const schoolStats = [
     { number: '65+', label: 'Years of Excellence', icon: <History /> },
-    { number: '500+', label: 'Students', icon: <People /> },
+    { number: '500+', label: 'Learners', icon: <People /> },
     { number: '98%', label: 'Pass Rate', icon: <CheckCircle /> },
     { number: '15+', label: 'Programs', icon: <School /> }
   ];
@@ -859,7 +859,7 @@ const Home: React.FC = () => {
               </Typography>
               <Typography variant="body1" sx={{ color: '#666', fontStyle: 'italic', maxWidth: '800px', mx: 'auto' }}>
                 "While our facilities and methods have modernized, our commitment to Catholic education 
-                and student excellence remains unchanged since 1959. Every student who walks through our doors 
+                and learner excellence remains unchanged since 1959. Every learner who walks through our doors 
                 becomes part of our extended family, carrying forward our legacy of faith, learning, and service."
               </Typography>
             </Box>
@@ -873,7 +873,7 @@ const Home: React.FC = () => {
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
                   Rooted in Catholic tradition, we provide a values-based education that 
-                  nurtures both academic excellence and spiritual growth. Our students 
+                  nurtures both academic excellence and spiritual growth. Our learners 
                   learn to serve others and make a positive impact in their communities.
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -1102,11 +1102,11 @@ const Home: React.FC = () => {
               }}
             />
             <Typography variant="h3" component="h2" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
-              Preparing Students for Tomorrow
+              Preparing Learners for Tomorrow
             </Typography>
             <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', maxWidth: '600px', mx: 'auto' }}>
               We combine time-honored Catholic values with cutting-edge educational 
-              approaches to prepare students for success in a rapidly changing world.
+              approaches to prepare learners for success in a rapidly changing world.
             </Typography>
           </Box>
 
@@ -1139,7 +1139,7 @@ const Home: React.FC = () => {
                   Academic Excellence
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Rigorous curriculum designed to challenge and inspire students to reach their full potential.
+                  Rigorous curriculum designed to challenge and inspire learners to reach their full potential.
                 </Typography>
               </CardContent>
             </Card>
@@ -1165,7 +1165,7 @@ const Home: React.FC = () => {
                   Faith-Based Education
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Rooted in Catholic values while welcoming students of all faiths and backgrounds.
+                  Rooted in Catholic values while welcoming learners of all faiths and backgrounds.
                 </Typography>
               </CardContent>
             </Card>
@@ -1187,16 +1187,16 @@ const Home: React.FC = () => {
       </Container>
 
 
-      {/* Student Showcase Section */}
-      {studentVideos.length > 0 && (
+      {/* Learner Showcase Section */}
+      {learnerVideos.length > 0 && (
         <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
           <Container maxWidth="lg">
             <Box sx={{ textAlign: 'center', mb: 6 }}>
               <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
-                Student Achievements
+                Learner Achievements
               </Typography>
               <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                Watch our students showcase their talents and achievements
+                Watch our learners showcase their talents and achievements
               </Typography>
             </Box>
 
@@ -1204,21 +1204,21 @@ const Home: React.FC = () => {
             <Card sx={{ mb: 6, boxShadow: 3, background: 'linear-gradient(135deg, #e3eafc 0%, #fffde7 100%)' }}>
               <CardContent>
                 <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, textAlign: 'center' }}>
-                  {studentVideos[0].title}
+                  {learnerVideos[0].title}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#555', mb: 3, textAlign: 'center' }}>
-                  {studentVideos[0].description}
+                  {learnerVideos[0].description}
                 </Typography>
                 
                 <VideoContainer>
-                  <div dangerouslySetInnerHTML={{ __html: studentVideos[0].embedCode }} />
+                  <div dangerouslySetInnerHTML={{ __html: learnerVideos[0].embedCode }} />
                 </VideoContainer>
                 
                 <Box sx={{ textAlign: 'center', mt: 2 }}>
                   <Button
                     variant="outlined"
                     startIcon={<Facebook />}
-                    href={studentVideos[0].facebookUrl}
+                    href={learnerVideos[0].facebookUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
@@ -1238,7 +1238,7 @@ const Home: React.FC = () => {
 
             {/* Video Gallery */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
-              {studentVideos.slice(1).map((video) => (
+              {learnerVideos.slice(1).map((video) => (
                 <VideoCard key={video.id} onClick={() => handleVideoClick(video)}>
                   <CardContent>
                     <VideoThumbnail>
@@ -1254,7 +1254,7 @@ const Home: React.FC = () => {
                     </Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       <Chip 
-                        label="Student Achievement" 
+                        label="Learner Achievement" 
                         size="small" 
                         color="secondary" 
                         variant="outlined"
