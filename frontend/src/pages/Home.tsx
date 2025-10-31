@@ -563,11 +563,7 @@ const Home: React.FC = () => {
                   fontSize: 'clamp(1rem, 2vw, 1.2rem)',
                   color: 'white',
                   fontWeight: 500,
-                  textShadow: holyCrossBrand.textShadowHeavy,
-                  backgroundColor: 'rgba(0,0,0,0.4)',
-                  padding: '20px 24px',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(10px)'
+                  textShadow: holyCrossBrand.textShadowHeavy
                 }}
               >
                 For over 65 years, we've been nurturing young minds and hearts in Brooklyn, 
