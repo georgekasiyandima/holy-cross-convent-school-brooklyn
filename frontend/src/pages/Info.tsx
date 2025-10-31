@@ -53,7 +53,7 @@ const Info: React.FC = () => (
       }}
     >
       <Avatar
-        src="/HCLOGO1.png"
+        src="/Logo.jpeg"
         alt="School Logo"
         sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
       />

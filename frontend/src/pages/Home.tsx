@@ -124,6 +124,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   color: 'white',
   textAlign: 'center',
+  paddingTop: '80px', // Add padding to account for fixed header
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -259,12 +260,17 @@ const TimelineCard = styled(Card)(({ theme }) => ({
 
 
 
-// Hero images - reduced to 3 strongest visuals
+// Hero images - including Robotics showcase
 const heroImages = [
   {
     src: '/HCCS25.jpeg',
     title: 'Welcome to Holy Cross',
     description: 'Where faith, learning, and community unite'
+  },
+  {
+    src: '/ROBTX1.jpg',
+    title: 'Robotics Excellence',
+    description: 'Innovation, creativity, and future-ready learning'
   },
   {
     src: '/SCIENCEEXPO24.jpg',
@@ -395,7 +401,9 @@ const Home: React.FC = () => {
                       sx={{ 
                         fontWeight: 600, 
                         mb: 1,
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                        color: '#ffffff',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)',
+                        fontSize: 'clamp(1.5rem, 3vw, 2rem)'
                       }}
                     >
                       {heroImages[currentImageIndex].title}
@@ -403,8 +411,10 @@ const Home: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       sx={{ 
-                        opacity: 0.9,
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                        color: '#ffffff',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.5)',
+                        fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+                        fontWeight: 500
                       }}
                     >
                       {heroImages[currentImageIndex].description}

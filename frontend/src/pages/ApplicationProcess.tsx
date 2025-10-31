@@ -55,52 +55,15 @@ import ApplicationDocumentUpload from '../components/ApplicationDocumentUpload';
 
 // Styled components for better visual appeal
 const HeroSection = styled(Box)(({ theme }) => ({
-  background: 'url("/BOOKDAY08.jpg") center/cover',
-  color: 'white',
+  backgroundColor: 'transparent',
+  color: '#1a237e',
   padding: theme.spacing(8, 0),
   position: 'relative',
-  overflow: 'hidden',
-  minHeight: '500px',
+  minHeight: '300px',
   display: 'flex',
   alignItems: 'center',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(57, 73, 171, 0.75) 50%, rgba(255, 215, 0, 0.65) 100%)',
-    zIndex: 1,
-  },
-  '& > *': {
-    position: 'relative',
-    zIndex: 2,
-  }
 }));
 
-const ProcessCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-  border: '1px solid #e3f2fd',
-  borderRadius: theme.spacing(2),
-  padding: theme.spacing(3),
-  position: 'relative',
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
-    borderRadius: `${theme.spacing(2)}px ${theme.spacing(2)}px 0 0`,
-  }
-}));
 
 const GradeRCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
@@ -578,7 +541,7 @@ const ApplicationProcess: React.FC = () => {
       case 0:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Learner Information
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -702,13 +665,13 @@ const ApplicationProcess: React.FC = () => {
       case 1:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Parent/Guardian Details
             </Typography>
             
             {/* Mother's Information */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Mother's Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -766,7 +729,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Father's Information */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Father's Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -824,7 +787,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Responsible Party (if not parents) */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 If responsible party not parents
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -887,7 +850,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Learner Address (if different from parents) */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Address - Learner (If not same as parents)
               </Typography>
               <TextField
@@ -905,13 +868,13 @@ const ApplicationProcess: React.FC = () => {
       case 2:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Religious & Family Information
             </Typography>
             
             {/* Religious Information */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Religious Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -967,7 +930,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Family Information */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Family Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1026,13 +989,13 @@ const ApplicationProcess: React.FC = () => {
       case 3:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Employment Details
             </Typography>
             
             {/* Mother's Employment */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Mother's Employment Details
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1082,7 +1045,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Father's Employment */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Father's Employment Details
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1132,7 +1095,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Responsible Party Employment */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 If responsible party not parent - Employment Details
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1182,7 +1145,7 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Self-employed and Marital Status */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Additional Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1219,7 +1182,7 @@ const ApplicationProcess: React.FC = () => {
       case 4:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Current School Information
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1262,13 +1225,13 @@ const ApplicationProcess: React.FC = () => {
       case 5:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Payment Method & Required Documents
             </Typography>
             
             {/* Payment Method */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Method of Payment
               </Typography>
               <FormControl fullWidth error={!!fieldErrors.paymentMethod}>
@@ -1295,20 +1258,20 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Required Documents */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Required Documents
               </Typography>
               <Alert severity="warning" sx={{ mb: 3 }}>
-                <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   <strong>APPLICATION WILL NOT BE ACCEPTED WITHOUT ALL RELEVANT DOCUMENTS</strong>
                 </Typography>
               </Alert>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', fontWeight: 600 }}>
+                <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', fontWeight: 600 }}>
                   Please ensure you have the following documents ready:
                 </Typography>
                 <Box sx={{ pl: 2 }}>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     • Birth certificate<br />
                     • Baptism certificate (if applicable/Catholic learners)<br />
                     • Recent photograph of Learner<br />
@@ -1327,11 +1290,11 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Terms and Conditions */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Terms and Conditions
               </Typography>
               <Alert severity="info" sx={{ mb: 3 }}>
-                <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   <strong>NOTE:</strong> PARENTS WILL BE NOTIFIED TELEPHONICALLY OF OUTCOME OF APPLICATION - NO DISCUSSION WILL BE LED INTO ONCE A DECISION HAS BEEN REACHED
                 </Typography>
               </Alert>
@@ -1344,7 +1307,7 @@ const ApplicationProcess: React.FC = () => {
                   />
                 }
                 label="I agree to the school's terms and conditions"
-                sx={{ fontFamily: '"Kalam", cursive' }}
+                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               />
               {fieldErrors.agreeToTerms && (
                 <Typography variant="caption" color="error" sx={{ ml: 4, display: 'block' }}>
@@ -1360,7 +1323,7 @@ const ApplicationProcess: React.FC = () => {
                   />
                 }
                 label="I agree to the privacy policy and data processing"
-                sx={{ fontFamily: '"Kalam", cursive' }}
+                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               />
               {fieldErrors.agreeToPrivacy && (
                 <Typography variant="caption" color="error" sx={{ ml: 4, display: 'block' }}>
@@ -1374,10 +1337,10 @@ const ApplicationProcess: React.FC = () => {
       case 6:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Upload Supporting Documents
             </Typography>
-            <Typography variant="body1" sx={{ mb: 3, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="body1" sx={{ mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Please upload all required supporting documents for your application. You can upload multiple documents of different types.
             </Typography>
             {applicationId && (
@@ -1395,41 +1358,41 @@ const ApplicationProcess: React.FC = () => {
       case 7:
         return (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               Review Your Application
             </Typography>
             <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Application Summary
               </Typography>
               <Divider sx={{ my: 2 }} />
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Learner's Name:</strong> {formData.surname} {formData.christianName}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Date of Birth:</strong> {formData.dateOfBirth}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Grade:</strong> {formData.gradeApplying}
                   </Typography>
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Mother:</strong> {formData.motherFullName}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Father:</strong> {formData.fatherFullName}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Payment Method:</strong> {formData.paymentMethod}
                   </Typography>
                 </Box>
               </Box>
             </Paper>
             <Alert severity="success" sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 <strong>Next Steps:</strong> After submitting your application, our admissions team will review it and contact you within 2-3 business days to schedule an interview and school tour.
               </Typography>
             </Alert>
@@ -1460,8 +1423,8 @@ const ApplicationProcess: React.FC = () => {
               sx={{ 
                 fontWeight: 700, 
                 mb: 2,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                color: 'white'
+                color: '#1a237e',
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               Application Process
@@ -1470,9 +1433,9 @@ const ApplicationProcess: React.FC = () => {
               variant="h5" 
               sx={{ 
                 mb: 4, 
-                textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-                color: 'white',
-                fontWeight: 600
+                color: '#3949ab',
+                fontWeight: 600,
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               Join Our Holy Cross Family
@@ -1483,13 +1446,10 @@ const ApplicationProcess: React.FC = () => {
                 maxWidth: '800px', 
                 margin: '0 auto', 
                 fontSize: '1.1rem',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                color: 'white',
-                fontWeight: 500,
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                padding: '16px 24px',
-                borderRadius: '8px',
-                backdropFilter: 'blur(10px)'
+                color: '#555',
+                fontWeight: 400,
+                fontFamily: '"Lato", "Open Sans", sans-serif',
+                lineHeight: 1.8
               }}
             >
               We welcome applications from families who share our values of faith, excellence, and community. 
@@ -1537,55 +1497,147 @@ const ApplicationProcess: React.FC = () => {
           </Box>
         </GradeRCard>
 
-        {/* Application Process Overview */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" component="h2" gutterBottom sx={{ textAlign: 'center', color: '#1a237e', fontWeight: 700, mb: 4 }}>
-            Application Process
+        {/* Helpful Resources for Prospective Parents */}
+        <Box sx={{ mb: 6, p: 4, bgcolor: '#f8f9fa', borderRadius: 2, border: '1px solid #e3f2fd' }}>
+          <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, mb: 3 }}>
+            Helpful Resources
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 24px)' } }}>
-              <ProcessCard>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Person sx={{ fontSize: 50, color: '#1a237e', mb: 2 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>1. Complete Application</Typography>
-                  <Typography variant="body2">
-                    Fill out our comprehensive online application form with your child's and family information.
-                  </Typography>
-                </Box>
-              </ProcessCard>
+          <Typography variant="body1" sx={{ mb: 3, color: '#555', lineHeight: 1.8 }}>
+            Before completing your application, explore these resources to help you make an informed decision about joining the Holy Cross family:
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Description sx={{ color: '#1a237e', mt: 0.5 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                  Fees Structure 2026
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                  Review our comprehensive fee structure including tuition, activity fees, and payment options.
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  href="/forms" 
+                  sx={{ color: '#1a237e', borderColor: '#1a237e', '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' } }}
+                >
+                  View Fees Structure
+                </Button>
+              </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 24px)' } }}>
-              <ProcessCard>
-                <Box sx={{ textAlign: 'center' }}>
-                  <ContactPhone sx={{ fontSize: 50, color: '#1a237e', mb: 2 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>2. Initial Contact</Typography>
-                  <Typography variant="body2">
-                    Our admissions team will contact you within 2-3 business days to discuss your application.
-                  </Typography>
-                </Box>
-              </ProcessCard>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Description sx={{ color: '#1a237e', mt: 0.5 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                  School Uniforms
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                  Learn about our uniform requirements, where to purchase, and uniform guidelines.
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  href="/info" 
+                  sx={{ color: '#1a237e', borderColor: '#1a237e', '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' } }}
+                >
+                  View Uniform Information
+                </Button>
+              </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 24px)' } }}>
-              <ProcessCard>
-                <Box sx={{ textAlign: 'center' }}>
-                  <School sx={{ fontSize: 50, color: '#1a237e', mb: 2 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>3. School Tour</Typography>
-                  <Typography variant="body2">
-                    Visit our campus for a personalized tour and meet with our staff and teachers.
-                  </Typography>
-                </Box>
-              </ProcessCard>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <School sx={{ color: '#1a237e', mt: 0.5 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                  School Information
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                  Discover more about our mission, values, academic programs, and school facilities.
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  href="/info" 
+                  sx={{ color: '#1a237e', borderColor: '#1a237e', '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' } }}
+                >
+                  Learn More About Our School
+                </Button>
+              </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 24px)' } }}>
-              <ProcessCard>
-                <Box sx={{ textAlign: 'center' }}>
-                  <CheckCircle sx={{ fontSize: 50, color: '#1a237e', mb: 2 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>4. Enrollment</Typography>
-                  <Typography variant="body2">
-                    Complete the enrollment process and welcome your child to the Holy Cross family!
-                  </Typography>
-                </Box>
-              </ProcessCard>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Group sx={{ color: '#1a237e', mt: 0.5 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                  Meet Our Staff
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                  Get to know our dedicated teachers and staff who will guide your child's educational journey.
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  href="/staff" 
+                  sx={{ color: '#1a237e', borderColor: '#1a237e', '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' } }}
+                >
+                  View Our Staff
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Application Process Overview - Plain Text Version */}
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, mb: 3 }}>
+            Application Process Overview
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Person sx={{ fontSize: 32, color: '#1a237e' }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  1. Complete Application
+                </Typography>
+              </Box>
+              <Typography variant="body1" sx={{ color: '#555', lineHeight: 1.8, pl: 7 }}>
+                Fill out our comprehensive online application form with your child's and family information. The form is divided into clear sections to make the process straightforward and manageable.
+              </Typography>
+            </Box>
+
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <ContactPhone sx={{ fontSize: 32, color: '#1a237e' }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  2. Initial Contact
+                </Typography>
+              </Box>
+              <Typography variant="body1" sx={{ color: '#555', lineHeight: 1.8, pl: 7 }}>
+                Our admissions team will review your application and contact you within 2-3 business days to discuss your application, answer any questions, and schedule the next steps.
+              </Typography>
+            </Box>
+
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <School sx={{ fontSize: 32, color: '#1a237e' }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  3. School Tour & Interview
+                </Typography>
+              </Box>
+              <Typography variant="body1" sx={{ color: '#555', lineHeight: 1.8, pl: 7 }}>
+                Visit our campus for a personalized tour where you'll meet with our staff and teachers, see our facilities, and experience our welcoming community firsthand. This is also an opportunity for us to get to know your family better.
+              </Typography>
+            </Box>
+
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <CheckCircle sx={{ fontSize: 32, color: '#1a237e' }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                  4. Enrollment
+                </Typography>
+              </Box>
+              <Typography variant="body1" sx={{ color: '#555', lineHeight: 1.8, pl: 7 }}>
+                Once accepted, complete the enrollment process including document submission, fee payment, and orientation. Welcome your child to the Holy Cross family!
+              </Typography>
             </Box>
           </Box>
         </Box>
@@ -1729,7 +1781,7 @@ const ApplicationProcess: React.FC = () => {
                 color: '#1a237e',
                 fontWeight: 700,
                 mb: 4,
-                fontFamily: '"Kalam", cursive'
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               Transport Providers
@@ -1740,7 +1792,7 @@ const ApplicationProcess: React.FC = () => {
                 textAlign: 'center',
                 mb: 4,
                 color: '#666',
-                fontFamily: '"Kalam", cursive'
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               We have compiled a list of reliable transport providers who service various areas around Brooklyn.
@@ -1748,11 +1800,11 @@ const ApplicationProcess: React.FC = () => {
             </Typography>
             
             <Paper sx={{ p: 4, mb: 4 }}>
-              <Typography variant="h6" sx={{ mb: 3, color: '#d32f2f', fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ mb: 3, color: '#d32f2f', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Transport Contacts and Areas
               </Typography>
               <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: '"Kalam", cursive' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#1a237e', color: 'white' }}>
                       <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Name</th>
@@ -1815,7 +1867,7 @@ const ApplicationProcess: React.FC = () => {
                 </table>
               </Box>
               <Alert severity="warning" sx={{ mt: 3 }}>
-                <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   <strong>PLEASE NOTE:</strong> These are private individuals and have no contracts or interest between the Holy Cross School and the drivers. 
                   They are independent. These are contacts given to us, Holy Cross are not in any way liable or responsible for any occurrence or things going missing etc. 
                   This is between yourself and your driver.
@@ -1836,7 +1888,7 @@ const ApplicationProcess: React.FC = () => {
                 color: '#1a237e',
                 fontWeight: 700,
                 mb: 4,
-                fontFamily: '"Kalam", cursive'
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               Grade R School Uniforms
@@ -1845,15 +1897,15 @@ const ApplicationProcess: React.FC = () => {
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, mb: 6 }}>
               {/* Summer Uniform */}
               <Paper sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' }, p: 4, border: '2px solid #d32f2f' }}>
-                <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 3, fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   Summer Uniform
                 </Typography>
                 
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     Girls:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', pl: 2 }}>
+                  <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', pl: 2 }}>
                     • School golf shirt<br />
                     • Royal blue school skorts/shorts<br />
                     • Royal blue school jersey (long or sleeveless)<br />
@@ -1862,10 +1914,10 @@ const ApplicationProcess: React.FC = () => {
                 </Box>
                 
                 <Box>
-                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     Boys:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', pl: 2 }}>
+                  <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', pl: 2 }}>
                     • School golf shirt<br />
                     • Royal blue school shorts<br />
                     • Royal blue school jersey (long or sleeveless)<br />
@@ -1876,15 +1928,15 @@ const ApplicationProcess: React.FC = () => {
 
               {/* Winter Uniform */}
               <Paper sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' }, p: 4, border: '2px solid #1a237e' }}>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3, fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   Winter Uniform
                 </Typography>
                 
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     Girls:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', pl: 2 }}>
+                  <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', pl: 2 }}>
                     • School tracksuit<br />
                     • Long-sleeved school shirt<br />
                     • Royal blue school jersey (long or sleeveless)<br />
@@ -1893,10 +1945,10 @@ const ApplicationProcess: React.FC = () => {
                 </Box>
                 
                 <Box>
-                  <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+                  <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     Boys:
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', pl: 2 }}>
+                  <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', pl: 2 }}>
                     • School tracksuit<br />
                     • Long-sleeved school golf shirt<br />
                     • Royal blue school jersey (long or sleeveless)<br />
@@ -1908,19 +1960,19 @@ const ApplicationProcess: React.FC = () => {
 
             {/* Stockist Information */}
             <Paper sx={{ p: 4, backgroundColor: '#f8f9fa', border: '2px solid #ffd700' }}>
-              <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Our Stockist
               </Typography>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 De Jagers Outfitters in Bellville
               </Typography>
-              <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', mb: 2 }}>
+              <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
                 <strong>Address:</strong> Willowbridge Mall, 39 Carl Cronje Road, Tygervalley
               </Typography>
-              <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', mb: 3 }}>
+              <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', mb: 3 }}>
                 <strong>Telephone:</strong> +27 (21) 914 7816
               </Typography>
-              <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+              <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 <strong>Note:</strong> Tracksuits, long-sleeved golf shirts and school backpacks may be ordered and purchased from school.
               </Typography>
             </Paper>
@@ -1929,24 +1981,24 @@ const ApplicationProcess: React.FC = () => {
 
         {/* Contact Information */}
         <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Typography variant="h5" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Kalam", cursive' }}>
+          <Typography variant="h5" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
             Need Help with Your Application?
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3, fontFamily: '"Kalam", cursive' }}>
+          <Typography variant="body1" sx={{ mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
             Our admissions team is here to help you through the application process.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Phone sx={{ mr: 1, color: '#1a237e' }} />
-              <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive' }}>+27 21 511 4337</Typography>
+              <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>+27 21 511 4337</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Email sx={{ mr: 1, color: '#1a237e' }} />
-              <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive' }}>admin@holycrossbrooklyn.co.za</Typography>
+              <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>admin@holycrossbrooklyn.co.za</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LocationOn sx={{ mr: 1, color: '#1a237e' }} />
-              <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive' }}>162 Koeberg Road, Brooklyn</Typography>
+              <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>162 Koeberg Road, Brooklyn</Typography>
             </Box>
           </Box>
         </Box>

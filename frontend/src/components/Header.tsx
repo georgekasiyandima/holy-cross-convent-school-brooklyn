@@ -20,7 +20,9 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  ExpandMore
+  ExpandMore,
+  ChevronRight,
+  ArrowForward
 } from '@mui/icons-material';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
@@ -44,40 +46,23 @@ interface HeaderProps {
 
 
 // Logo path constant
-const schoolLogo = '/HCLOGO1.png';
+const schoolLogo = '/L1.png';
 
-// Modern styled components with improved design
+// Frameless header fixed on scroll
 const StyledAppBar = styled(AppBar)<{ scrolled?: boolean }>(({ theme, scrolled }) => ({
   background: scrolled 
-    ? 'linear-gradient(135deg, rgba(26, 35, 126, 0.35) 0%, rgba(57, 73, 171, 0.35) 50%, rgba(92, 107, 192, 0.35) 100%)'
-    : 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
-  boxShadow: scrolled ? '0 2px 10px rgba(26, 35, 126, 0.2)' : '0 8px 32px rgba(26, 35, 126, 0.3)',
-  position: 'sticky',
+    ? 'rgba(255, 255, 255, 0.98)' 
+    : 'transparent',
+  boxShadow: scrolled 
+    ? '0 2px 8px rgba(0, 0, 0, 0.1)' 
+    : 'none',
+  position: 'fixed',
   top: 0,
+  left: 0,
+  right: 0,
   zIndex: theme.zIndex.drawer + 1,
-  backdropFilter: scrolled ? 'blur(40px)' : 'blur(20px)',
-  borderBottom: scrolled ? '1px solid rgba(255, 215, 0, 0.3)' : '3px solid #ffd700',
   transition: 'all 0.4s ease-in-out',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: scrolled ? '0px' : '2px',
-    background: 'linear-gradient(90deg, transparent 0%, #ffd700 25%, #d32f2f 50%, #ffd700 75%, transparent 100%)',
-    transition: 'height 0.4s ease-in-out',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: scrolled ? '0px' : '1px',
-    background: 'linear-gradient(90deg, transparent 0%, #d32f2f 50%, transparent 100%)',
-    transition: 'height 0.4s ease-in-out',
-  },
+  backdropFilter: scrolled ? 'blur(10px)' : 'none',
 }));
 
 const LogoContainer = styled(Box)({
@@ -120,42 +105,26 @@ const LogoFallback = styled(Box)({
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
 });
 
-const NavButton = styled(Button)(({ theme }) => ({
-  color: '#ffffff',
+const NavButton = styled(Button)<{ scrolled?: boolean }>(({ theme, scrolled }) => ({
+  color: scrolled ? '#1a237e' : '#1a237e',
   fontWeight: 600,
-  fontSize: '0.85rem',
+  fontSize: '0.9rem',
   textTransform: 'none',
-  padding: '8px 12px',
-  margin: '0 1px',
-  borderRadius: '20px',
+  padding: '10px 16px',
+  margin: '0 2px',
+  borderRadius: '8px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   minWidth: 'auto',
   '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(26, 35, 126, 0.08)',
     transform: 'translateY(-2px)',
-    boxShadow: '0 8px 25px rgba(255, 215, 0, 0.4)',
-    color: '#ffd700',
+    color: '#1a237e',
   },
   '&.active': {
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
-    color: '#ffd700',
-    border: '1px solid rgba(255, 215, 0, 0.5)',
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent)',
-    transition: 'left 0.6s ease',
-  },
-  '&:hover::before': {
-    left: '100%',
+    backgroundColor: 'rgba(26, 35, 126, 0.12)',
+    color: '#1a237e',
   },
   '& .MuiButton-startIcon': {
     marginRight: '6px',
@@ -272,33 +241,33 @@ const MobileDrawer = memo(({
   mobileOpen: boolean;
   handleDrawerToggle: () => void;
 }) => (
-  <Drawer
-    variant="temporary"
-    anchor="right"
-    open={mobileOpen}
-    onClose={handleDrawerToggle}
-    ModalProps={{
-      keepMounted: true, // Better open performance on mobile.
-    }}
-    sx={{
-      display: { xs: 'block', md: 'none' },
-      '& .MuiDrawer-paper': { 
-        boxSizing: 'border-box', 
-        width: 280,
-        background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 50%, #5c6bc0 100%)',
-        backdropFilter: 'blur(20px)',
-        borderLeft: '3px solid #ffd700',
-      },
-    }}
-  >
-    <Box sx={{ width: 280, pt: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 2 }}>
+      <Drawer
+        variant="temporary"
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { 
+            boxSizing: 'border-box', 
+            width: 320,
+            background: '#ffffff',
+            borderLeft: '2px solid #ffd700',
+            boxShadow: '-4px 0 20px rgba(26, 35, 126, 0.1)',
+          },
+        }}
+      >
+      <Box sx={{ width: '100%', pt: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, mb: 3, pb: 2, borderBottom: '1px solid rgba(26, 35, 126, 0.1)' }}>
         <LogoImage src={schoolLogo} alt="Holy Cross Convent School" />
-        <Typography variant="h6" sx={{ ml: 1, color: '#ffffff', fontWeight: 600, textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}>
+        <Typography variant="h6" sx={{ ml: 1, color: '#1a237e', fontWeight: 700 }}>
           Holy Cross
         </Typography>
       </Box>
-      <List>
+      <List sx={{ px: 1 }}>
         {navigationItems.map((item, index) => (
           <Fade in timeout={300 + index * 100} key={item.name}>
             <span>
@@ -307,17 +276,20 @@ const MobileDrawer = memo(({
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
                   backgroundColor: currentPage === item.name 
-                    ? 'rgba(255, 215, 0, 0.2)' 
+                    ? 'rgba(26, 35, 126, 0.1)' 
                     : 'transparent',
                   cursor: 'pointer',
-                  borderRadius: '12px',
-                  margin: '2px 8px',
+                  borderRadius: '8px',
+                  margin: '4px 8px',
                   transition: 'all 0.3s ease',
-                  border: item.name === 'SUPPORT US' ? '1px solid rgba(255, 215, 0, 0.5)' : 'none',
+                  border: item.name === 'SUPPORT US' ? '1px solid #ffd700' : 'none',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                    backgroundColor: 'rgba(26, 35, 126, 0.08)',
                     transform: 'translateX(4px)',
-                    borderColor: item.name === 'SUPPORT US' ? 'rgba(255, 215, 0, 0.8)' : 'transparent',
+                    borderColor: item.name === 'SUPPORT US' ? '#ffd700' : 'transparent',
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
@@ -326,28 +298,36 @@ const MobileDrawer = memo(({
                   primary={item.name} 
                   sx={{
                     '& .MuiTypography-root': {
-                      fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' ? 600 : 400),
-                      color: '#ffffff',
+                      fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' ? 600 : 500),
+                      color: '#1a237e',
+                      fontSize: '0.95rem',
                     }
                   }}
                 />
+                {item.path && (
+                  <ChevronRight sx={{ color: '#9e9e9e', fontSize: '1.2rem' }} />
+                )}
               </ListItem>
             ) : (
               <>
                 <ListItem 
                   sx={{
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    borderRadius: '12px',
-                    margin: '2px 8px',
-                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    backgroundColor: 'rgba(26, 35, 126, 0.05)',
+                    borderRadius: '8px',
+                    margin: '4px 8px',
+                    border: '1px solid rgba(26, 35, 126, 0.1)',
+                    mb: 1,
                   }}
                 >
                   <ListItemText 
                     primary={item.name} 
                     sx={{
                       '& .MuiTypography-root': {
-                        fontWeight: 600,
-                        color: '#ffffff',
+                        fontWeight: 700,
+                        color: '#1a237e',
+                        fontSize: '0.85rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
                       }
                     }}
                   />
@@ -357,14 +337,23 @@ const MobileDrawer = memo(({
                     key={subItem.name}
                     onClick={() => handleNavigation(subItem.path)}
                     sx={{
-                      backgroundColor: currentPage === subItem.name ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+                      backgroundColor: currentPage === subItem.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent',
                       cursor: 'pointer',
-                      borderRadius: '12px',
-                      margin: '2px 8px 2px 32px',
-                        transition: 'all 0.3s ease',
+                      borderRadius: '8px',
+                      margin: '2px 8px 2px 24px',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderLeft: '3px solid transparent',
                       '&:hover': {
-                        backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                        backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                        transform: 'translateX(4px)',
+                        borderLeftColor: '#ffd700',
+                        '& .arrow-icon': {
                           transform: 'translateX(4px)',
+                          color: '#ffd700',
+                        },
                       },
                     }}
                       aria-label={`Navigate to ${subItem.name}`}
@@ -373,11 +362,19 @@ const MobileDrawer = memo(({
                       primary={subItem.name} 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontWeight: currentPage === subItem.name ? 600 : 400,
-                          color: '#ffffff',
-                          fontSize: '0.9rem',
+                          fontWeight: currentPage === subItem.name ? 600 : 500,
+                          color: '#1a237e',
+                          fontSize: '0.95rem',
                         }
                       }}
+                    />
+                    <ChevronRight 
+                      className="arrow-icon"
+                      sx={{ 
+                        color: '#9e9e9e', 
+                        fontSize: '1.2rem',
+                        transition: 'all 0.2s ease',
+                      }} 
                     />
                   </ListItem>
                 ))}
@@ -459,25 +456,26 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                         }
                       }}
                       endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
+                      scrolled={scrolled}
                     sx={{
                       backgroundColor: currentPage === item.name 
-                        ? 'rgba(255, 255, 255, 0.2)' 
+                        ? 'rgba(26, 35, 126, 0.1)' 
                         : 'transparent',
-                      color: '#ffffff',
+                      color: scrolled ? '#1a237e' : '#1a237e',
                       fontWeight: 600,
-                      border: item.name === 'SUPPORT US' ? '1px solid rgba(255, 215, 0, 0.5)' : 'none',
+                      border: item.name === 'SUPPORT US' ? '1px solid #ffd700' : 'none',
                       '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        backgroundColor: 'rgba(26, 35, 126, 0.08)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(255, 215, 0, 0.4)',
-                        borderColor: item.name === 'SUPPORT US' ? 'rgba(255, 215, 0, 0.8)' : 'transparent',
+                        color: '#1a237e',
+                        borderColor: item.name === 'SUPPORT US' ? '#ffd700' : 'transparent',
                       }
                     }}
                   >
                     {item.name}
                   </NavButton>
                     
-                    {/* Dropdown Menu */}
+                    {/* Modern Drawer-Style Dropdown Menu */}
                     {item.type === 'dropdown' && (
                       <Menu
                         anchorEl={anchorEl}
@@ -494,48 +492,78 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                         }}
                         sx={{
                           '& .MuiPaper-root': {
-                            backgroundColor: 'rgba(26, 35, 126, 0.95)',
-                            backdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(255, 215, 0, 0.3)',
-                            borderRadius: '16px',
-                            boxShadow: '0 12px 40px rgba(26, 35, 126, 0.3)',
-                            mt: 2,
-                            minWidth: 220,
+                            backgroundColor: '#ffffff',
+                            borderRadius: '12px',
+                            boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+                            mt: 1.5,
+                            minWidth: 320,
+                            maxWidth: 400,
                             overflow: 'hidden',
+                            border: '1px solid rgba(26, 35, 126, 0.1)',
                           },
                         }}
                       >
+                        <Box sx={{ p: 1.5, borderBottom: '1px solid rgba(26, 35, 126, 0.1)' }}>
+                          <Typography 
+                            variant="subtitle1" 
+                            sx={{ 
+                              fontWeight: 700,
+                              color: '#1a237e',
+                              fontSize: '0.95rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            {item.name}
+                          </Typography>
+                        </Box>
                         {item.items?.map((subItem, subIndex) => (
                           <MenuItem
                             key={subIndex}
                             onClick={() => handleNavigation(subItem.path)}
                             sx={{
-                              py: 1.5,
-                              px: 2,
-                              color: '#ffffff',
+                              py: 1.75,
+                              px: 2.5,
+                              color: '#1a237e',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              transition: 'all 0.2s ease',
+                              borderLeft: '3px solid transparent',
                               '&:hover': {
-                                backgroundColor: 'rgba(255, 215, 0, 0.15)',
-                                color: '#ffd700',
-                              },
-                              '&:first-of-type': {
-                                borderTopLeftRadius: '16px',
-                                borderTopRightRadius: '16px',
-                              },
-                              '&:last-of-type': {
-                                borderBottomLeftRadius: '16px',
-                                borderBottomRightRadius: '16px',
+                                backgroundColor: 'rgba(26, 35, 126, 0.05)',
+                                borderLeftColor: '#ffd700',
+                                '& .arrow-icon': {
+                                  transform: 'translateX(4px)',
+                                  color: '#ffd700',
+                                },
+                                '& .menu-text': {
+                                  color: '#1a237e',
+                                  fontWeight: 600,
+                                },
                               },
                             }}
                           >
                             <Typography 
-                              variant="body2" 
+                              variant="body1" 
+                              className="menu-text"
                               sx={{ 
                                 fontWeight: 500,
                                 color: 'inherit',
+                                fontSize: '0.95rem',
+                                transition: 'all 0.2s ease',
                               }}
                             >
                               {subItem.name}
                             </Typography>
+                            <ChevronRight 
+                              className="arrow-icon"
+                              sx={{ 
+                                fontSize: '1.2rem',
+                                color: '#9e9e9e',
+                                transition: 'all 0.2s ease',
+                              }} 
+                            />
                           </MenuItem>
                         ))}
                       </Menu>
@@ -554,12 +582,12 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                 edge="end"
                 onClick={handleDrawerToggle}
                 sx={{ 
-                  color: '#ffffff',
+                  color: '#1a237e',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'rotate(90deg)',
-                    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-                    color: '#ffd700',
+                    backgroundColor: 'rgba(26, 35, 126, 0.1)',
+                    color: '#1a237e',
                   },
                 }}
               >

@@ -173,33 +173,33 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
     <Box>
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ fontFamily: '"Kalam", cursive', fontWeight: 600 }}>
+          <Typography variant="h6" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', fontWeight: 600 }}>
             Supporting Documents
           </Typography>
           <Button
             variant="contained"
             startIcon={<CloudUpload />}
             onClick={() => setUploadDialogOpen(true)}
-            sx={{ fontFamily: '"Kalam", cursive' }}
+            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
           >
             Upload Document
           </Button>
         </Box>
 
-        <Typography variant="body2" sx={{ mb: 3, fontFamily: '"Kalam", cursive', color: '#666' }}>
+        <Typography variant="body2" sx={{ mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif', color: '#666' }}>
           Please upload all required supporting documents for your application. 
           Required documents include: Birth certificate, Baptism certificate (if applicable), 
           School report, ID copies, Proof of residence, and other relevant documents.
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2, fontFamily: '"Kalam", cursive' }}>
+          <Alert severity="error" sx={{ mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
             {error}
           </Alert>
         )}
 
         {success && (
-          <Alert severity="success" sx={{ mb: 2, fontFamily: '"Kalam", cursive' }}>
+          <Alert severity="success" sx={{ mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
             {success}
           </Alert>
         )}
@@ -207,7 +207,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
         {documents.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <AttachFile sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
-            <Typography variant="body1" sx={{ color: '#666', fontFamily: '"Kalam", cursive' }}>
+            <Typography variant="body1" sx={{ color: '#666', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
               No documents uploaded yet
             </Typography>
           </Box>
@@ -218,7 +218,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                 <ListItemText
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive' }}>
+                      <Typography variant="body1" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                         {document.originalName}
                       </Typography>
                       <Chip
@@ -227,7 +227,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                         sx={{
                           backgroundColor: getDocumentTypeColor(document.documentType),
                           color: 'white',
-                          fontFamily: '"Kalam", cursive',
+                          fontFamily: '"Lato", "Open Sans", sans-serif',
                           fontSize: '0.75rem'
                         }}
                       />
@@ -235,10 +235,10 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                   }
                   secondary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                      <Typography variant="caption" sx={{ fontFamily: '"Kalam", cursive' }}>
+                      <Typography variant="caption" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                         {applicationDocumentsService.formatFileSize(document.fileSize)}
                       </Typography>
-                      <Typography variant="caption" sx={{ fontFamily: '"Kalam", cursive' }}>
+                      <Typography variant="caption" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                         {new Date(document.uploadedAt).toLocaleDateString()}
                       </Typography>
                     </Box>
@@ -268,7 +268,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: '"Kalam", cursive' }}>
+        <DialogTitle sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
           Upload Document
         </DialogTitle>
         <DialogContent>
@@ -279,10 +279,10 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                 value={selectedDocumentType}
                 onChange={(e) => setSelectedDocumentType(e.target.value)}
                 label="Document Type"
-                sx={{ fontFamily: '"Kalam", cursive' }}
+                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               >
                 {documentTypes.map((type) => (
-                  <MenuItem key={type.value} value={type.value} sx={{ fontFamily: '"Kalam", cursive' }}>
+                  <MenuItem key={type.value} value={type.value} sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     {type.label}
                   </MenuItem>
                 ))}
@@ -302,7 +302,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                 component="span"
                 startIcon={<CloudUpload />}
                 fullWidth
-                sx={{ fontFamily: '"Kalam", cursive' }}
+                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               >
                 {selectedFile ? selectedFile.name : 'Select File'}
               </Button>
@@ -310,7 +310,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
 
             {selectedFile && (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   Selected: {selectedFile.name} ({applicationDocumentsService.formatFileSize(selectedFile.size)})
                 </Typography>
               </Box>
@@ -319,7 +319,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
             {uploading && (
               <Box sx={{ mt: 2 }}>
                 <LinearProgress variant="determinate" value={uploadProgress} />
-                <Typography variant="body2" sx={{ mt: 1, fontFamily: '"Kalam", cursive' }}>
+                <Typography variant="body2" sx={{ mt: 1, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   Uploading... {uploadProgress}%
                 </Typography>
               </Box>
@@ -329,7 +329,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
         <DialogActions>
           <Button
             onClick={() => setUploadDialogOpen(false)}
-            sx={{ fontFamily: '"Kalam", cursive' }}
+            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
           >
             Cancel
           </Button>
@@ -337,7 +337,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
             onClick={handleUpload}
             variant="contained"
             disabled={!selectedFile || !selectedDocumentType || uploading}
-            sx={{ fontFamily: '"Kalam", cursive' }}
+            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
           >
             Upload
           </Button>
