@@ -54,6 +54,7 @@ import LiveFeed from '../components/LiveFeed';
 import SchoolStatistics from '../components/SchoolStatistics';
 import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
+import PillarCarousel from '../components/PillarCarousel';
 import { holyCrossBrand, pillarColors } from '../theme/branding';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
@@ -572,60 +573,22 @@ const Home: React.FC = () => {
                 character development creates leaders for tomorrow's world.
               </Typography>
               
-              {/* Pillars Preview */}
+              {/* Pillars Carousel */}
               <Box sx={{ mb: 5 }}>
                 <Typography 
                   variant="h5" 
                   sx={{ 
                     fontWeight: 600,
-                    mb: 3,
-                    color: '#ffd700',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                    mb: 4,
+                    color: holyCrossBrand.signatureGold,
+                    textShadow: holyCrossBrand.textShadowMedium,
                     fontFamily: '"Inter", sans-serif'
                   }}
                 >
                   Our Five Pillars of Excellence
                 </Typography>
                 
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  justifyContent: 'center', 
-                  gap: 2,
-                  maxWidth: '900px',
-                  mx: 'auto'
-                }}>
-                  {[
-                    { icon: <Book />, label: 'Academic', color: '#1a237e', path: '/academic' },
-                    { icon: <Computer />, label: 'Robotics', color: '#ff9800', path: '/robotics' },
-                    { icon: <SportsSoccer />, label: 'Sport', color: '#4caf50', path: '/sport' },
-                    { icon: <MusicNote />, label: 'Cultural', color: '#9c27b0', path: '/cultural' },
-                    { icon: <Groups />, label: 'Service & Ethos', color: '#d32f2f', path: '/service-ethos' }
-                  ].map((pillar, index) => (
-                    <Chip
-                      key={index}
-                      icon={pillar.icon}
-                      label={pillar.label}
-                      onClick={() => navigate(pillar.path)}
-                      sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                        color: 'white',
-                        border: `2px solid ${pillar.color}`,
-                        fontWeight: 600,
-                        px: 2,
-                        py: 1,
-                        fontSize: '0.9rem',
-                        backdropFilter: 'blur(10px)',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                          transform: 'scale(1.05)'
-                        },
-                        transition: 'all 0.3s ease'
-                      }}
-                    />
-                  ))}
-                </Box>
+                <PillarCarousel />
               </Box>
               
               <Stack 
