@@ -31,6 +31,8 @@ import {
   Language,
   Computer
 } from '@mui/icons-material';
+import CountUp from 'react-countup';
+import { useInView } from 'react-intersection-observer';
 import { useSchoolStats } from '../hooks/useSchoolStats';
 import { ICON_MAP } from '../types/schoolStats';
 
@@ -72,64 +74,88 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ stat, index, animate }) => {
   const IconComponent = iconComponents[stat.icon] || Numbers;
+  const [ref, inView] = useInView({
+    threshold: 0.5,
+    triggerOnce: true
+  });
+
+  // Extract numeric value for animation
+  const getNumericValue = (value: string): number => {
+    const cleaned = value.replace(/[^0-9]/g, '');
+    return cleaned ? parseInt(cleaned, 10) : 0;
+  };
+
+  const numericValue = getNumericValue(stat.value);
+  const hasAnimation = stat.type === 'number' || stat.type === 'percentage';
 
   return (
-    <Fade in={animate} timeout={800 + (index * 200)}>
-      <Card
-        sx={{
-          textAlign: 'center',
-          p: 3,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(26, 35, 126, 0.1)',
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(26, 35, 126, 0.1)',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 40px rgba(26, 35, 126, 0.15)',
-          },
-        }}
-      >
-        <CardContent sx={{ p: 0 }}>
-          <IconComponent
-            sx={{
-              fontSize: 60,
-              color: '#1a237e',
-              mb: 2,
-              transition: 'transform 0.3s ease',
-            }}
-          />
-          <Typography
-            variant="h3"
-            component="h3"
-            sx={{
-              color: '#1a237e',
-              fontWeight: 700,
-              mb: 1,
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              lineHeight: 1.2,
-            }}
-          >
-            {stat.value}
-          </Typography>
-          <Typography
-            variant="h6"
-            color="text.secondary"
-            sx={{
-              fontWeight: 500,
-              fontSize: { xs: '1rem', md: '1.1rem' },
-            }}
-          >
-            {stat.label}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Fade>
+    <Box ref={ref}>
+      <Fade in={animate} timeout={800 + (index * 200)}>
+        <Card
+          sx={{
+            textAlign: 'center',
+            p: 3,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(26, 35, 126, 0.1)',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(26, 35, 126, 0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(26, 35, 126, 0.15)',
+            },
+          }}
+        >
+          <CardContent sx={{ p: 0 }}>
+            <IconComponent
+              sx={{
+                fontSize: 60,
+                color: '#1a237e',
+                mb: 2,
+                transition: 'transform 0.3s ease',
+              }}
+            />
+            <Typography
+              variant="h3"
+              component="h3"
+              sx={{
+                color: '#1a237e',
+                fontWeight: 700,
+                mb: 1,
+                fontSize: { xs: '2rem', md: '2.5rem' },
+                lineHeight: 1.2,
+              }}
+            >
+              {hasAnimation && inView ? (
+                <CountUp 
+                  end={numericValue} 
+                  duration={2} 
+                  suffix={stat.value.includes('+') ? '+' : ''}
+                  separator=","
+                />
+              ) : (
+                stat.value
+              )}
+            </Typography>
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{
+                fontWeight: 500,
+                fontSize: { xs: '1rem', md: '1.1rem' },
+              }}
+            >
+              {stat.label}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Fade>
+    </Box>
   );
 };
 

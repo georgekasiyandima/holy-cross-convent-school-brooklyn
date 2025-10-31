@@ -50,7 +50,7 @@ import { styled } from '@mui/material/styles';
 import ProgressiveFeaturesCollage from '../components/ProgressiveFeaturesCollage';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
-import LiveFeed from '../components/LiveFeed';
+import SchoolHighlights from '../components/SchoolHighlights';
 import SchoolStatistics from '../components/SchoolStatistics';
 import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
@@ -1090,12 +1090,8 @@ const Home: React.FC = () => {
         </Container>
       </ProgressiveSection>
 
-      {/* Live Feed Section */}
-      <Box sx={{ py: 6, background: 'white' }}>
-        <Container maxWidth="xl">
-          <LiveFeed />
-        </Container>
-      </Box>
+      {/* School Highlights Section */}
+      <SchoolHighlights />
 
       {/* Dynamic Statistics Section */}
       <SchoolStatistics animate={animateStats} />
