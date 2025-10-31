@@ -39,7 +39,7 @@ interface Highlight {
   category: string;
   date: string;
   link?: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   accentColor: string;
 }
 
