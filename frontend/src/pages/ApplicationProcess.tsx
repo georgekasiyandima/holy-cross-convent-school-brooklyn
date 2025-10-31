@@ -1920,7 +1920,7 @@ const ApplicationProcess: React.FC = () => {
               <Typography variant="body1" sx={{ fontFamily: '"Kalam", cursive', mb: 3 }}>
                 <strong>Telephone:</strong> +27 (21) 914 7816
               </Typography>
-              <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive', fontStyle: 'italic' }}>
+              <Typography variant="body2" sx={{ fontFamily: '"Kalam", cursive' }}>
                 <strong>Note:</strong> Tracksuits, long-sleeved golf shirts and school backpacks may be ordered and purchased from school.
               </Typography>
             </Paper>

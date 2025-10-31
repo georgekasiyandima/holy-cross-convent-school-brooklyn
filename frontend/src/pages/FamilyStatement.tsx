@@ -132,7 +132,6 @@ const FamilyStatementPage: React.FC = () => {
               variant="body1" 
               sx={{ 
                 color: '#666',
-                fontStyle: 'italic',
                 textAlign: 'center',
                 mt: 4,
                 fontSize: '1rem'

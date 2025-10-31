@@ -821,7 +821,7 @@ const AdminApplicationManagement: React.FC = () => {
                     ))}
                   </List>
                 ) : (
-                  <Typography variant="body2" sx={{ color: '#6b7280', fontStyle: 'italic' }}>
+                  <Typography variant="body2" sx={{ color: '#6b7280' }}>
                     No documents uploaded yet.
                   </Typography>
                 )}

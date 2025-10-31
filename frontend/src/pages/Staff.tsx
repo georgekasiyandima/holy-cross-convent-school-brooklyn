@@ -271,7 +271,6 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
               variant="body2"
               sx={{
                 color: "#1a237e",
-                fontStyle: "italic",
                 fontSize: "0.875rem",
                 lineHeight: 1.6,
                 textAlign: "center"
@@ -735,7 +734,6 @@ const Staff: React.FC = () => {
                           variant="body1"
                           sx={{
                             color: "#ffd700",
-                            fontStyle: "italic",
                             fontSize: "1rem",
                             lineHeight: 1.6,
                             textAlign: "left",

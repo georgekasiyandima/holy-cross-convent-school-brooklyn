@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, Card, CardContent, Fade } from '@mui/material';
+import { Box, Typography, IconButton, Card, Fade } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { NavigateBefore, NavigateNext, Book, Computer, SportsSoccer, MusicNote, Groups } from '@mui/icons-material';
+import { NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { pillarColors } from '../theme/branding';
 
@@ -64,26 +64,6 @@ const SlideOverlay = styled(Box)<{ bgImage: string; accentColor: string }>(({ bg
   }
 }));
 
-const IconContainer = styled(Box)<{ accentColor: string }>(({ accentColor }) => ({
-  width: 100,
-  height: 100,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: '1.5rem',
-  background: `linear-gradient(135deg, ${accentColor} 0%, rgba(255,255,255,0.2) 100%)`,
-  backdropFilter: 'blur(10px)',
-  border: `3px solid ${accentColor}`,
-  boxShadow: `0 8px 32px ${accentColor}40`,
-  transition: 'all 0.3s ease',
-  '& .MuiSvgIcon-root': {
-    fontSize: '3rem',
-    color: '#ffffff',
-    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
-  }
-}));
-
 const NavButton = styled(IconButton)({
   position: 'absolute',
   top: '50%',
@@ -118,7 +98,6 @@ const Dot = styled(Box)<{ active: boolean }>(({ active }) => ({
 
 interface PillarCarouselItem {
   pillar: string;
-  icon: React.ReactNode;
   accentColor: string;
   description: string;
   path: string;
@@ -128,7 +107,6 @@ interface PillarCarouselItem {
 const pillars: PillarCarouselItem[] = [
   {
     pillar: 'Academic',
-    icon: <Book />,
     accentColor: pillarColors.academic,
     description: 'Excellence in Learning',
     path: '/academic',
@@ -136,7 +114,6 @@ const pillars: PillarCarouselItem[] = [
   },
   {
     pillar: 'Robotics',
-    icon: <Computer />,
     accentColor: pillarColors.robotics,
     description: 'Technology & Innovation',
     path: '/robotics',
@@ -144,7 +121,6 @@ const pillars: PillarCarouselItem[] = [
   },
   {
     pillar: 'Sport',
-    icon: <SportsSoccer />,
     accentColor: pillarColors.sport,
     description: 'Teamwork & Excellence',
     path: '/sport',
@@ -152,7 +128,6 @@ const pillars: PillarCarouselItem[] = [
   },
   {
     pillar: 'Cultural',
-    icon: <MusicNote />,
     accentColor: pillarColors.cultural,
     description: 'Creativity & Expression',
     path: '/cultural',
@@ -160,7 +135,6 @@ const pillars: PillarCarouselItem[] = [
   },
   {
     pillar: 'Service & Ethos',
-    icon: <Groups />,
     accentColor: pillarColors.serviceEthos,
     description: 'Faith in Action',
     path: '/service-ethos',
@@ -205,9 +179,6 @@ const PillarCarousel: React.FC = () => {
             <SlideContent>
               <Fade in timeout={800}>
                 <Box>
-                  <IconContainer accentColor={pillar.accentColor}>
-                    {pillar.icon}
-                  </IconContainer>
                   <Typography
                     variant="h2"
                     sx={{

@@ -126,7 +126,6 @@ const MissionVision: React.FC = () => {
             variant="body1" 
             sx={{ 
               color: '#555',
-              fontStyle: 'italic',
               textAlign: 'center',
               mt: 3,
               fontSize: '1rem'

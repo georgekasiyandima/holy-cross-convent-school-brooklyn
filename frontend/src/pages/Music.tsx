@@ -181,7 +181,7 @@ const Music: React.FC = () => {
         <Typography variant="body1" sx={{ color: '#555', mb: 2 }}>
           Developed in 2021 by a Cape Town task team, this new composition replaces the old School Anthem "The Holy Cross My Own". The song celebrates our school's values and community spirit.
         </Typography>
-        <Typography variant="body2" sx={{ color: '#1a237e', fontStyle: 'italic', mb: 2 }}>
+        <Typography variant="body2" sx={{ color: '#1a237e', mb: 2 }}>
           "Holy Cross is our Salvation"
         </Typography>
       </Box>

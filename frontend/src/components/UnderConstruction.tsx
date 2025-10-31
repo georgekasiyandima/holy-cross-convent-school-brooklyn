@@ -224,7 +224,6 @@ const UnderConstruction: React.FC<UnderConstructionProps> = ({
             variant="body2"
             sx={{
               color: '#999',
-              fontStyle: 'italic',
               maxWidth: '600px',
               mx: 'auto'
             }}

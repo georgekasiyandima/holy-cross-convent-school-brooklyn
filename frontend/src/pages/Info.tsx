@@ -73,7 +73,7 @@ const Info: React.FC = () => (
       <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
         Principal’s Welcome
       </Typography>
-      <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 1 }}>
+      <Typography variant="body1" sx={{ mb: 1 }}>
         "At Holy Cross Convent, we nurture each child’s unique gifts in a caring, faith-filled environment. We invite you to discover what makes our school special."
       </Typography>
       <Typography variant="subtitle2" sx={{ color: '#3949ab' }}>

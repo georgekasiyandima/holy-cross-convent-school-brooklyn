@@ -45,7 +45,7 @@ import {
   Group,
   School as SchoolIcon,
   AutoAwesome as Sparkles,
-  KeyboardArrowDown
+  ExpandMore
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
@@ -56,6 +56,7 @@ import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
 import PillarCarousel from '../components/PillarCarousel';
 import { holyCrossBrand, pillarColors } from '../theme/branding';
+import { getBackgroundImageUrl } from '../utils/staticFiles';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -130,7 +131,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(57, 73, 171, 0.85) 50%, rgba(92, 107, 192, 0.85) 100%)',
+    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(57, 73, 171, 0.4) 50%, rgba(92, 107, 192, 0.4) 100%)',
     zIndex: 1
   },
   '&::after': {
@@ -171,7 +172,8 @@ const HeroBackground = styled(Box)({
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
   transition: 'opacity 1s ease-in-out',
-  zIndex: 0
+  zIndex: 0,
+  filter: 'none' // Ensure no blur is applied
 });
 
 const HeroContent = styled(Box)(({ theme }) => ({
@@ -460,7 +462,7 @@ const Home: React.FC = () => {
                     fontWeight: 700,
                     fontSize: 'clamp(2rem, 4vw, 3.5rem)',
                     fontFamily: '"Kalam", cursive',
-                    color: holyCrossBrand.signatureGold,
+                    color: holyCrossBrand.signatureRed,
                     textShadow: holyCrossBrand.textShadowUltra,
                     mb: 2,
                     animation: 'textPulse 2s ease-in-out infinite alternate'
@@ -505,8 +507,13 @@ const Home: React.FC = () => {
                 character development creates leaders for tomorrow's world.
               </Typography>
               
-              {/* Single Primary CTA */}
-              <Box sx={{ textAlign: 'center', mb: 4 }}>
+              {/* Primary CTAs */}
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                spacing={3} 
+                justifyContent="center"
+                sx={{ mb: 4 }}
+              >
                 <Button
                   variant="contained"
                   size="large"
@@ -515,9 +522,9 @@ const Home: React.FC = () => {
                   sx={{
                     background: holyCrossBrand.primaryGradient,
                     color: '#ffffff',
-                    px: 8,
-                    py: 3,
-                    fontSize: '1.2rem',
+                    px: 5,
+                    py: 2,
+                    fontSize: '1.1rem',
                     fontWeight: 700,
                     borderRadius: 3,
                     boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)',
@@ -530,16 +537,42 @@ const Home: React.FC = () => {
                 >
                   Schedule a Visit
                 </Button>
-              </Box>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={handleVirtualTour}
+                  startIcon={<Visibility />}
+                  sx={{
+                    borderColor: 'white',
+                    color: 'white',
+                    borderWidth: 2,
+                    px: 5,
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    borderRadius: 3,
+                    '&:hover': {
+                      borderColor: holyCrossBrand.signatureGold,
+                      color: holyCrossBrand.signatureGold,
+                      backgroundColor: holyCrossBrand.wisdomGold,
+                      transform: 'translateY(-3px)'
+                    },
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  Virtual Tour
+                </Button>
+              </Stack>
               
               {/* Scroll Indicator */}
               <Box sx={{ textAlign: 'center', mt: 4 }}>
                 <Typography variant="caption" sx={{ color: 'white', opacity: 0.8 }}>
                   Scroll to explore
-                </Typography>
+                    </Typography>
                 <Box sx={{ mt: 1 }}>
-                  <KeyboardArrowDown sx={{ color: 'white', opacity: 0.8, fontSize: 32 }} />
-                </Box>
+                  <ExpandMore sx={{ color: 'white', opacity: 0.8, fontSize: 32 }} />
+                  </Box>
               </Box>
             </Box>
           </Fade>
@@ -619,7 +652,7 @@ const Home: React.FC = () => {
                   <Box
                     sx={{
                       height: 300,
-                      backgroundImage: 'url("/Philomena.jpg")',
+                      backgroundImage: getBackgroundImageUrl('Philomena.jpg'),
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       position: 'relative',
@@ -674,7 +707,7 @@ const Home: React.FC = () => {
                   <Box
                     sx={{
                       height: 300,
-                      backgroundImage: 'url("/HCTEACHERS 34.jpg")',
+                      backgroundImage: getBackgroundImageUrl('HCTEACHERS 34.jpg'),
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       position: 'relative',
@@ -715,7 +748,7 @@ const Home: React.FC = () => {
               <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
                 Our Unchanging Commitment
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666', fontStyle: 'italic', maxWidth: '800px', mx: 'auto' }}>
+              <Typography variant="body1" sx={{ color: '#666', maxWidth: '800px', mx: 'auto' }}>
                 "While our facilities and methods have modernized, our commitment to Catholic education 
                 and learner excellence remains unchanged since 1959. Every learner who walks through our doors 
                 becomes part of our extended family, carrying forward our legacy of faith, learning, and service."
@@ -889,7 +922,7 @@ const Home: React.FC = () => {
                 family needs and preferences.
               </Typography>
             </Card>
-          </Box>
+      </Box>
 
           {/* Call to Action */}
           <Box sx={{ textAlign: 'center' }}>

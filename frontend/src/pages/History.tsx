@@ -55,7 +55,6 @@ const QuoteBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   margin: theme.spacing(3, 0),
   borderRadius: theme.spacing(1),
-  fontStyle: 'italic',
   position: 'relative',
   '&::before': {
     content: '"“"',

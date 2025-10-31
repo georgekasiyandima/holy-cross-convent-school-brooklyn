@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import admissionsRoutes from './routes/admissions';
 import applicationDocumentsRoutes from './routes/applicationDocuments';
 import staffRoutes from './routes/staff';
+import documentsRoutes from './routes/documents';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -59,6 +60,9 @@ app.use('/api/application-documents', applicationDocumentsRoutes);
 
 // Staff routes
 app.use('/api/staff', staffRoutes);
+
+// Documents routes
+app.use('/api/documents', documentsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

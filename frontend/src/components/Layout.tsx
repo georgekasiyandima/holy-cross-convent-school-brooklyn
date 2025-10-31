@@ -228,7 +228,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
                 </IconButton>
               </Box>
 
-              <Typography variant="body2" sx={{ opacity: 0.8, fontStyle: 'italic' }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 "Nurturing Excellence, Building Character, Inspiring Faith"
               </Typography>
             </Box>

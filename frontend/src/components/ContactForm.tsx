@@ -161,7 +161,7 @@ const ContactInfoItem = memo(({ info }: { info: ContactInfo }) => (
           </Typography>
         )}
         {info.tertiary && (
-          <Typography variant="caption" sx={{ color: '#888', fontStyle: 'italic' }}>
+          <Typography variant="caption" sx={{ color: '#888' }}>
             {info.tertiary}
           </Typography>
         )}
@@ -189,7 +189,7 @@ const ContactInfoSection = memo(() => (
             </Typography>
           </Box>
         </Box>
-        <Typography variant="body2" sx={{ color: '#666', fontStyle: 'italic' }}>
+        <Typography variant="body2" sx={{ color: '#666' }}>
           Excellence in Catholic Education since 1960
         </Typography>
       </Box>

@@ -184,7 +184,6 @@ const navigationItems: NavigationItem[] = [
       { name: 'Staff', path: '/staff' },
       { name: 'Board Members', path: '/school-board' },
       { name: 'History', path: '/history' },
-      { name: 'Policies', path: '/policies' },
       { name: 'School Info', path: '/info' },
       { name: 'Aftercare Programme', path: '/aftercare' },
       { name: 'Vacancies', path: '/vacancies' }
@@ -215,9 +214,7 @@ const navigationItems: NavigationItem[] = [
     name: 'Resources',
     type: 'dropdown',
     items: [
-      { name: 'Documents', path: '/documents' },
-      { name: 'Forms & Fees', path: '/forms' },
-      { name: 'Mission & Vision', path: '/mission-vision' }
+      { name: 'Forms & Fees', path: '/forms' }
     ]
   },
   {
@@ -309,20 +306,18 @@ const MobileDrawer = memo(({
               <ListItem 
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
-                  backgroundColor: item.name === 'SUPPORT US' 
-                    ? '#ffd700' 
-                    : currentPage === item.name 
-                      ? 'rgba(255, 215, 0, 0.2)' 
-                      : 'transparent',
+                  backgroundColor: currentPage === item.name 
+                    ? 'rgba(255, 215, 0, 0.2)' 
+                    : 'transparent',
                   cursor: 'pointer',
                   borderRadius: '12px',
                   margin: '2px 8px',
                   transition: 'all 0.3s ease',
+                  border: item.name === 'SUPPORT US' ? '1px solid rgba(255, 215, 0, 0.5)' : 'none',
                   '&:hover': {
-                    backgroundColor: item.name === 'SUPPORT US' 
-                      ? '#ffed4e' 
-                      : 'rgba(255, 215, 0, 0.15)',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
                     transform: 'translateX(4px)',
+                    borderColor: item.name === 'SUPPORT US' ? 'rgba(255, 215, 0, 0.8)' : 'transparent',
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
@@ -331,8 +326,8 @@ const MobileDrawer = memo(({
                   primary={item.name} 
                   sx={{
                     '& .MuiTypography-root': {
-                      fontWeight: item.name === 'SUPPORT US' ? 700 : (currentPage === item.name ? 600 : 400),
-                      color: item.name === 'SUPPORT US' ? '#1a237e' : '#ffffff',
+                      fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' ? 600 : 400),
+                      color: '#ffffff',
                     }
                   }}
                 />
@@ -465,25 +460,17 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                       }}
                       endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
                     sx={{
-                      backgroundColor: item.name === 'SUPPORT US' 
-                        ? '#ffd700' 
-                        : currentPage === item.name 
-                          ? 'rgba(255, 255, 255, 0.2)' 
-                          : 'transparent',
-                      color: item.name === 'SUPPORT US' 
-                        ? '#1a237e' 
-                        : currentPage === item.name 
-                          ? '#ffffff' 
-                          : '#1a1a1a',
-                      fontWeight: item.name === 'SUPPORT US' ? 700 : 600,
+                      backgroundColor: currentPage === item.name 
+                        ? 'rgba(255, 255, 255, 0.2)' 
+                        : 'transparent',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      border: item.name === 'SUPPORT US' ? '1px solid rgba(255, 215, 0, 0.5)' : 'none',
                       '&:hover': {
-                        backgroundColor: item.name === 'SUPPORT US' 
-                          ? '#ffed4e' 
-                          : 'rgba(255, 255, 255, 0.15)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
                         transform: 'translateY(-2px)',
-                        boxShadow: item.name === 'SUPPORT US' 
-                          ? '0 8px 25px rgba(255, 215, 0, 0.6)' 
-                          : '0 8px 25px rgba(255, 215, 0, 0.4)',
+                        boxShadow: '0 8px 25px rgba(255, 215, 0, 0.4)',
+                        borderColor: item.name === 'SUPPORT US' ? 'rgba(255, 215, 0, 0.8)' : 'transparent',
                       }
                     }}
                   >

@@ -45,7 +45,6 @@ import ServiceEthos from './pages/ServiceEthos';
 import Aftercare from './pages/Aftercare';
 import Vacancies from './pages/Vacancies';
 import ApplicationProcess from './pages/ApplicationProcess';
-import Policies from './pages/Policies';
 
 // Extend Material-UI theme to include custom school colors
 declare module '@mui/material/styles' {
@@ -117,43 +116,43 @@ const theme = createTheme({
     },
   },
         typography: {
-          fontFamily: '"Kalam", "Schoolbell", "Inter", "Source Sans Pro", "Open Sans", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
+          fontFamily: '"Lato", "Open Sans", "Inter", "Source Sans Pro", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 700,
       color: '#1a237e',
     },
     h2: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 600,
       color: '#1a237e',
     },
     h3: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 600,
       color: '#1a237e',
     },
     h4: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     h5: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     h6: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     body1: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 400,
     },
     body2: {
-      fontFamily: '"Inter", "Source Sans Pro", sans-serif',
+      fontFamily: '"Lato", "Open Sans", sans-serif',
       fontWeight: 400,
     },
   },
@@ -227,8 +226,6 @@ const NavigationWrapper: React.FC = () => {
         return 'Aftercare Programme';
       case '/vacancies':
         return 'Vacancies';
-      case '/policies':
-        return 'Policies';
       case '/admissions':
         return 'Application Process';
       default:
@@ -287,7 +284,6 @@ const NavigationWrapper: React.FC = () => {
         {/* Our School Section */}
         <Route path="/aftercare" element={<Aftercare />} />
         <Route path="/vacancies" element={<Vacancies />} />
-        <Route path="/policies" element={<Policies />} />
         {/* Admissions Section */}
         <Route path="/admissions" element={<ApplicationProcess />} />
         {/* Add more routes as we create more pages */}
