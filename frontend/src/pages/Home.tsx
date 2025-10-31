@@ -44,10 +44,10 @@ import {
   Star,
   Group,
   School as SchoolIcon,
-  AutoAwesome as Sparkles
+  AutoAwesome as Sparkles,
+  KeyboardArrowDown
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import ProgressiveFeaturesCollage from '../components/ProgressiveFeaturesCollage';
 import { videoManager, SchoolVideo } from '../utils/videoManager';
 import SEO from '../components/SEO';
 import SchoolHighlights from '../components/SchoolHighlights';
@@ -225,16 +225,6 @@ const GradeRSection = styled(Box)(({ theme }) => ({
   }
 }));
 
-const ProgressiveSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-  color: 'white',
-  padding: theme.spacing(8, 0),
-  position: 'relative'
-}));
-
-
-
-
 const TimelineCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
   border: '1px solid #e3f2fd',
@@ -267,47 +257,22 @@ const TimelineCard = styled(Card)(({ theme }) => ({
 
 
 
-// Hero images that tell the school's story
+// Hero images - reduced to 3 strongest visuals
 const heroImages = [
   {
-    src: '/HCTEACHERS 34.jpg',
-    title: 'Our Dedicated Teachers',
-    description: 'Inspiring minds and shaping futures'
+    src: '/HCCS25.jpeg',
+    title: 'Welcome to Holy Cross',
+    description: 'Where faith, learning, and community unite'
   },
   {
     src: '/SCIENCEEXPO24.jpg',
-    title: 'Science & Innovation',
-    description: 'Exploring the wonders of STEM education'
+    title: 'Excellence in Education',
+    description: 'Nurturing minds and hearts for tomorrow'
   },
   {
-    src: '/ATHLECTICS AWARDS25.jpg',
-    title: 'Athletic Excellence',
-    description: 'Celebrating sports achievements and teamwork'
-  },
-  {
-    src: '/MUSIC.jpg',
-    title: 'Musical Arts',
-    description: 'Nurturing creativity through music and performance'
-  },
-  {
-    src: '/SPRITUAL.jpg',
-    title: 'Spiritual Growth',
-    description: 'Building character through faith and values'
-  },
-  {
-    src: '/COMPUTERLAB.jpg',
-    title: 'Technology Hub',
-    description: 'Preparing learners for the digital future'
-  },
-  {
-    src: '/Cardinal Visit 2023 WEB 01.jpg',
-    title: 'Community & Faith',
-    description: 'Strengthening our Catholic community bonds'
-  },
-  {
-    src: '/BOOKDAY.jpg',
-    title: 'Love for Learning',
-    description: 'Cultivating a passion for knowledge and reading'
+    src: '/sports1.jpg',
+    title: 'Holistic Development',
+    description: 'Academics, sports, arts, and service'
   }
 ];
 
@@ -378,37 +343,6 @@ const Home: React.FC = () => {
     { year: '2024', title: 'Today', description: 'Continuing legacy of excellence and innovation' }
   ];
 
-  // Progressive features data with images
-  const progressiveFeatures = [
-    { 
-      icon: <Computer />, 
-      title: 'Digital Learning', 
-      description: 'State-of-the-art technology integration in classrooms',
-      images: ['/COMPUTERLAB.jpg', '/COMPUTERLAB01.jpg', '/COMPUTERLAB02.jpg', '/COMPUTERLAB03.jpg'],
-      color: '#9c27b0'
-    },
-    { 
-      icon: <Science />, 
-      title: 'STEM Programs', 
-      description: 'Robotics, coding, and scientific exploration',
-      images: ['/SCIENCEEXPO24.jpg', '/SCIENCEEXPO02.jpg', '/SCIENCEEXPO03.jpg', '/SCIENCEEXPO04.jpg'],
-      color: '#2e7d32'
-    },
-    { 
-      icon: <MusicNote />, 
-      title: 'Arts & Culture', 
-      description: 'Music, drama, and creative expression programs',
-      images: ['/MUSIC.jpg', '/MUSIC03.jpg', '/HCCREATIVEART.jpg', '/HCCREATIVEART01.jpg'],
-      color: '#ff6b35'
-    },
-    { 
-      icon: <SportsSoccer />, 
-      title: 'Sports Excellence', 
-      description: 'Comprehensive sports and physical education',
-      images: ['/ATHLECTICS AWARDS25.jpg', '/Sports01.jpg', '/Sports02.jpg', '/ATHLECTICSAWARDS25 05.jpg'],
-      color: '#d32f2f'
-    }
-  ];
 
   return (
     <>
@@ -571,30 +505,8 @@ const Home: React.FC = () => {
                 character development creates leaders for tomorrow's world.
               </Typography>
               
-              {/* Pillars Carousel */}
-              <Box sx={{ mb: 5 }}>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 600,
-                    mb: 4,
-                    color: holyCrossBrand.signatureGold,
-                    textShadow: holyCrossBrand.textShadowMedium,
-                    fontFamily: '"Inter", sans-serif'
-                  }}
-                >
-                  Our Five Pillars of Excellence
-                </Typography>
-                
-                <PillarCarousel />
-              </Box>
-              
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={3} 
-                justifyContent="center"
-                sx={{ mb: 4 }}
-              >
+              {/* Single Primary CTA */}
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
                 <Button
                   variant="contained"
                   size="large"
@@ -603,9 +515,9 @@ const Home: React.FC = () => {
                   sx={{
                     background: holyCrossBrand.primaryGradient,
                     color: '#ffffff',
-                    px: 5,
-                    py: 2,
-                    fontSize: '1.1rem',
+                    px: 8,
+                    py: 3,
+                    fontSize: '1.2rem',
                     fontWeight: 700,
                     borderRadius: 3,
                     boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)',
@@ -618,46 +530,16 @@ const Home: React.FC = () => {
                 >
                   Schedule a Visit
                 </Button>
-                
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={handleVirtualTour}
-                  startIcon={<Visibility />}
-                  sx={{
-                    borderColor: 'white',
-                    color: 'white',
-                    borderWidth: 2,
-                    px: 5,
-                    py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    borderRadius: 3,
-                    '&:hover': {
-                      borderColor: holyCrossBrand.signatureGold,
-                      color: holyCrossBrand.signatureGold,
-                      backgroundColor: holyCrossBrand.wisdomGold,
-                      transform: 'translateY(-3px)'
-                    },
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                >
-                  Virtual Tour
-                </Button>
-              </Stack>
-
-              {/* Quick Stats */}
-              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
-                {schoolStats.map((stat, index) => (
-                  <Box key={index} sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ffd700' }}>
-                      {stat.number}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                ))}
+              </Box>
+              
+              {/* Scroll Indicator */}
+              <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Typography variant="caption" sx={{ color: 'white', opacity: 0.8 }}>
+                  Scroll to explore
+                </Typography>
+                <Box sx={{ mt: 1 }}>
+                  <KeyboardArrowDown sx={{ color: 'white', opacity: 0.8, fontSize: 32 }} />
+                </Box>
               </Box>
             </Box>
           </Fade>
@@ -1061,41 +943,57 @@ const Home: React.FC = () => {
         </Container>
       </GradeRSection>
 
-      {/* Progressive Education Section */}
-      <ProgressiveSection>
+      {/* School Statistics Section */}
+      <SchoolStatistics animate={animateStats} />
+
+      {/* Five Pillars of Excellence Section */}
+      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Chip
               icon={<AutoAwesome />}
-              label="Progressive Education"
+              label="Five Pillars of Excellence"
               sx={{
-                backgroundColor: '#ffd700',
-                color: '#1a237e',
+                backgroundColor: holyCrossBrand.signatureBlue,
+                color: 'white',
                 fontWeight: 600,
                 mb: 3,
                 px: 2,
-                py: 1
+                py: 3,
+                fontSize: '1rem'
               }}
             />
-            <Typography variant="h3" component="h2" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
-              Preparing Learners for Tomorrow
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              sx={{ 
+                color: holyCrossBrand.signatureBlue, 
+                fontWeight: 800, 
+                mb: 2,
+                fontSize: 'clamp(2rem, 5vw, 3rem)'
+              }}
+            >
+              Our Pillars of Excellence
             </Typography>
-            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', maxWidth: '600px', mx: 'auto' }}>
-              We combine time-honored Catholic values with cutting-edge educational 
-              approaches to prepare learners for success in a rapidly changing world.
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#666', 
+                maxWidth: '700px', 
+                mx: 'auto',
+                fontWeight: 400
+              }}
+            >
+              Discover the five foundational pillars that shape every learner's journey at Holy Cross
             </Typography>
           </Box>
-
-          <ProgressiveFeaturesCollage features={progressiveFeatures} />
+          
+          <PillarCarousel />
         </Container>
-      </ProgressiveSection>
+      </Box>
 
       {/* School Highlights Section */}
       <SchoolHighlights />
-
-      {/* Dynamic Statistics Section */}
-      <SchoolStatistics animate={animateStats} />
-
 
       {/* Enhanced Features Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
