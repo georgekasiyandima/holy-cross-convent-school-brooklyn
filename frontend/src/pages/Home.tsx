@@ -54,6 +54,7 @@ import LiveFeed from '../components/LiveFeed';
 import SchoolStatistics from '../components/SchoolStatistics';
 import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
+import { holyCrossBrand, pillarColors } from '../theme/branding';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -492,14 +493,16 @@ const Home: React.FC = () => {
                 component="h1" 
                 gutterBottom
                 sx={{ 
-                  fontWeight: 800,
-                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                  fontWeight: 900,
+                  fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+                  textShadow: holyCrossBrand.textShadowHeavy,
                   mb: 2,
-                  background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
+                  background: holyCrossBrand.fullGradient,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
                   animation: 'fadeInUp 1.5s ease-out forwards',
                   '@keyframes fadeInUp': {
                     '0%': {
@@ -523,10 +526,10 @@ const Home: React.FC = () => {
                 component="h2" 
                 sx={{ 
                     fontWeight: 700,
-                    fontSize: { xs: '2rem', sm: '2.8rem', md: '3.5rem' },
+                    fontSize: 'clamp(2rem, 4vw, 3.5rem)',
                     fontFamily: '"Kalam", cursive',
-                    color: '#ffd700',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                    color: holyCrossBrand.signatureGold,
+                    textShadow: holyCrossBrand.textShadowHeavy,
                     mb: 2,
                     animation: 'textPulse 2s ease-in-out infinite alternate'
                   }}
@@ -637,8 +640,8 @@ const Home: React.FC = () => {
                   onClick={handleScheduleVisit}
                   startIcon={<Schedule />}
                   sx={{
-                    backgroundColor: '#ffd700',
-                    color: '#1a237e',
+                    background: holyCrossBrand.primaryGradient,
+                    color: '#ffffff',
                     px: 5,
                     py: 2,
                     fontSize: '1.1rem',
@@ -646,9 +649,8 @@ const Home: React.FC = () => {
                     borderRadius: 3,
                     boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)',
                     '&:hover': {
-                      backgroundColor: '#ffed4e',
                       transform: 'translateY(-3px)',
-                      boxShadow: '0 12px 35px rgba(255, 215, 0, 0.4)'
+                      boxShadow: holyCrossBrand.buttonStyles.primary.hoverBoxShadow
                     },
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
@@ -664,15 +666,16 @@ const Home: React.FC = () => {
                   sx={{
                     borderColor: 'white',
                     color: 'white',
+                    borderWidth: 2,
                     px: 5,
                     py: 2,
                     fontSize: '1.1rem',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     borderRadius: 3,
-                    borderWidth: 2,
                     '&:hover': {
-                      borderColor: '#ffd700',
-                      backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                      borderColor: holyCrossBrand.signatureGold,
+                      color: holyCrossBrand.signatureGold,
+                      backgroundColor: holyCrossBrand.wisdomGold,
                       transform: 'translateY(-3px)'
                     },
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -1330,18 +1333,17 @@ const Home: React.FC = () => {
               size="large"
               onClick={handleContactClick}
               sx={{
-                backgroundColor: '#ffd700',
-                color: '#1a237e',
+                background: holyCrossBrand.primaryGradient,
+                color: '#ffffff',
                 px: 6,
                 py: 2,
                 fontSize: '1.1rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 '&:hover': {
-                  backgroundColor: '#e6c200',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(255, 215, 0, 0.3)'
+                  transform: 'translateY(-3px)',
+                  boxShadow: holyCrossBrand.buttonStyles.primary.hoverBoxShadow
                 },
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
               Send Us a Message
