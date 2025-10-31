@@ -496,12 +496,9 @@ const Home: React.FC = () => {
                 sx={{ 
                   fontWeight: 900,
                   fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-                  textShadow: holyCrossBrand.textShadowHeavy,
+                  textShadow: holyCrossBrand.textShadowUltra,
                   mb: 2,
-                  background: holyCrossBrand.fullGradient,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: holyCrossBrand.signatureGold,
                   lineHeight: 1.1,
                   letterSpacing: '-0.02em',
                   animation: 'fadeInUp 1.5s ease-out forwards',
@@ -530,7 +527,7 @@ const Home: React.FC = () => {
                     fontSize: 'clamp(2rem, 4vw, 3.5rem)',
                     fontFamily: '"Kalam", cursive',
                     color: holyCrossBrand.signatureGold,
-                    textShadow: holyCrossBrand.textShadowHeavy,
+                    textShadow: holyCrossBrand.textShadowUltra,
                     mb: 2,
                     animation: 'textPulse 2s ease-in-out infinite alternate'
                   }}
@@ -542,12 +539,11 @@ const Home: React.FC = () => {
                   variant="h4" 
                   component="h3" 
                   sx={{ 
-                    fontWeight: 600,
-                    fontSize: { xs: '1.2rem', sm: '1.6rem', md: '2rem' },
+                    fontWeight: 700,
+                    fontSize: 'clamp(1.2rem, 3vw, 2rem)',
                     fontFamily: '"Inter", sans-serif',
                     color: 'white',
-                    textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-                    opacity: 0.95,
+                    textShadow: holyCrossBrand.textShadowHeavy,
                     maxWidth: '800px',
                     margin: '0 auto',
                     lineHeight: 1.3
@@ -561,11 +557,17 @@ const Home: React.FC = () => {
                 variant="h6" 
                 sx={{ 
                   mb: 5,
-                  opacity: 0.9,
                   maxWidth: '700px',
                   mx: 'auto',
-                  lineHeight: 1.6,
-                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' }
+                  lineHeight: 1.8,
+                  fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+                  color: 'white',
+                  fontWeight: 500,
+                  textShadow: holyCrossBrand.textShadowHeavy,
+                  backgroundColor: 'rgba(0,0,0,0.4)',
+                  padding: '20px 24px',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)'
                 }}
               >
                 For over 65 years, we've been nurturing young minds and hearts in Brooklyn, 

@@ -33,6 +33,7 @@ export const holyCrossBrand = {
   textShadowLight: '2px 2px 4px rgba(0,0,0,0.3)',
   textShadowMedium: '3px 3px 6px rgba(0,0,0,0.5)',
   textShadowHeavy: '4px 4px 8px rgba(0,0,0,0.9)',
+  textShadowUltra: '0 0 20px rgba(0,0,0,0.9), 4px 4px 8px rgba(0,0,0,0.9)', // Ultra strong for hero sections
   
   // Button Styles
   buttonStyles: {
