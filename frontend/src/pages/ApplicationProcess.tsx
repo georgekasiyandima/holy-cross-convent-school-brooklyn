@@ -55,13 +55,35 @@ import ApplicationDocumentUpload from '../components/ApplicationDocumentUpload';
 
 // Styled components for better visual appeal
 const HeroSection = styled(Box)(({ theme }) => ({
-  backgroundColor: 'transparent',
+  backgroundImage: 'url("/ROBT02.jpg")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
   color: '#1a237e',
   padding: theme.spacing(8, 0),
   position: 'relative',
-  minHeight: '300px',
+  minHeight: '400px',
   display: 'flex',
   alignItems: 'center',
+  filter: 'none !important',
+  WebkitFilter: 'none !important',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%)',
+    zIndex: 0,
+    backdropFilter: 'none !important',
+    WebkitBackdropFilter: 'none !important',
+    filter: 'none !important',
+  },
+  '& > *': {
+    position: 'relative',
+    zIndex: 1,
+  },
 }));
 
 
@@ -1423,8 +1445,9 @@ const ApplicationProcess: React.FC = () => {
               sx={{ 
                 fontWeight: 700, 
                 mb: 2,
-                color: '#1a237e',
-                fontFamily: '"Lato", "Open Sans", sans-serif'
+                color: '#ffffff',
+                fontFamily: '"Lato", "Open Sans", sans-serif',
+                textShadow: '2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)'
               }}
             >
               Application Process
@@ -1433,9 +1456,10 @@ const ApplicationProcess: React.FC = () => {
               variant="h5" 
               sx={{ 
                 mb: 4, 
-                color: '#3949ab',
+                color: '#ffffff',
                 fontWeight: 600,
-                fontFamily: '"Lato", "Open Sans", sans-serif'
+                fontFamily: '"Lato", "Open Sans", sans-serif',
+                textShadow: '2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.5)'
               }}
             >
               Join Our Holy Cross Family
@@ -1446,10 +1470,11 @@ const ApplicationProcess: React.FC = () => {
                 maxWidth: '800px', 
                 margin: '0 auto', 
                 fontSize: '1.1rem',
-                color: '#555',
-                fontWeight: 400,
+                color: '#ffffff',
+                fontWeight: 500,
                 fontFamily: '"Lato", "Open Sans", sans-serif',
-                lineHeight: 1.8
+                lineHeight: 1.8,
+                textShadow: '1px 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5)'
               }}
             >
               We welcome applications from families who share our values of faith, excellence, and community. 

@@ -11,6 +11,7 @@ import admissionsRoutes from './routes/admissions';
 import applicationDocumentsRoutes from './routes/applicationDocuments';
 import staffRoutes from './routes/staff';
 import documentsRoutes from './routes/documents';
+import { errorHandler } from './middleware/errorHandler';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -133,11 +134,8 @@ app.get('/api/calendar/events', async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+// Error handling middleware (must be after all routes)
+app.use(errorHandler);
 
 // 404 handler
 app.use('*', (req, res) => {

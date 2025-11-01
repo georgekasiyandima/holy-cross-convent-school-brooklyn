@@ -325,42 +325,39 @@ const ContactFormComponent: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }} role="main" aria-label="Contact form">
-      {/* Hero section matching Staff page style */}
+      {/* Hero section with image background */}
       <Box sx={{ 
-        background: 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%)',
+        backgroundImage: 'url("/ROBT02.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         color: 'white',
-        py: 8,
+        py: { xs: 10, md: 12 },
         position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Background Pattern */}
-        <Box sx={{
+        overflow: 'hidden',
+        filter: 'none',
+        '&::before': {
+          content: '""',
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: `
-            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%)
-          `,
-          zIndex: 0
-        }} />
-
+          background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.7) 0%, rgba(57, 73, 171, 0.6) 100%)',
+          zIndex: 0,
+        }
+      }}>
         <Box sx={{ position: 'relative', zIndex: 1, maxWidth: '1200px', mx: 'auto', px: 2 }}>
-          <ReturnToHome />
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
             <Typography
               variant="h1"
               sx={{
                 fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
                 fontWeight: 800,
                 mb: 3,
-                background: 'linear-gradient(45deg, #ffffff 30%, #ffd700 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                color: '#ffffff',
+                textShadow: '2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)',
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               Contact Us
@@ -370,73 +367,52 @@ const ContactFormComponent: React.FC = () => {
               sx={{
                 maxWidth: '700px',
                 mx: 'auto',
-                opacity: 0.9,
-                fontWeight: 400,
+                color: '#ffffff',
+                fontWeight: 500,
                 fontSize: { xs: '1.1rem', sm: '1.3rem' },
-                lineHeight: 1.6
+                lineHeight: 1.6,
+                textShadow: '1px 1px 4px rgba(0, 0, 0, 0.8)',
+                fontFamily: '"Lato", "Open Sans", sans-serif'
               }}
             >
               We'd love to hear from you. For admissions, general enquiries or to schedule a visit, our team is ready to help.
             </Typography>
-            {/* Decorative Elements */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              mt: 4,
-              gap: 2
-            }}>
-              <Box sx={{ 
-                width: 60, 
-                height: 4, 
-                background: 'linear-gradient(90deg, #ffd700 0%, #ffed4e 100%)',
-                borderRadius: 2
-              }} />
-              <Box sx={{ 
-                width: 8, 
-                height: 8, 
-                background: '#ffd700',
-                borderRadius: '50%'
-              }} />
-              <Box sx={{ 
-                width: 60, 
-                height: 4, 
-                background: 'linear-gradient(90deg, #ffed4e 0%, #ffd700 100%)',
-                borderRadius: 2
-              }} />
-            </Box>
           </Box>
         </Box>
       </Box>
 
       <Box sx={{ 
-        display: 'grid', 
-        gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' },
-        gap: 4,
         maxWidth: '1200px',
         mx: 'auto',
         px: 2,
         py: 6
       }}>
-        {/* Contact Information */}
-        <Slide direction="right" in timeout={600}>
-          <Box>
-            <ContactInfoSection />
-          </Box>
-        </Slide>
+        {/* Contact Information and Form Grid */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' },
+          gap: 4,
+          mb: 6
+        }}>
+          {/* Contact Information */}
+          <Slide direction="right" in timeout={600}>
+            <Box>
+              <ContactInfoSection />
+            </Box>
+          </Slide>
 
-        {/* Contact Form */}
-        <Slide direction="left" in timeout={600}>
-          <Box>
-            <ContactCard>
-              <CardContent>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, textAlign: 'center' }}>
-                  Send us a Message
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666', mb: 4, textAlign: 'center' }}>
-                  Fill out the form below and we'll get back to you within 24 hours. 
-                  All fields marked with * are required.
-                </Typography>
+          {/* Contact Form */}
+          <Slide direction="left" in timeout={600}>
+            <Box>
+              <ContactCard>
+                <CardContent>
+                  <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, textAlign: 'center' }}>
+                    Send us a Message
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 4, textAlign: 'center' }}>
+                    Fill out the form below and we'll get back to you within 24 hours. 
+                    All fields marked with * are required.
+                  </Typography>
 
                 <form onSubmit={handleSubmit} noValidate>
                   <Box sx={{ 
@@ -564,6 +540,58 @@ const ContactFormComponent: React.FC = () => {
             </ContactCard>
           </Box>
         </Slide>
+        </Box>
+
+        {/* Google Maps Section */}
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 3, textAlign: 'center', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+            Find Us
+          </Typography>
+          <Box sx={{ 
+            borderRadius: 2, 
+            overflow: 'hidden',
+            boxShadow: 3,
+            height: { xs: '300px', md: '450px' }
+          }}>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3308.5!2d18.479!3d-33.911!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5f1a1234567%3A0x1234567890abcdef!2s162%20Koeberg%20Road%2C%20Brooklyn%2C%20Cape%20Town%2C%207405!5e0!3m2!1sen!2sza!4v1234567890123!5m2!1sen!2sza"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Holy Cross Convent School Location"
+            />
+          </Box>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body1" sx={{ color: '#666', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+              <strong>Address:</strong> 162 Koeberg Road, Brooklyn, Cape Town, 7405
+            </Typography>
+            <Button
+              variant="outlined"
+              href="https://www.google.com/maps/dir/?api=1&destination=162+Koeberg+Road,+Brooklyn,+Cape+Town,+7405"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                mt: 2,
+                color: '#1a237e',
+                borderColor: '#1a237e',
+                '&:hover': {
+                  borderColor: '#3949ab',
+                  backgroundColor: 'rgba(26, 35, 126, 0.05)'
+                }
+              }}
+            >
+              Get Directions
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Return to Home - moved to bottom */}
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <ReturnToHome />
+        </Box>
       </Box>
 
       {/* Success Snackbar */}

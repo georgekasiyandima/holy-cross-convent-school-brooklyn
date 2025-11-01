@@ -183,7 +183,7 @@ const navigationItems: NavigationItem[] = [
     name: 'Resources',
     type: 'dropdown',
     items: [
-      { name: 'Forms & Fees', path: '/forms' }
+      { name: 'School Documents', path: '/forms' }
     ]
   },
   {
@@ -275,21 +275,23 @@ const MobileDrawer = memo(({
               <ListItem 
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
-                  backgroundColor: currentPage === item.name 
-                    ? 'rgba(26, 35, 126, 0.1)' 
-                    : 'transparent',
+                  backgroundColor: item.name === 'SUPPORT US' 
+                    ? (currentPage === item.name ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)')
+                    : (currentPage === item.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent'),
                   cursor: 'pointer',
                   borderRadius: '8px',
                   margin: '4px 8px',
                   transition: 'all 0.3s ease',
-                  border: item.name === 'SUPPORT US' ? '1px solid #ffd700' : 'none',
+                  border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' : 'none',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   '&:hover': {
-                    backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                    backgroundColor: item.name === 'SUPPORT US' 
+                      ? 'rgba(211, 47, 47, 0.15)' 
+                      : 'rgba(26, 35, 126, 0.08)',
                     transform: 'translateX(4px)',
-                    borderColor: item.name === 'SUPPORT US' ? '#ffd700' : 'transparent',
+                    borderColor: item.name === 'SUPPORT US' ? '#d32f2f' : 'transparent',
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
@@ -460,15 +462,17 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                     sx={{
                       backgroundColor: currentPage === item.name 
                         ? 'rgba(26, 35, 126, 0.1)' 
-                        : 'transparent',
+                        : (item.name === 'SUPPORT US' ? 'rgba(211, 47, 47, 0.1)' : 'transparent'),
                       color: scrolled ? '#1a237e' : '#1a237e',
                       fontWeight: 600,
-                      border: item.name === 'SUPPORT US' ? '1px solid #ffd700' : 'none',
+                      border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' : 'none',
                       '&:hover': {
-                        backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                        backgroundColor: item.name === 'SUPPORT US' 
+                          ? 'rgba(211, 47, 47, 0.15)' 
+                          : 'rgba(26, 35, 126, 0.08)',
                         transform: 'translateY(-2px)',
                         color: '#1a237e',
-                        borderColor: item.name === 'SUPPORT US' ? '#ffd700' : 'transparent',
+                        borderColor: item.name === 'SUPPORT US' ? '#d32f2f' : 'transparent',
                       }
                     }}
                   >

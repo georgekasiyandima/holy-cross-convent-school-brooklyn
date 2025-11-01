@@ -181,7 +181,7 @@ const NavigationWrapper: React.FC = () => {
       case '/info':
         return 'Info';
       case '/forms':
-        return 'Forms & Fees';
+        return 'School Documents';
       case '/links':
         return 'Links';
       case '/music':

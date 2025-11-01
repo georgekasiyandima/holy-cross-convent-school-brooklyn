@@ -202,7 +202,7 @@ class DocumentService {
       formData.append('category', category);
       formData.append('isPublished', documentData.isPublished.toString());
 
-      const response = await api.post('/api/upload/document', formData, {
+      const response = await api.post('/api/documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -216,12 +216,20 @@ class DocumentService {
       });
 
       return response.data.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading document:', error);
-      if (error instanceof Error) {
+      
+      // Provide more specific error messages
+      if (error.response?.status === 401) {
+        throw new Error('Authentication required. Please log in to upload documents.');
+      } else if (error.response?.status === 403) {
+        throw new Error('You do not have permission to upload documents.');
+      } else if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else if (error instanceof Error) {
         throw error;
       } else {
-        throw new Error('Failed to upload document');
+        throw new Error('Failed to upload document. Please try again.');
       }
     }
   }

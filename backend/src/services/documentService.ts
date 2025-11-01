@@ -141,9 +141,25 @@ export class DocumentService {
         createdAt: document.createdAt,
         updatedAt: document.updatedAt
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating document:', error);
-      throw new Error('Failed to create document');
+      console.error('Error details:', {
+        message: error?.message,
+        name: error?.name,
+        code: error?.code,
+        meta: error?.meta,
+        stack: error?.stack
+      });
+      console.error('Document data attempted:', documentData);
+      
+      // Provide more specific error message
+      if (error?.code === 'P2002') {
+        throw new Error('A document with this title already exists');
+      } else if (error?.message) {
+        throw new Error(`Failed to create document: ${error.message}`);
+      } else {
+        throw new Error('Failed to create document. Please check the server logs for details.');
+      }
     }
   }
 

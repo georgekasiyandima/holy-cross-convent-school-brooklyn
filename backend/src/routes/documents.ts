@@ -105,19 +105,50 @@ router.get('/:category/:id', async (req: Request, res: Response) => {
 router.post('/upload', 
   authMiddleware,
   requireEditor,
-  upload.single('file'),
-  async (req: Request, res: Response) => {
-    try {
-        if (!req.file) {
+  (req: Request, res: Response, next: any) => {
+    upload.single('file')(req, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              success: false,
+              error: 'File too large. Maximum size is 10MB'
+            });
+          }
           return res.status(400).json({
             success: false,
-            error: 'No file uploaded'
+            error: err.message || 'File upload error'
           });
         }
+        return res.status(400).json({
+          success: false,
+          error: err.message || 'File upload error'
+        });
+      }
+      next();
+    });
+  },
+  async (req: Request, res: Response) => {
+    try {
+      // Handle multer errors
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded'
+        });
+      }
         
       const { title, description, category, isPublished, authorId, authorName } = req.body;
       
       if (!title || !category) {
+        // Clean up uploaded file if validation fails
+        if (req.file.path) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch (unlinkError) {
+            console.error('Error deleting file after validation failure:', unlinkError);
+          }
+        }
         return res.status(400).json({
           success: false,
           error: 'Title and category are required'
@@ -125,31 +156,59 @@ router.post('/upload',
       }
 
       const documentData = {
-            title,
+        title,
         description: description || '',
         fileName: req.file.filename,
         fileUrl: `/uploads/documents/${req.file.filename}`,
-        fileSize: req.file.size,
+        fileSize: Number(req.file.size) || 0, // Ensure it's a number
         mimeType: req.file.mimetype,
         category,
         tags: [],
-            isPublished: isPublished === 'true',
+        // Default to published if not explicitly set to false
+        isPublished: isPublished === 'false' ? false : true,
         authorId: authorId || 'system',
         authorName: authorName || 'System'
-          };
+      };
+      
+      console.log('Document data being created:', documentData);
           
       const document = await documentService.createDocument(documentData);
           
       return res.json({
-            success: true,
+        success: true,
         data: document,
-            message: 'Document uploaded successfully'
+        message: 'Document uploaded successfully'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading document:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        name: error?.name,
+        code: error?.code,
+        stack: error?.stack
+      });
+      
+      // Clean up uploaded file if database operation fails
+      if (req.file?.path) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting file after upload failure:', unlinkError);
+        }
+      }
+      
+      // Return more detailed error message
+      const errorMessage = error?.message || 'Failed to upload document';
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
       return res.status(500).json({
         success: false,
-        error: 'Failed to upload document'
+        error: errorMessage,
+        ...(isDevelopment && {
+          details: error?.stack,
+          errorName: error?.name,
+          errorCode: error?.code
+        })
       });
     }
   }
