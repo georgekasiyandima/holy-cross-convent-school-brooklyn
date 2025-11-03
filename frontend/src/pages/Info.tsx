@@ -30,26 +30,26 @@ const Banner = styled(Box)(({ theme }) => ({
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(135deg, rgba(26,35,126,.85), rgba(211,47,47,.65))',
+    background: 'linear-gradient(135deg, rgba(26,35,126,.80), rgba(211,47,47,.60))',
     zIndex: 0
   },
   '& > *': { position: 'relative', zIndex: 1 }
 }));
 
-// Backend API URL - adjust based on environment
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
 // Image paths - these should be uploaded to backend/uploads/documents
 // Admin can upload mission, vision, and holy cross family images via document upload
 // The images should be named: mission-statement.jpg, vision-statement.jpg, holy-cross-family-statement.jpg
-const missionImageUrl = `${API_URL}/uploads/documents/mission-statement.jpg`;
-const visionImageUrl = `${API_URL}/uploads/documents/vision-statement.jpg`;
-const holyCrossFamilyImageUrl = `${API_URL}/uploads/documents/holy-cross-family-statement.jpg`;
+// Using proxy path that works in both dev and production
+const getImagePath = (filename: string) => {
+  const apiUrl = process.env.REACT_APP_API_URL || '';
+  // In production, API_URL might include /api, so we handle both cases
+  const baseUrl = apiUrl ? (apiUrl.includes('/api') ? apiUrl.replace('/api', '') : apiUrl) : '';
+  return baseUrl ? `${baseUrl}/uploads/documents/${filename}` : `/uploads/documents/${filename}`;
+};
 
-// Fallback URLs from public folder
-const missionFallback = '/HCCMS.jpeg';
-const visionFallback = '/HCCMS.jpeg';
-const holyCrossFamilyFallback = '/HCCMS.jpeg';
+const missionImageUrl = getImagePath('mission-statement.jpg');
+const visionImageUrl = getImagePath('vision-statement.jpg');
+const holyCrossFamilyImageUrl = getImagePath('holy-cross-family-statement.jpg');
 
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
@@ -62,10 +62,10 @@ const quickFacts = [
 ];
 
 const galleryImages = [
-  'BOOKDAY.jpg',
-  'Sports01.jpg',
-  'Garden Club 04.jpg',
-  'COMPUTERLAB02.jpg'
+  'ROBTX1.jpg',
+  'ROBT7.jpg',
+  'ROBT4.jpg',
+  'cultra07.jpg'
 ];
 
 const Info: React.FC = () => (
@@ -102,39 +102,30 @@ const Info: React.FC = () => (
     {/* Banner Section */}
     <Banner>
       <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
-        <Box sx={{
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(8px)',
-          padding: { xs: 3, md: 4 },
-          borderRadius: 3,
-          border: '2px solid rgba(255, 215, 0, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
-        }}>
-          <Typography 
-            variant="h1" 
-            sx={{ 
-              fontWeight: 900,
-              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
-              mb: 2,
-              color: '#ffd700',
-              textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(26,35,126,0.5)',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Holy Cross Convent School
-          </Typography>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              color: '#ffffff',
-              fontWeight: 600,
-              textShadow: '2px 2px 4px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.6)',
-              fontSize: { xs: '1.5rem', md: '2rem' }
-            }}
-          >
-            Brooklyn, Cape Town
-          </Typography>
-        </Box>
+        <Typography 
+          variant="h1" 
+          sx={{ 
+            fontWeight: 900,
+            fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+            mb: 2,
+            color: '#ffd700',
+            textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+            letterSpacing: '0.5px'
+          }}
+        >
+          Holy Cross Convent School
+        </Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            color: '#ffffff',
+            fontWeight: 600,
+            textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+            fontSize: { xs: '1.5rem', md: '2rem' }
+          }}
+        >
+          Brooklyn, Cape Town
+        </Typography>
       </Container>
     </Banner>
 
@@ -396,17 +387,37 @@ const Info: React.FC = () => (
 
       {/* Quick Gallery */}
       <Box sx={{ mb: 6 }}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            color: '#1a237e', 
-            fontWeight: 700,
-            mb: 3,
-            textAlign: 'center'
-          }}
-        >
-          School Gallery
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              color: '#1a237e', 
+              fontWeight: 700
+            }}
+          >
+            School Gallery
+          </Typography>
+          <Button 
+            variant="contained"
+            onClick={() => window.location.href = '/gallery'}
+            sx={{
+              backgroundColor: '#1a237e',
+              color: '#fff',
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              '&:hover': {
+                backgroundColor: '#283593',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 20px rgba(26, 35, 126, 0.3)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            View Full Gallery →
+          </Button>
+        </Box>
         <Box sx={{ 
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },

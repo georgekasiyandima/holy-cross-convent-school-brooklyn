@@ -91,7 +91,7 @@ const LogoSymbolism: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 6, mt: 4 }}>
       <Paper 
         elevation={3} 
         sx={{ 
@@ -107,11 +107,12 @@ const LogoSymbolism: React.FC = () => {
             variant="h3" 
             component="h1"
             sx={{
-              fontFamily: '"Dancing Script", cursive',
-              fontWeight: 600,
+              fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+              fontWeight: 700,
               color: '#1a237e',
               mb: 2,
-              fontSize: { xs: '2rem', md: '3rem' }
+              fontSize: { xs: '2rem', md: '3rem' },
+              letterSpacing: '0.5px'
             }}
           >
             Logo Symbolism

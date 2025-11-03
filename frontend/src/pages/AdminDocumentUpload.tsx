@@ -227,11 +227,19 @@ const AdminDocumentUpload: React.FC = () => {
   // RENDER
   //---------------------------------------------------------
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <ReturnToHome />
+    <Container maxWidth="md" sx={{ py: 4, position: 'relative' }}>
+      {/* Return to Home - positioned to avoid header clash */}
+      <Box sx={{ 
+        position: 'absolute',
+        top: { xs: 16, sm: 20 },
+        left: 16,
+        zIndex: 10
+      }}>
+        <ReturnToHome />
+      </Box>
       
       {/* Header */}
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
+      <Box sx={{ mb: 4, textAlign: 'center', pt: 4 }}>
         <Typography variant="h4" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
           Document Upload
         </Typography>
