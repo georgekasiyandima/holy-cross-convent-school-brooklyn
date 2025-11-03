@@ -18,7 +18,7 @@ const Hero = styled(Box)(({ theme }) => ({
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(135deg, rgba(26,35,126,.75), rgba(211,47,47,.50))',
+    background: 'linear-gradient(135deg, rgba(26,35,126,.70), rgba(211,47,47,.45))',
     zIndex: 0
   },
   '& > *': { position: 'relative', zIndex: 1 }

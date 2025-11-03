@@ -246,6 +246,7 @@ const Info: React.FC = () => (
           <OptimizedImage
             src={visionImageUrl}
             alt="Vision Statement"
+            fallbackSrc="/HCCVS.jpeg"
             width={800}
             height={600}
             variant="image"
@@ -313,6 +314,7 @@ const Info: React.FC = () => (
           <OptimizedImage
             src={holyCrossFamilyImageUrl}
             alt="The Holy Cross Family, Brooklyn Statement"
+            fallbackSrc="/HCCFS.jpeg"
             width={800}
             height={600}
             variant="image"

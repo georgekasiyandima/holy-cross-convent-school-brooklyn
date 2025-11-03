@@ -11,6 +11,9 @@ import admissionsRoutes from './routes/admissions';
 import applicationDocumentsRoutes from './routes/applicationDocuments';
 import staffRoutes from './routes/staff';
 import documentsRoutes from './routes/documents';
+import schoolHubRoutes from './routes/schoolHub';
+import calendarRoutes from './routes/calendar';
+import galleryRoutes from './routes/gallery';
 import { errorHandler } from './middleware/errorHandler';
 import dotenv from 'dotenv';
 
@@ -65,6 +68,15 @@ app.use('/api/staff', staffRoutes);
 // Documents routes
 app.use('/api/documents', documentsRoutes);
 
+// School Hub routes (unified calendar & events)
+app.use('/api/school-hub', schoolHubRoutes);
+
+// Calendar routes (terms, etc.)
+app.use('/api/calendar', calendarRoutes);
+
+// Gallery routes
+app.use('/api/gallery', galleryRoutes);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -105,8 +117,14 @@ app.get('/api/news', async (req, res) => {
   }
 });
 
-// Events API
+// DEPRECATED: Events API - Use /api/school-hub/events instead
+// This endpoint will be removed in a future version
 app.get('/api/events', async (req, res) => {
+  // Add deprecation header
+  res.setHeader('X-API-Deprecated', 'true');
+  res.setHeader('X-API-Deprecation-Message', 'This endpoint is deprecated. Please use /api/school-hub/events instead.');
+  res.setHeader('X-API-Alternative', '/api/school-hub/events');
+  
   try {
     const events = await prisma.event.findMany({
       where: { isPublished: true },
@@ -120,8 +138,14 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-// Calendar API
+// DEPRECATED: Calendar API - Use /api/school-hub/events instead
+// This endpoint will be removed in a future version
 app.get('/api/calendar/events', async (req, res) => {
+  // Add deprecation header
+  res.setHeader('X-API-Deprecated', 'true');
+  res.setHeader('X-API-Deprecation-Message', 'This endpoint is deprecated. Please use /api/school-hub/events instead.');
+  res.setHeader('X-API-Alternative', '/api/school-hub/events');
+  
   try {
     const events = await prisma.academicCalendar.findMany({
       orderBy: { startDate: 'asc' },
