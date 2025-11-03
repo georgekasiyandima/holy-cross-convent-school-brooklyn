@@ -228,12 +228,9 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
       );
     }
 
-    // Mr Thelen - Remove "Music" and "Computer Science" after quote
+    // Mr Thelen - Remove all subjects (keep only grade and quote)
     if (name.includes('thelen')) {
-      filteredSubjects = filteredSubjects.filter(subj => 
-        !subj.toLowerCase().includes('music') && 
-        !subj.toLowerCase().includes('computer science')
-      );
+      filteredSubjects = [];
     }
 
     // Mrs Wilson - Remove "Physical Education" and "Sports"
@@ -250,6 +247,26 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
         !subj.toLowerCase().includes('religious education') && 
         !subj.toLowerCase().includes('remedial work')
       );
+    }
+
+    // Ms Du Preez - Remove all subjects (keep only grade and quote)
+    if (name.includes('du preez') || name.includes('dupreez')) {
+      filteredSubjects = [];
+    }
+
+    // Mrs Lottering - Remove all subjects (keep only grade and quote)
+    if (name.includes('lottering')) {
+      filteredSubjects = [];
+    }
+
+    // Ms Daniels - Remove all subjects (keep only grade and quote)
+    if (name.includes('daniels')) {
+      filteredSubjects = [];
+    }
+
+    // Mrs Malander - Remove all subjects (keep only grade and quote)
+    if (name.includes('malander')) {
+      filteredSubjects = [];
     }
 
     return filteredSubjects.length > 0 ? filteredSubjects : null;
