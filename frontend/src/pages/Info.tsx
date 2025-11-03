@@ -173,19 +173,14 @@ const Info: React.FC = () => (
         </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <OptimizedImage
+          <Box
+            component="img"
             src={missionImageUrl}
             alt="Mission Statement"
-            fallbackSrc="/HCCMS.jpeg"
-            width={800}
-            height={600}
-            variant="image"
-            config={{
-              width: 800,
-              height: 600,
-              quality: 90,
-              format: 'webp',
-              fit: 'contain'
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== missionImageUrl) return; // Prevent infinite loop
+              target.src = '/HCCMS.jpeg';
             }}
             sx={{
               borderRadius: 2,
@@ -193,7 +188,9 @@ const Info: React.FC = () => (
               maxWidth: '100%',
               height: 'auto',
               width: '100%',
-              objectFit: 'contain'
+              objectFit: 'contain',
+              display: 'block',
+              mx: 'auto'
             }}
           />
         </Box>
@@ -242,19 +239,14 @@ const Info: React.FC = () => (
         </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <OptimizedImage
+          <Box
+            component="img"
             src={visionImageUrl}
             alt="Vision Statement"
-            fallbackSrc="/HCCVS.jpeg"
-            width={800}
-            height={600}
-            variant="image"
-            config={{
-              width: 800,
-              height: 600,
-              quality: 90,
-              format: 'webp',
-              fit: 'contain'
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== visionImageUrl) return; // Prevent infinite loop
+              target.src = '/HCCVS.jpeg';
             }}
             sx={{
               borderRadius: 2,
@@ -262,7 +254,9 @@ const Info: React.FC = () => (
               maxWidth: '100%',
               height: 'auto',
               width: '100%',
-              objectFit: 'contain'
+              objectFit: 'contain',
+              display: 'block',
+              mx: 'auto'
             }}
           />
         </Box>
@@ -311,19 +305,14 @@ const Info: React.FC = () => (
         </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <OptimizedImage
+          <Box
+            component="img"
             src={holyCrossFamilyImageUrl}
             alt="The Holy Cross Family, Brooklyn Statement"
-            fallbackSrc="/HCCFS.jpeg"
-            width={800}
-            height={600}
-            variant="image"
-            config={{
-              width: 800,
-              height: 600,
-              quality: 90,
-              format: 'webp',
-              fit: 'contain'
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== holyCrossFamilyImageUrl) return; // Prevent infinite loop
+              target.src = '/HCCFS.jpeg';
             }}
             sx={{
               borderRadius: 2,
@@ -331,7 +320,9 @@ const Info: React.FC = () => (
               maxWidth: '100%',
               height: 'auto',
               width: '100%',
-              objectFit: 'contain'
+              objectFit: 'contain',
+              display: 'block',
+              mx: 'auto'
             }}
           />
         </Box>
