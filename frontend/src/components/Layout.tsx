@@ -220,7 +220,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
                     }
                   }}
                   component="a"
-                  href="https://www.tiktok.com/@holycrossbrooklyn"
+                  href="https://www.tiktok.com/@holy.cross.brookl?_r=1&_t=ZS-916BhJDoSUq"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

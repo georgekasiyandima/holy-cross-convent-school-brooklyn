@@ -43,7 +43,7 @@ const FloatingSocialIcons: React.FC = () => {
     { icon: <Facebook />, label: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61553924237049' },
     { icon: <Instagram />, label: 'Instagram', url: 'https://www.instagram.com/holycrossbrooklyn' },
     { icon: <YouTube />, label: 'YouTube', url: 'https://www.youtube.com/@holycrossbrooklyn' },
-    { icon: <MusicNote />, label: 'TikTok', url: 'https://www.tiktok.com/@holycrossbrooklyn' },
+    { icon: <MusicNote />, label: 'TikTok', url: 'https://www.tiktok.com/@holy.cross.brookl?_r=1&_t=ZS-916BhJDoSUq' },
   ];
 
   return (
