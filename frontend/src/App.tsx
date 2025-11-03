@@ -34,6 +34,7 @@ import FamilyStatementPage from './pages/FamilyStatement';
 // import Robotics from './pages/Robotics'; // File doesn't exist  
 // import ICTHub from './pages/ICTHub'; // File doesn't exist
 import Calendar from './pages/Calendar';
+import SchoolHub from './pages/SchoolHub';
 import CalendarManagement from './pages/CalendarManagement';
 import GalleryManagement from './pages/GalleryManagement';
 import NewsletterManagement from './pages/NewsletterManagement';
@@ -42,7 +43,7 @@ import Robotics from './pages/Robotics';
 import Sport from './pages/Sport';
 import Cultural from './pages/Cultural';
 import ServiceEthos from './pages/ServiceEthos';
-import Aftercare from './pages/Aftercare';
+import AfterSchoolProgram from './pages/AfterSchoolProgram';
 import Vacancies from './pages/Vacancies';
 import ApplicationProcess from './pages/ApplicationProcess';
 
@@ -163,11 +164,15 @@ const NavigationWrapper: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   const getCurrentPage = () => {
     const path = location.pathname;
     switch (path) {
       case '/':
         return 'Home';
+      case '/school-hub':
+        return 'School Hub';
       case '/gallery':
         return 'Gallery';
       case '/history':
@@ -198,10 +203,6 @@ const NavigationWrapper: React.FC = () => {
         return 'Contact';
       case '/documents':
         return 'School Documents';
-      case '/admin/staff-upload':
-        return 'Staff Upload';
-      case '/admin/document-upload':
-        return 'Document Upload';
       case '/logo-symbolism':
         return 'Logo Symbolism';
       case '/mission-vision':
@@ -222,8 +223,9 @@ const NavigationWrapper: React.FC = () => {
         return 'Cultural';
       case '/service-ethos':
         return 'Service & Ethos';
+      case '/after-school-programme':
       case '/aftercare':
-        return 'Aftercare Programme';
+        return 'After School Programme';
       case '/vacancies':
         return 'Vacancies';
       case '/admissions':
@@ -237,16 +239,37 @@ const NavigationWrapper: React.FC = () => {
     navigate(path);
   };
 
+  // Admin routes - NO public Layout (Header/Footer)
+  if (isAdminRoute) {
+    return (
+      <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/applications" element={<AdminApplicationManagement />} />
+        <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
+        <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
+        <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
+        <Route path="/admin/calendar" element={<CalendarManagement />} />
+        <Route path="/admin/gallery" element={<GalleryManagement />} />
+        <Route path="/admin/newsletters" element={<NewsletterManagement />} />
+      </Routes>
+    );
+  }
+
+  // Public routes - WITH Layout (Header/Footer)
   return (
     <Layout currentPage={getCurrentPage()} onNavigate={handleNavigation}>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/school-hub" element={<SchoolHub />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/history" element={<History />} />
         <Route path="/news" element={<News />} />
         <Route path="/spiritual" element={<Spiritual />} />
         <Route path="/info" element={<Info />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/calendar" element={<Calendar />} />
         <Route path="/school-board" element={<SchoolBoard />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/links" element={<Links />} />
@@ -255,26 +278,10 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/music" element={<Music />} />
         <Route path="/donate" element={<Donate />} />
         <Route path="/contact" element={<ContactForm />} />
-        <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/applications" element={<AdminApplicationManagement />} />
-        <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
-        <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
-        <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
-                <Route path="/admin/calendar" element={<CalendarManagement />} />
-                <Route path="/admin/gallery" element={<GalleryManagement />} />
-                <Route path="/admin/newsletters" element={<NewsletterManagement />} />
         <Route path="/documents" element={<SchoolDocuments />} />
         <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
         <Route path="/mission-vision" element={<MissionVision />} />
         <Route path="/family-statement" element={<FamilyStatementPage />} />
-        {/* 
-        <Route path="/academics" element={<Academics />} /> // File doesn't exist
-        <Route path="/robotics" element={<Robotics />} /> // File doesn't exist
-        <Route path="/ict-hub" element={<ICTHub />} /> // File doesn't exist
-        */}
-        <Route path="/calendar" element={<Calendar />} />
         {/* Pillars Section */}
         <Route path="/academic" element={<Academic />} />
         <Route path="/robotics" element={<Robotics />} />
@@ -282,7 +289,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/cultural" element={<Cultural />} />
         <Route path="/service-ethos" element={<ServiceEthos />} />
         {/* Our School Section */}
-        <Route path="/aftercare" element={<Aftercare />} />
+        <Route path="/after-school-programme" element={<AfterSchoolProgram />} />
+        <Route path="/aftercare" element={<AfterSchoolProgram />} />
         <Route path="/vacancies" element={<Vacancies />} />
         {/* Admissions Section */}
         <Route path="/admissions" element={<ApplicationProcess />} />
