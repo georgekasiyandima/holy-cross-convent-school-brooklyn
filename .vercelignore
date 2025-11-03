@@ -1,59 +1,17 @@
-# Only ignore ROOT level files, NOT the frontend directory
-# Vercel will operate from frontend/ directory, so we only ignore root files
+# Minimal .vercelignore - only ignore what we must
+# DO NOT ignore frontend/ directory
 
-# Ignore root package.json (but NOT frontend/package.json)
+# Only root package.json
 /package.json
 /package-lock.json
 
-# Ignore root level .md files only
+# Only root markdown files
 /*.md
-/DEPLOYMENT*.md
-/COMPLETE*.md
-/QUICK*.md
-/VERCEL*.md
-/*_FIX.md
-/*_GUIDE.md
-/*_SOLUTION.md
-/CHECKLIST.md
-/START_HERE.md
-/URGENT*.md
-/VISUAL*.md
-/BRANDING*.md
-/LANDING*.md
-/IMPLEMENTATION*.md
-/POSTGRESQL*.md
-/RENDER*.md
-/BACKEND*.md
-/PROJECT*.md
 
-# Ignore backend directory (at root)
+# Backend directory
 /backend/
 
-# Ignore root node_modules
+# Root node_modules
 /node_modules/
 
-# Ignore root level database files
-/*.db
-/*.sqlite
-/*.db-journal
-
-# Ignore root level scripts
-/deploy*.sh
-/*.sh
-
-# Ignore root docker files
-/docker-compose.yml
-/Dockerfile
-/nginx.conf
-
-# Ignore root env files
-/.env.local
-/.env.development.local
-/.env.test.local
-
-# Ignore root logs
-/*.log
-/.DS_Store
-
-# DO NOT ignore frontend/ directory or its contents
-# DO NOT ignore frontend/package.json
+# That's it - everything else should be included, especially frontend/
