@@ -5,10 +5,14 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import FaxIcon from '@mui/icons-material/Fax';
+import LanguageIcon from '@mui/icons-material/Language';
 import FlagIcon from '@mui/icons-material/Flag';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
+import OptimizedImage from '../components/OptimizedImage';
 
 const Banner = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -18,27 +22,43 @@ const Banner = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   background: 'url("/xul.jpg") center/cover no-repeat',
-  backgroundPosition: 'center center',
-  backgroundSize: '150%',
-  backgroundAttachment: 'fixed',
+  backgroundPosition: 'center 40%',
+  backgroundSize: 'cover',
   textAlign: 'center',
   overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(135deg, rgba(26,35,126,.70), rgba(211,47,47,.55))',
+    background: 'linear-gradient(135deg, rgba(26,35,126,.85), rgba(211,47,47,.65))',
     zIndex: 0
   },
   '& > *': { position: 'relative', zIndex: 1 }
 }));
 
+// Backend API URL - adjust based on environment
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+// Image paths - these should be uploaded to backend/uploads/documents
+// Admin can upload mission, vision, and holy cross family images via document upload
+// The images should be named: mission-statement.jpg, vision-statement.jpg, holy-cross-family-statement.jpg
+const missionImageUrl = `${API_URL}/uploads/documents/mission-statement.jpg`;
+const visionImageUrl = `${API_URL}/uploads/documents/vision-statement.jpg`;
+const holyCrossFamilyImageUrl = `${API_URL}/uploads/documents/holy-cross-family-statement.jpg`;
+
+// Fallback URLs from public folder
+const missionFallback = '/HCCMS.jpeg';
+const visionFallback = '/HCCMS.jpeg';
+const holyCrossFamilyFallback = '/HCCMS.jpeg';
+
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
   { icon: <SchoolIcon color="primary" />, label: 'Grades', value: 'Grade R – Grade 7' },
-  { icon: <EmailIcon color="primary" />, label: 'Email', value: 'info@holycrossbrooklyn.co.za' },
-  { icon: <PhoneIcon color="primary" />, label: 'Phone', value: '+27 21 123 4567' },
-  { icon: <LocationOnIcon color="primary" />, label: 'Address', value: '123 Brooklyn Rd, Cape Town' },
+  { icon: <EmailIcon color="primary" />, label: 'Email', value: 'admin@holycrossbrooklyn.co.za' },
+  { icon: <PhoneIcon color="primary" />, label: 'Phone', value: '021 5114337' },
+  { icon: <FaxIcon color="primary" />, label: 'Fax', value: '021 511 9690' },
+  { icon: <LocationOnIcon color="primary" />, label: 'Address', value: '162 Koeberg Road Brooklyn 7405' },
+  { icon: <LanguageIcon color="primary" />, label: 'Website', value: 'http://www.holycrossbrooklyn.co.za' },
 ];
 
 const galleryImages = [
@@ -55,54 +75,71 @@ const Info: React.FC = () => (
       description="Learn about Holy Cross Convent School Brooklyn, our mission, vision, and community values." 
     />
     
-    {/* Return to Home */}
+    {/* Return to Home - positioned outside banner to avoid clash */}
     <Box sx={{ 
-      position: 'absolute', 
-      top: 16, 
+      position: 'fixed', 
+      top: { xs: 80, sm: 100 }, 
       left: 16, 
-      zIndex: 10,
+      zIndex: 1000,
       '& .MuiTypography-root': {
         color: 'white !important',
-        textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(26, 35, 126, 0.7)',
+        padding: '8px 16px',
+        borderRadius: '8px',
         display: 'inline-block',
+        backdropFilter: 'blur(4px)',
         '&:hover': {
           transform: 'translateX(-2px)',
-        }
+          backgroundColor: 'rgba(26, 35, 126, 0.9)',
+        },
+        transition: 'all 0.3s ease'
       }
     }}>
-    <ReturnToHome />
+      <ReturnToHome />
     </Box>
 
     {/* Banner Section */}
     <Banner>
-      <Container maxWidth="lg">
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontWeight: 900,
-            fontSize: { xs: '2.5rem', md: '4rem' },
-            mb: 2,
-            color: '#ffd700',
-            textShadow: '4px 4px 8px rgba(0,0,0,0.9)'
-          }}
-        >
-          Holy Cross Convent School
-        </Typography>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            color: '#ffffff',
-            fontWeight: 600,
-            textShadow: '3px 3px 6px rgba(0,0,0,0.9)'
-          }}
-        >
-          Brooklyn, Cape Town
-        </Typography>
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
+        <Box sx={{
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(8px)',
+          padding: { xs: 3, md: 4 },
+          borderRadius: 3,
+          border: '2px solid rgba(255, 215, 0, 0.3)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+        }}>
+          <Typography 
+            variant="h1" 
+            sx={{ 
+              fontWeight: 900,
+              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+              mb: 2,
+              color: '#ffd700',
+              textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(26,35,126,0.5)',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Holy Cross Convent School
+          </Typography>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              color: '#ffffff',
+              fontWeight: 600,
+              textShadow: '2px 2px 4px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.6)',
+              fontSize: { xs: '1.5rem', md: '2rem' }
+            }}
+          >
+            Brooklyn, Cape Town
+          </Typography>
+        </Box>
       </Container>
     </Banner>
 
     <Container maxWidth="lg" sx={{ py: 6 }}>
-      {/* Mission Statement */}
+      {/* Mission Statement - as Image */}
       <Paper 
         elevation={3} 
         sx={{ 
@@ -144,43 +181,123 @@ const Info: React.FC = () => (
           </Typography>
         </Box>
         
-        <Typography 
-          variant="h6" 
-          paragraph 
-          sx={{ 
-            color: '#333',
-            lineHeight: 1.8,
-            fontSize: '1.1rem'
-          }}
-        >
-          To provide a holistic education rooted in Catholic values, fostering academic excellence, 
-          spiritual growth, and compassionate service. We are committed to nurturing each child's unique 
-          gifts in a caring, faith-filled environment that prepares them to make a positive difference in the world.
-        </Typography>
+        <Box sx={{ textAlign: 'center' }}>
+          <OptimizedImage
+            src={missionImageUrl}
+            alt="Mission Statement"
+            width={800}
+            height={600}
+            variant="image"
+            config={{
+              width: 800,
+              height: 600,
+              quality: 90,
+              format: 'webp',
+              fit: 'contain'
+            }}
+            sx={{
+              borderRadius: 2,
+              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+              maxWidth: '100%',
+              height: 'auto',
+              width: '100%'
+            }}
+            onError={() => {
+              // Fallback handled by component's error state
+            }}
+          />
+        </Box>
       </Paper>
 
-      {/* The Holy Cross Family Brooklyn Statement */}
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 4, 
+      {/* Vision Statement - as Image */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
+          mb: 4, 
+          background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+          borderRadius: 3,
+          border: '2px solid #d32f2f',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+            borderRadius: '12px 12px 0 0',
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <VisibilityIcon 
+            sx={{ 
+              fontSize: '2.5rem', 
+              color: '#d32f2f', 
+              mr: 2 
+            }} 
+          />
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              color: '#1a237e', 
+              fontWeight: 700 
+            }}
+          >
+            Our Vision
+          </Typography>
+        </Box>
+        
+        <Box sx={{ textAlign: 'center' }}>
+          <OptimizedImage
+            src={visionImageUrl}
+            alt="Vision Statement"
+            width={800}
+            height={600}
+            variant="image"
+            config={{
+              width: 800,
+              height: 600,
+              quality: 90,
+              format: 'webp',
+              fit: 'contain'
+            }}
+            sx={{
+              borderRadius: 2,
+              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+              maxWidth: '100%',
+              height: 'auto',
+              width: '100%'
+            }}
+          />
+        </Box>
+      </Paper>
+
+      {/* The Holy Cross Family Brooklyn Statement - as Image */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
           mb: 4, 
           background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
           borderRadius: 3,
-        border: '2px solid #d32f2f',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
-          borderRadius: '12px 12px 0 0',
-        }
-      }}
-    >
+          border: '2px solid #d32f2f',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+            borderRadius: '12px 12px 0 0',
+          }
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <FamilyRestroomIcon 
             sx={{ 
@@ -198,35 +315,33 @@ const Info: React.FC = () => (
             }}
           >
             The Holy Cross Family, Brooklyn
-      </Typography>
+          </Typography>
         </Box>
         
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: '#333',
-            lineHeight: 1.8,
-            fontSize: '1.1rem',
-            whiteSpace: 'pre-line',
-            mb: 2
-          }}
-        >
-          To make a positive difference in the world.{'\n\n'}
-          We strive in our daily lives and encounters to continue the work of Jesus who said, 'I have come that you may have a life and have it to the full.'{'\n\n'}
-          In union with the Risen Lord, we prayerfully endeavour to interpret present realities in our world.{'\n\n'}
-          This challenges us to develop and deepen our personal and corporate faith and to keep our eyes, hearts and minds open. Through interpersonal relationships in our Apostolate and the rich interactions that this affords us we find reason to:{'\n\n'}
-          • Give Thanks{'\n'}
-          • To hope{'\n'}
-          • To be open to joy{'\n'}
-          • To laugh{'\n'}
-          • To sing{'\n\n'}
-          And to live through love in His presence{'\n\n'}
-          <Typography component="span" sx={{ fontStyle: 'italic', fontSize: '1rem' }}>
-            Glory be to Him, whose Power working in us, can do infinitely more than we can ever imagine.{'\n'}
-            Ephesians 3:20
-      </Typography>
-      </Typography>
-    </Paper>
+        <Box sx={{ textAlign: 'center' }}>
+          <OptimizedImage
+            src={holyCrossFamilyImageUrl}
+            alt="The Holy Cross Family, Brooklyn Statement"
+            width={800}
+            height={600}
+            variant="image"
+            config={{
+              width: 800,
+              height: 600,
+              quality: 90,
+              format: 'webp',
+              fit: 'contain'
+            }}
+            sx={{
+              borderRadius: 2,
+              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+              maxWidth: '100%',
+              height: 'auto',
+              width: '100%'
+            }}
+          />
+        </Box>
+      </Paper>
 
       {/* Quick Facts */}
       <Box sx={{ mb: 6 }}>
@@ -240,17 +355,17 @@ const Info: React.FC = () => (
           }}
         >
           School Information
-      </Typography>
+        </Typography>
         <Box sx={{ 
           display: 'flex', 
           flexWrap: 'wrap', 
           gap: 2 
         }}>
           {quickFacts.map((fact) => (
-        <Box
-          key={fact.label}
-          sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }}
-        >
+            <Box
+              key={fact.label}
+              sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }}
+            >
               <Card sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -265,19 +380,19 @@ const Info: React.FC = () => (
                 <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
                   {fact.icon}
                 </Box>
-            <Box>
+                <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a237e' }}>
-                {fact.label}
-              </Typography>
+                    {fact.label}
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {fact.value}
                   </Typography>
+                </Box>
+              </Card>
             </Box>
-            </Card>
-          </Box>
-        ))}
+          ))}
+        </Box>
       </Box>
-    </Box>
 
       {/* Quick Gallery */}
       <Box sx={{ mb: 6 }}>
@@ -290,8 +405,8 @@ const Info: React.FC = () => (
             textAlign: 'center'
           }}
         >
-        School Gallery
-      </Typography>
+          School Gallery
+        </Typography>
         <Box sx={{ 
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
@@ -299,7 +414,7 @@ const Info: React.FC = () => (
         }}>
           {galleryImages.map((img, idx) => (
             <Card 
-            key={img}
+              key={img}
               sx={{ 
                 overflow: 'hidden',
                 borderRadius: 2,
@@ -322,9 +437,9 @@ const Info: React.FC = () => (
                 }}
               />
             </Card>
-        ))}
+          ))}
+        </Box>
       </Box>
-    </Box>
 
       {/* Logo Symbolism */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -346,7 +461,7 @@ const Info: React.FC = () => (
             }}
           >
             Discover Our Heritage
-      </Typography>
+          </Typography>
           <Typography 
             variant="body1" 
             sx={{ 
@@ -357,10 +472,10 @@ const Info: React.FC = () => (
             }}
           >
             Learn about the rich symbolism and meaning behind our school logo, representing our values and Catholic heritage.
-      </Typography>
-      <Button 
-        variant="contained" 
-        onClick={() => window.location.href = '/logo-symbolism'}
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => window.location.href = '/logo-symbolism'}
             sx={{
               backgroundColor: '#1a237e',
               color: '#fff',
@@ -375,12 +490,12 @@ const Info: React.FC = () => (
               },
               transition: 'all 0.3s ease'
             }}
-      >
-        View Logo Symbolism
-      </Button>
+          >
+            View Logo Symbolism
+          </Button>
         </Paper>
-    </Box>
-  </Container>
+      </Box>
+    </Container>
   </>
 );
 

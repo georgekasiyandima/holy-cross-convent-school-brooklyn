@@ -22,7 +22,6 @@ import {
   Close as CloseIcon
 } from '@mui/icons-material';
 import OptimizedImage from './OptimizedImage';
-import ReturnToHome from './ReturnToHome';
 
 interface LogoElement {
   id: string;
@@ -93,9 +92,6 @@ const LogoSymbolism: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Return to Home */}
-      <ReturnToHome />
-      
       <Paper 
         elevation={3} 
         sx={{ 

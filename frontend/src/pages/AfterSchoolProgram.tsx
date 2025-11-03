@@ -61,16 +61,23 @@ const AfterSchoolProgram: React.FC = () => {
         <Container maxWidth="lg">
           {/* Return to Home */}
           <Box sx={{ 
-            position: 'absolute',
-            top: 16,
+            position: 'fixed',
+            top: { xs: 80, sm: 100 },
             left: 16,
+            zIndex: 1000,
             '& .MuiTypography-root': {
               color: 'white !important',
-              textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(26, 35, 126, 0.7)',
+              padding: '8px 16px',
+              borderRadius: '8px',
               display: 'inline-block',
+              backdropFilter: 'blur(4px)',
               '&:hover': {
                 transform: 'translateX(-2px)',
-              }
+                backgroundColor: 'rgba(26, 35, 126, 0.9)',
+              },
+              transition: 'all 0.3s ease'
             }
           }}>
             <ReturnToHome />
@@ -89,49 +96,61 @@ const AfterSchoolProgram: React.FC = () => {
             }} 
           />
           
-          <Typography 
-            variant="h1" 
-            sx={{ 
-              fontWeight: 900,
-              fontSize: { xs: '2.5rem', md: '4rem' },
-              mb: 3,
-              color: '#ffd700',
-              textShadow: '4px 4px 8px rgba(0,0,0,0.9)'
-            }}
-          >
-            After School Programme
-          </Typography>
-          
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              maxWidth: '900px',
-              mx: 'auto',
-              mb: 4,
-              fontWeight: 700,
-              color: '#ffffff',
-              textShadow: '3px 3px 6px rgba(0,0,0,0.9)',
-              px: 2,
-              lineHeight: 1.4
-            }}
-          >
-            Learning Doesn't Stop When the Bell Rings
-          </Typography>
+          <Box sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(8px)',
+            padding: { xs: 3, md: 4 },
+            borderRadius: 3,
+            border: '2px solid rgba(255, 215, 0, 0.3)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+          }}>
+            <Typography 
+              variant="h1" 
+              sx={{ 
+                fontWeight: 900,
+                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                mb: 3,
+                color: '#ffd700',
+                textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(26,35,126,0.5)',
+                letterSpacing: '0.5px'
+              }}
+            >
+              After School Programme
+            </Typography>
+            
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                maxWidth: '900px',
+                mx: 'auto',
+                mb: 4,
+                fontWeight: 700,
+                color: '#ffffff',
+                textShadow: '2px 2px 4px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.6)',
+                px: 2,
+                lineHeight: 1.4,
+                fontSize: { xs: '1.3rem', md: '1.5rem' }
+              }}
+            >
+              Learning Doesn't Stop When the Bell Rings
+            </Typography>
 
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              maxWidth: '800px',
-              mx: 'auto',
-              mb: 4,
-              color: '#ffffff',
-              fontWeight: 600,
-              lineHeight: 1.8,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.9)'
-            }}
-          >
-            A safe, engaging, and enriching environment where learners can grow, explore, and thrive after school hours.
-          </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                maxWidth: '800px',
+                mx: 'auto',
+                mb: 4,
+                color: '#ffffff',
+                fontWeight: 600,
+                lineHeight: 1.8,
+                textShadow: '2px 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)',
+                fontSize: { xs: '1rem', md: '1.2rem' }
+              }}
+            >
+              A safe, engaging, and enriching environment where learners can grow, explore, and thrive after school hours.
+            </Typography>
+          </Box>
 
           <Stack 
             direction={{ xs: 'column', sm: 'row' }} 
