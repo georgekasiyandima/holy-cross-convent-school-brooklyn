@@ -205,6 +205,58 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
   const subjects = parseSubjects(member.subjects);
   const CardComponent = isLeadership ? LeadershipCard : StaffCard;
 
+  // Filter subjects based on staff member name
+  const getFilteredSubjects = (): string[] | null => {
+    if (!subjects) return null;
+    
+    const name = member.name.toLowerCase();
+    let filteredSubjects = [...subjects];
+
+    // Ms. Gleeson - Remove "Grade R" and "Early Childhood Development" after quote section
+    if (name.includes('gleeson')) {
+      filteredSubjects = filteredSubjects.filter(subj => 
+        !subj.toLowerCase().includes('grade r') && 
+        !subj.toLowerCase().includes('early childhood development')
+      );
+    }
+
+    // Mrs De Sousa - Remove "Computer Studies" and "ICT"
+    if (name.includes('de sousa') || name.includes('desousa')) {
+      filteredSubjects = filteredSubjects.filter(subj => 
+        !subj.toLowerCase().includes('computer studies') && 
+        !subj.toLowerCase().includes('ict')
+      );
+    }
+
+    // Mr Thelen - Remove "Music" and "Computer Science" after quote
+    if (name.includes('thelen')) {
+      filteredSubjects = filteredSubjects.filter(subj => 
+        !subj.toLowerCase().includes('music') && 
+        !subj.toLowerCase().includes('computer science')
+      );
+    }
+
+    // Mrs Wilson - Remove "Physical Education" and "Sports"
+    if (name.includes('wilson')) {
+      filteredSubjects = filteredSubjects.filter(subj => 
+        !subj.toLowerCase().includes('physical education') && 
+        !subj.toLowerCase().includes('sports')
+      );
+    }
+
+    // Mrs McLeod - Remove "Religious Education" and "Remedial Work"
+    if (name.includes('mcleod') || name.includes('mcleod')) {
+      filteredSubjects = filteredSubjects.filter(subj => 
+        !subj.toLowerCase().includes('religious education') && 
+        !subj.toLowerCase().includes('remedial work')
+      );
+    }
+
+    return filteredSubjects.length > 0 ? filteredSubjects : null;
+  };
+
+  const filteredSubjects = getFilteredSubjects();
+
   return (
     <CardComponent>
       <CardContent sx={{ textAlign: "center", p: 3 }}>
@@ -235,7 +287,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           </Typography>
         )}
 
-        {/* Grade */}
+        {/* Grade - Only show for teaching staff, keep grade button in red */}
         {member.grade && member.grade !== 'All' && member.grade !== 'All Grades' && (
           <Chip
             label={member.grade}
@@ -281,8 +333,8 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           </Box>
         )}
 
-        {/* Subjects */}
-        {subjects && (
+        {/* Subjects - Only show filtered subjects */}
+        {filteredSubjects && (
           <Box
             sx={{
               display: "flex",
@@ -292,7 +344,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
               mb: 2,
             }}
           >
-            {subjects.map((subject) => (
+            {filteredSubjects.map((subject) => (
               <Chip
                 key={subject}
                 label={subject}
@@ -763,7 +815,19 @@ const Staff: React.FC = () => {
 
         <TabPanel value={tabValue} index={2}>
           {groupedStaff.support.length > 0 ? (
-            renderStaffGrid(groupedStaff.support)
+            renderStaffGrid(
+              // Sort support staff to put Mrs Benita Faulman first
+              [...groupedStaff.support].sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                const faulmanInA = aName.includes('faulman') || aName.includes('benita');
+                const faulmanInB = bName.includes('faulman') || bName.includes('benita');
+                
+                if (faulmanInA && !faulmanInB) return -1;
+                if (!faulmanInA && faulmanInB) return 1;
+                return 0;
+              })
+            )
           ) : (
             <EmptyState category="support" />
           )}
