@@ -228,7 +228,7 @@ const Cultural: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Gallery Section */}
+      {/* Gallery Section - Images Only */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
@@ -244,98 +244,78 @@ const Cultural: React.FC = () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ac003.jpg" 
-                alt="Cultural Activity"
-                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Choir Festivals
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Performing at choir festivals and embassy events with confidence and joy.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ac003.jpg"
+              alt="Cultural Activity"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/cultra001.jpg" 
-                alt="Cultural Activity"
-                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Cultural Expression
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Celebrating our rich cultural heritage through traditional dress and expression.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/cultra001.jpg"
+              alt="Cultural Activity"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/AC3.jpg" 
-                alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Art Exhibitions
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Showcasing creative talent in art exhibitions and displays.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/AC3.jpg"
+              alt="Cultural Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/cultra002.jpg" 
-                alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Drama & Theater
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Building confidence through drama and theatrical performance.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/cultra002.jpg"
+              alt="Cultural Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/cultra004.jpg" 
-                alt="Cultural Activity"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Teamwork & Discipline
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Encouraging artistic growth, teamwork, and discipline.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/cultra004.jpg"
+              alt="Cultural Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
         </Grid>
       </Container>

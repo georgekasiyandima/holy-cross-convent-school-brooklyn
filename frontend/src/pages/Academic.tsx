@@ -347,7 +347,7 @@ const Academic: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Gallery Section - Images WITHOUT text overlays */}
+      {/* Gallery Section - Images Only */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
@@ -363,98 +363,48 @@ const Academic: React.FC = () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/acad2.jpg" 
-                alt="Focused attention and belonging"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Focused Attention & Belonging
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  With one class per grade, our learners benefit from individual attention and a strong sense of belonging.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/acad2.jpg"
+              alt="Academic learning"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/acad04.jpg" 
-                alt="Dedicated learner support"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Dedicated Learner Support
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Support is offered across the school to nurture curiosity, confidence and compassion from Grade R–7.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/acad04.jpg"
+              alt="Academic support"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/acad1.jpg" 
-                alt="Academic excellence"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Academic Excellence
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  CAPS-aligned curriculum with Catholic values and innovative teaching.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/acad2.jpg" 
-                alt="Faith and learning"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Faith and Learning
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Where faith and learning come together to prepare learners for success.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/acad04.jpg" 
-                alt="Nurturing potential"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Nurturing Potential
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Every child is seen, supported, and encouraged to reach their full God-given potential.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/acad1.jpg"
+              alt="Academic excellence"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
         </Grid>
       </Container>

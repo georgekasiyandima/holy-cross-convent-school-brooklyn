@@ -342,7 +342,7 @@ const Robotics: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Gallery Section */}
+      {/* Gallery Section - Images Only */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
@@ -358,98 +358,78 @@ const Robotics: React.FC = () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ROBT02.jpg" 
-                alt="Computer Lab"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Interactive Learning Spaces
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Modern workstations designed for both individual focus and collaborative projects.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ROBT02.jpg"
+              alt="Computer Lab"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ROBT03.jpg" 
-                alt="Students Learning"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Hands-On Experience
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Learners actively engage with technology to solve real-world problems and express their creativity.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ROBT03.jpg"
+              alt="Students Learning"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ROBT4.jpg" 
-                alt="Digital Citizenship"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Digital Citizenship
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Teaching responsible and ethical use of technology from the start.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ROBT4.jpg"
+              alt="Digital Citizenship"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ROBT008.jpg" 
-                alt="Modern Technology"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Modern Equipment
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Latest technology to ensure learners have access to the best tools.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ROBT008.jpg"
+              alt="Modern Technology"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ROBTX1.jpg" 
-                alt="Dedicated Room"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Dedicated Facility
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  A purpose-built space for exploration, innovation, and discovery.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ROBTX1.jpg"
+              alt="Dedicated Room"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
         </Grid>
       </Container>

@@ -236,7 +236,7 @@ const Sport: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Gallery Section */}
+      {/* Gallery Section - Images Only */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
@@ -252,98 +252,78 @@ const Sport: React.FC = () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/sports1.jpg" 
-                alt="Sports Activity"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Team Spirit
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Building teamwork and camaraderie through shared sporting experiences.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/sports1.jpg"
+              alt="Sports Activity"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/sports2.jpg" 
-                alt="Sports Activity"
-                sx={{ height: 400, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Active Engagement
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Every learner has opportunities to participate and excel in their chosen sport.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/sports2.jpg"
+              alt="Sports Activity"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/sports3.jpg" 
-                alt="Sports Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Competitive Play
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Fixtures with neighbouring schools build resilience and sportsmanship.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/sports3.jpg"
+              alt="Sports Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/sports6.jpg" 
-                alt="Sports Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Skill Development
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Daily practice sessions help learners hone their abilities.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/sports6.jpg"
+              alt="Sports Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/sports8.jpg" 
-                alt="Sports Activity"
-                sx={{ height: 300, objectFit: 'cover' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Afternoon Activities
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Fun and engaging activities every afternoon from 14:30 to 15:15.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/sports8.jpg"
+              alt="Sports Activity"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            />
           </Grid>
         </Grid>
       </Container>

@@ -446,60 +446,48 @@ const ServiceEthos: React.FC = () => {
 
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <Card elevation={2} sx={{ overflow: 'hidden' }}>
-                <CardMedia 
-                  component="img" 
-                  image="/ETHOS1.jpg" 
-                  alt="Community Outreach"
-                  sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-                />
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                    Faith in Action
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Sharing our Catholic values through community service and support.
-                  </Typography>
-                </CardContent>
-              </Card>
+              <Box
+                component="img"
+                src="/ETHOS1.jpg"
+                alt="Community Outreach"
+                sx={{
+                  width: '100%',
+                  height: 400,
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                }}
+              />
             </Grid>
 
             <Grid item xs={12} md={4}>
-              <Card elevation={2} sx={{ overflow: 'hidden' }}>
-                <CardMedia 
-                  component="img" 
-                  image="/ETHOS2.jpg" 
-                  alt="Food Distribution"
-                  sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-                />
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                    Serving Meals
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Providing nourishment to families and individuals in need.
-                  </Typography>
-                </CardContent>
-              </Card>
+              <Box
+                component="img"
+                src="/ETHOS2.jpg"
+                alt="Food Distribution"
+                sx={{
+                  width: '100%',
+                  height: 400,
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                }}
+              />
             </Grid>
 
             <Grid item xs={12} md={4}>
-              <Card elevation={2} sx={{ overflow: 'hidden' }}>
-                <CardMedia 
-                  component="img" 
-                  image="/ETHOS4.jpg" 
-                  alt="Community Support"
-                  sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-                />
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                    Catholic Care
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Working together with the church to address community needs.
-                  </Typography>
-                </CardContent>
-              </Card>
+              <Box
+                component="img"
+                src="/ETHOS4.jpg"
+                alt="Community Support"
+                sx={{
+                  width: '100%',
+                  height: 400,
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                }}
+              />
             </Grid>
           </Grid>
         </Container>
