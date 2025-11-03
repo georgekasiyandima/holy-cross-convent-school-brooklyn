@@ -5,12 +5,13 @@ import {
   Card, 
   CardContent, 
   Button, 
-  Stack,
+  Grid,
   Paper,
   Avatar,
   Chip,
   LinearProgress,
-  Divider
+  Divider,
+  Stack
 } from '@mui/material';
 import {
   Event,
@@ -20,7 +21,11 @@ import {
   BarChart,
   ArrowForward,
   Assignment,
-  PhotoLibrary
+  PhotoLibrary,
+  Email,
+  Upload,
+  School,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -29,170 +34,162 @@ import AdminLayout from '../components/AdminLayout';
 const StatCard = styled(Card)(({ theme }) => ({
   height: '100%',
   transition: 'all 0.3s ease',
-  cursor: 'pointer',
-  borderRadius: 16,
+  borderRadius: 12,
   background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
   border: '1px solid #e2e8f0',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
   '&:hover': {
     transform: 'translateY(-4px)',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+    boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
     border: '1px solid #1a237e'
   }
 }));
 
-const QuickActionCard = styled(Card)(({ theme }) => ({
+const ModuleCard = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  transition: 'all 0.3s ease',
-  cursor: 'pointer',
-  borderRadius: 16,
+  borderRadius: 12,
   background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
   border: '1px solid #e2e8f0',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+  transition: 'all 0.3s ease',
+  cursor: 'pointer',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 15px 30px rgba(0,0,0,0.1)',
-    border: '1px solid #1a237e'
+    transform: 'translateY(-6px)',
+    boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
+    border: '2px solid #1a237e',
+    '& .module-icon': {
+      transform: 'scale(1.1)',
+    }
   }
 }));
 
-
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-
-  const quickActions = [
-    {
-      title: 'Application Management',
-      description: 'Review and manage student applications',
-      icon: <Assignment sx={{ fontSize: 40, color: '#d32f2f' }} />,
-      color: '#d32f2f',
-      onClick: () => navigate('/admin/applications')
-    },
-    {
-      title: 'Calendar Management',
-      description: 'Manage school calendar and events',
-      icon: <CalendarToday sx={{ fontSize: 40, color: '#1a237e' }} />,
-      color: '#1a237e',
-      onClick: () => navigate('/admin/calendar')
-    },
-    {
-      title: 'School Statistics',
-      description: 'View and manage school metrics',
-      icon: <BarChart sx={{ fontSize: 40, color: '#4caf50' }} />,
-      color: '#4caf50',
-      onClick: () => navigate('/admin/stats')
-    },
-    {
-      title: 'Staff Upload',
-      description: 'Upload and manage staff photos',
-      icon: <People sx={{ fontSize: 40, color: '#9c27b0' }} />,
-      color: '#9c27b0',
-      onClick: () => navigate('/admin/staff-upload')
-    },
-    {
-      title: 'Document Upload',
-      description: 'Upload school documents',
-      icon: <Assignment sx={{ fontSize: 40, color: '#ff9800' }} />,
-      color: '#ff9800',
-      onClick: () => navigate('/admin/document-upload')
-    }
-  ];
 
   const stats = [
     {
       title: 'Total Events',
       value: '24',
       change: '+12%',
-      icon: <Event sx={{ fontSize: 32, color: '#1a237e' }} />,
+      icon: <Event sx={{ fontSize: 28 }} />,
       color: '#1a237e'
     },
     {
       title: 'Staff Members',
       value: '18',
       change: '+2',
-      icon: <People sx={{ fontSize: 32, color: '#4caf50' }} />,
+      icon: <People sx={{ fontSize: 28 }} />,
       color: '#4caf50'
     },
     {
       title: 'Documents',
       value: '156',
       change: '+8%',
-      icon: <Assignment sx={{ fontSize: 32, color: '#ff9800' }} />,
+      icon: <Assignment sx={{ fontSize: 28 }} />,
       color: '#ff9800'
     },
     {
       title: 'Gallery Items',
       value: '89',
       change: '+15%',
-      icon: <PhotoLibrary sx={{ fontSize: 32, color: '#9c27b0' }} />,
+      icon: <PhotoLibrary sx={{ fontSize: 28 }} />,
       color: '#9c27b0'
     }
   ];
 
-  const recentActivities = [
+  const mainModules = [
     {
-      action: 'New event added',
-      description: 'Sports Day 2025',
-      time: '2 hours ago',
-      icon: <Event sx={{ color: '#1a237e' }} />,
-      status: 'completed'
+      title: 'Application Management',
+      description: 'Review and manage student applications',
+      icon: <Assignment sx={{ fontSize: 48 }} />,
+      color: '#d32f2f',
+      path: '/admin/applications',
+      status: 'active'
     },
     {
-      action: 'Staff photo uploaded',
-      description: 'Mrs. Du Plesis - Principal',
-      time: '4 hours ago',
-      icon: <People sx={{ color: '#4caf50' }} />,
-      status: 'completed'
+      title: 'Calendar Management',
+      description: 'Manage school calendar, terms, and events',
+      icon: <CalendarToday sx={{ fontSize: 48 }} />,
+      color: '#1a237e',
+      path: '/admin/calendar',
+      status: 'active'
     },
     {
-      action: 'Document updated',
-      description: 'School Policy 2025',
-      time: '1 day ago',
-      icon: <Assignment sx={{ color: '#ff9800' }} />,
-      status: 'completed'
+      title: 'Gallery Management',
+      description: 'Upload and organize images and videos',
+      icon: <PhotoLibrary sx={{ fontSize: 48 }} />,
+      color: '#9c27b0',
+      path: '/admin/gallery',
+      status: 'active'
     },
     {
-      action: 'Calendar event scheduled',
-      description: 'Parent Meeting - Grade 7',
-      time: '2 days ago',
-      icon: <CalendarToday sx={{ color: '#9c27b0' }} />,
-      status: 'pending'
+      title: 'Newsletter System',
+      description: 'Automated parent communication',
+      icon: <Email sx={{ fontSize: 48 }} />,
+      color: '#2196f3',
+      path: '/admin/newsletters',
+      status: 'active'
+    },
+    {
+      title: 'School Statistics',
+      description: 'View and manage school metrics',
+      icon: <BarChart sx={{ fontSize: 48 }} />,
+      color: '#4caf50',
+      path: '/admin/school-stats',
+      status: 'active'
+    }
+  ];
+
+  const utilityModules = [
+    {
+      title: 'Staff Upload',
+      description: 'Manage staff photos and information',
+      icon: <Upload sx={{ fontSize: 40 }} />,
+      color: '#9c27b0',
+      path: '/admin/staff-upload',
+      status: 'active'
+    },
+    {
+      title: 'Document Upload',
+      description: 'Upload school documents and policies',
+      icon: <School sx={{ fontSize: 40 }} />,
+      color: '#ff9800',
+      path: '/admin/document-upload',
+      status: 'active'
     }
   ];
 
   return (
     <AdminLayout>
-      <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+      <Box>
         {/* Welcome Section */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
-            Welcome to Admin Dashboard
-            </Typography>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
+            Dashboard Overview
+          </Typography>
           <Typography variant="body1" sx={{ color: '#6b7280' }}>
             Manage your school's digital presence with ease
-            </Typography>
-          </Box>
+          </Typography>
+        </Box>
 
-          {/* Stats Cards */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-            {stats.map((stat, index) => (
-            <Box key={index} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(25% - 18px)' } }}>
-                <StatCard>
+        {/* Stats Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {stats.map((stat, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <StatCard>
                 <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color }}>
-                      {stat.value}
-                    </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                      {stat.title}
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color, mb: 0.5 }}>
+                        {stat.value}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        {stat.title}
                       </Typography>
                     </Box>
-                    <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color }}>
+                    <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 48, height: 48 }}>
                       {stat.icon}
                     </Avatar>
                   </Box>
@@ -202,202 +199,224 @@ const AdminDashboard: React.FC = () => {
                       {stat.change}
                     </Typography>
                   </Box>
+                </CardContent>
+              </StatCard>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Main Management Modules */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 3 }}>
+            Management Modules
+          </Typography>
+          <Grid container spacing={3}>
+            {mainModules.map((module, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <ModuleCard onClick={() => navigate(module.path)}>
+                  <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'flex-start',
+                      mb: 2
+                    }}>
+                      <Avatar 
+                        className="module-icon"
+                        sx={{ 
+                          bgcolor: `${module.color}15`, 
+                          color: module.color, 
+                          width: 64, 
+                          height: 64,
+                          transition: 'transform 0.3s ease'
+                        }}
+                      >
+                        {module.icon}
+                      </Avatar>
+                      <Chip 
+                        label={module.status} 
+                        size="small" 
+                        sx={{ 
+                          bgcolor: '#10b981',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '0.7rem'
+                        }} 
+                      />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+                      {module.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#6b7280', mb: 2, flex: 1 }}>
+                      {module.description}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      endIcon={<ArrowForward />}
+                      sx={{
+                        bgcolor: module.color,
+                        color: 'white',
+                        '&:hover': {
+                          bgcolor: module.color,
+                          filter: 'brightness(0.9)'
+                        },
+                        mt: 'auto'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(module.path);
+                      }}
+                    >
+                      Open Module
+                    </Button>
                   </CardContent>
-                </StatCard>
-            </Box>
+                </ModuleCard>
+              </Grid>
             ))}
+          </Grid>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-          {/* Quick Actions */}
-          <Box sx={{ flex: { xs: '1', md: '2' } }}>
-            <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 3 }}>
-              Quick Actions
-            </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {quickActions.map((action, index) => (
-                  <Box key={index} sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <QuickActionCard onClick={action.onClick}>
-                      <Box sx={{ mb: 2 }}>
-                        {action.icon}
+        {/* Utility Modules */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 3 }}>
+            Utility Tools
+          </Typography>
+          <Grid container spacing={3}>
+            {utilityModules.map((module, index) => (
+              <Grid item xs={12} sm={6} key={index}>
+                <ModuleCard onClick={() => navigate(module.path)}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar 
+                        className="module-icon"
+                        sx={{ 
+                          bgcolor: `${module.color}15`, 
+                          color: module.color, 
+                          width: 56, 
+                          height: 56,
+                          mr: 2,
+                          transition: 'transform 0.3s ease'
+                        }}
+                      >
+                        {module.icon}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                          {module.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                          {module.description}
+                        </Typography>
                       </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                        {action.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
-                        {action.description}
-                      </Typography>
                       <Button
                         variant="outlined"
-                        size="small"
                         endIcon={<ArrowForward />}
-                        sx={{ 
-                          borderColor: action.color,
-                          color: action.color,
+                        sx={{
+                          borderColor: module.color,
+                          color: module.color,
                           '&:hover': {
-                            borderColor: action.color,
-                            bgcolor: `${action.color}10`
+                            borderColor: module.color,
+                            bgcolor: `${module.color}10`
                           }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(module.path);
                         }}
                       >
                         Access
                       </Button>
-                    </QuickActionCard>
-                  </Box>
-                ))}
-              </Box>
-            </Paper>
-
-            {/* Recent Activities */}
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 3 }}>
-                Recent Activities
-              </Typography>
-              <Stack spacing={2}>
-                {recentActivities.map((activity, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, bgcolor: '#f8fafc' }}>
-                    <Avatar sx={{ bgcolor: `${activity.icon.props.color}20`, color: activity.icon.props.color, mr: 2 }}>
-                      {activity.icon}
-                    </Avatar>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a237e' }}>
-                        {activity.action}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                        {activity.description}
-                      </Typography>
                     </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Chip 
-                        label={activity.status} 
-                        size="small" 
-                        color={activity.status === 'completed' ? 'success' : 'warning'}
-                        sx={{ mb: 0.5 }}
-                      />
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        {activity.time}
-                      </Typography>
-                    </Box>
-          </Box>
-                ))}
-              </Stack>
-            </Paper>
-          </Box>
-
-          {/* Sidebar */}
-          <Box sx={{ flex: { xs: '1', md: '1' } }}>
-            {/* System Status */}
-            <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 3 }}>
-                System Status
-              </Typography>
-              <Stack spacing={2}>
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                      Server Health
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 600 }}>
-                      98%
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={98} 
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: '#e2e8f0',
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: '#10b981'
-                      }
-                    }} 
-                  />
-                </Box>
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                      Database
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 600 }}>
-                      100%
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={100} 
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: '#e2e8f0',
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: '#10b981'
-                      }
-                    }} 
-                  />
-                </Box>
-          <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                      Storage
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600 }}>
-                      75%
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={75} 
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: '#e2e8f0',
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: '#f59e0b'
-                      }
-                    }} 
-                  />
-                </Box>
-              </Stack>
-            </Paper>
-
-            {/* Quick Stats */}
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 3 }}>
-                Quick Stats
-              </Typography>
-              <Stack spacing={2}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                    This Month
-                  </Typography>
-                  <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>
-                    12
-                  </Typography>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                    Active Users
-                  </Typography>
-                  <Typography variant="h6" sx={{ color: '#4caf50', fontWeight: 600 }}>
-                    8
-                  </Typography>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                    Total Views
-                  </Typography>
-                  <Typography variant="h6" sx={{ color: '#ff9800', fontWeight: 600 }}>
-                    1,234
-            </Typography>
-                </Box>
-              </Stack>
-            </Paper>
-          </Box>
+                  </CardContent>
+                </ModuleCard>
+              </Grid>
+            ))}
+          </Grid>
         </Box>
+
+        {/* System Status */}
+        <Paper sx={{ p: 3, borderRadius: 3, bgcolor: 'white' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 3 }}>
+            System Status
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                    Server Health
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 600 }}>
+                    98%
+                  </Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={98} 
+                  sx={{ 
+                    height: 8, 
+                    borderRadius: 4,
+                    bgcolor: '#e2e8f0',
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: '#10b981',
+                      borderRadius: 4
+                    }
+                  }} 
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                    Database
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 600 }}>
+                    100%
+                  </Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={100} 
+                  sx={{ 
+                    height: 8, 
+                    borderRadius: 4,
+                    bgcolor: '#e2e8f0',
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: '#10b981',
+                      borderRadius: 4
+                    }
+                  }} 
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                    Storage
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600 }}>
+                    75%
+                  </Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={75} 
+                  sx={{ 
+                    height: 8, 
+                    borderRadius: 4,
+                    bgcolor: '#e2e8f0',
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: '#f59e0b',
+                      borderRadius: 4
+                    }
+                  }} 
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
       </Box>
     </AdminLayout>
   );

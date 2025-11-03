@@ -6,7 +6,6 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Container,
   Drawer,
   List,
   ListItem,
@@ -17,7 +16,8 @@ import {
   Badge,
   Tooltip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Divider
 } from '@mui/material';
 import { 
   AdminPanelSettings, 
@@ -36,7 +36,7 @@ import {
   Assignment
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -45,12 +45,12 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(!isMobile);
-  const [selectedItem, setSelectedItem] = React.useState('/admin');
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -73,7 +73,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    setSelectedItem(path);
     if (isMobile) {
       setDrawerOpen(false);
     }
@@ -83,59 +82,63 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     setDrawerOpen(!drawerOpen);
   };
 
-      const menuItems = [
-        {
-          text: 'Dashboard',
-          icon: <Dashboard />,
-          path: '/admin',
-          description: 'Overview and analytics'
-        },
-        {
-          text: 'Application Management',
-          icon: <Assignment />,
-          path: '/admin/applications',
-          description: 'Review student applications'
-        },
-        {
-          text: 'Calendar Management',
-          icon: <CalendarToday />,
-          path: '/admin/calendar',
-          description: 'Manage school calendar'
-        },
-        {
-          text: 'Gallery Management',
-          icon: <PhotoLibrary />,
-          path: '/admin/gallery',
-          description: 'Manage images and videos'
-        },
-        {
-          text: 'Newsletter System',
-          icon: <Email />,
-          path: '/admin/newsletters',
-          description: 'Automated parent communication'
-        },
-        {
-          text: 'School Statistics',
-          icon: <BarChart />,
-          path: '/admin/stats',
-          description: 'View school metrics'
-        },
-        {
-          text: 'Staff Upload',
-          icon: <Upload />,
-          path: '/admin/staff-upload',
-          description: 'Manage staff photos'
-        },
-        {
-          text: 'Document Upload',
-          icon: <School />,
-          path: '/admin/document-upload',
-          description: 'Upload school documents'
-        }
-      ];
+  const menuItems = [
+    {
+      text: 'Dashboard',
+      icon: <Dashboard />,
+      path: '/admin',
+      description: 'Overview and analytics'
+    },
+    {
+      text: 'Application Management',
+      icon: <Assignment />,
+      path: '/admin/applications',
+      description: 'Review student applications'
+    },
+    {
+      text: 'Calendar Management',
+      icon: <CalendarToday />,
+      path: '/admin/calendar',
+      description: 'Manage school calendar'
+    },
+    {
+      text: 'Gallery Management',
+      icon: <PhotoLibrary />,
+      path: '/admin/gallery',
+      description: 'Manage images and videos'
+    },
+    {
+      text: 'Newsletter System',
+      icon: <Email />,
+      path: '/admin/newsletters',
+      description: 'Automated parent communication'
+    },
+    {
+      text: 'School Statistics',
+      icon: <BarChart />,
+      path: '/admin/school-stats',
+      description: 'View school metrics'
+    },
+    {
+      text: 'Staff Upload',
+      icon: <Upload />,
+      path: '/admin/staff-upload',
+      description: 'Manage staff photos'
+    },
+    {
+      text: 'Document Upload',
+      icon: <School />,
+      path: '/admin/document-upload',
+      description: 'Upload school documents'
+    }
+  ];
+
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc', overflow: 'hidden' }}>
       {/* Enhanced Sidebar */}
       <Drawer
         variant={isMobile ? 'temporary' : 'persistent'}
@@ -151,12 +154,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             background: 'linear-gradient(180deg, #1a237e 0%, #283593 100%)',
             color: 'white',
             borderRight: 'none',
-            boxShadow: '0 0 20px rgba(26, 35, 126, 0.15)'
+            boxShadow: '0 0 20px rgba(26, 35, 126, 0.15)',
+            display: 'flex',
+            flexDirection: 'column'
           },
         }}
       >
         {/* Sidebar Header */}
-        <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Box sx={{ 
               p: 1, 
@@ -170,10 +175,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <AdminPanelSettings sx={{ fontSize: 28, color: '#ffd700' }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', fontSize: '1.1rem' }}>
                 Admin Panel
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
                 Holy Cross School
               </Typography>
             </Box>
@@ -181,27 +186,38 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           
           {/* User Info */}
           <Paper sx={{ 
-            p: 2, 
+            p: 1.5, 
             bgcolor: 'rgba(255,255,255,0.1)', 
             borderRadius: 2,
             border: '1px solid rgba(255,255,255,0.1)'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ 
-                width: 40, 
-                height: 40, 
+                width: 36, 
+                height: 36, 
                 bgcolor: '#ffd700', 
                 color: '#1a237e',
-                mr: 2,
-                fontWeight: 600
+                mr: 1.5,
+                fontWeight: 600,
+                fontSize: '0.9rem'
               }}>
                 {user?.name?.charAt(0) || 'A'}
               </Avatar>
-              <Box>
-                <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    color: 'white', 
+                    fontWeight: 600, 
+                    fontSize: '0.875rem', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   {user?.name || 'Admin'}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem' }}>
                   Administrator
                 </Typography>
               </Box>
@@ -209,65 +225,71 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </Paper>
         </Box>
 
-        {/* Navigation Menu */}
-        <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <List sx={{ px: 2, py: 1 }}>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton 
-                  onClick={() => handleNavigation(item.path)}
-                  sx={{
-                    borderRadius: 2,
-                    mb: 0.5,
-                    bgcolor: selectedItem === item.path ? 'rgba(255,255,255,0.15)' : 'transparent',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.1)',
-                    },
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                >
-                  <ListItemIcon sx={{ 
-                    color: selectedItem === item.path ? '#ffd700' : 'rgba(255,255,255,0.7)',
-                    minWidth: 40
-                  }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={item.text}
-                    secondary={item.description}
-                    primaryTypographyProps={{
-                      fontSize: '0.9rem',
-                      fontWeight: selectedItem === item.path ? 600 : 400,
-                      color: 'white'
+        {/* Navigation Menu - Scrollable */}
+        <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <List sx={{ px: 1.5, py: 1 }}>
+            {menuItems.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton 
+                    onClick={() => handleNavigation(item.path)}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 0.5,
+                      bgcolor: active ? 'rgba(255,255,255,0.2)' : 'transparent',
+                      border: active ? '1px solid rgba(255,215,0,0.3)' : '1px solid transparent',
+                      '&:hover': {
+                        bgcolor: active ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                      py: 1.5
                     }}
-                    secondaryTypographyProps={{
-                      fontSize: '0.75rem',
-                      color: 'rgba(255,255,255,0.6)'
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
+                  >
+                    <ListItemIcon sx={{ 
+                      color: active ? '#ffd700' : 'rgba(255,255,255,0.7)',
+                      minWidth: 40
+                    }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.text}
+                      secondary={item.description}
+                      primaryTypographyProps={{
+                        fontSize: '0.875rem',
+                        fontWeight: active ? 600 : 400,
+                        color: 'white'
+                      }}
+                      secondaryTypographyProps={{
+                        fontSize: '0.7rem',
+                        color: 'rgba(255,255,255,0.6)'
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
           </List>
         </Box>
 
         {/* Sidebar Footer */}
-        <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <List>
-            <ListItem disablePadding>
+        <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+          <List sx={{ p: 0 }}>
+            <ListItem disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton 
                 onClick={handleGoHome}
                 sx={{ 
                   borderRadius: 2,
+                  py: 1,
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
                 }}
               >
                 <ListItemIcon sx={{ color: 'rgba(255,255,255,0.7)', minWidth: 40 }}>
-                  <Home />
+                  <Home sx={{ fontSize: 20 }} />
                 </ListItemIcon>
                 <ListItemText 
                   primary="Go to Website"
-                  primaryTypographyProps={{ fontSize: '0.9rem', color: 'white' }}
+                  primaryTypographyProps={{ fontSize: '0.875rem', color: 'white', fontWeight: 400 }}
                 />
               </ListItemButton>
             </ListItem>
@@ -276,15 +298,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 onClick={handleLogout}
                 sx={{ 
                   borderRadius: 2,
+                  py: 1,
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
                 }}
               >
                 <ListItemIcon sx={{ color: 'rgba(255,255,255,0.7)', minWidth: 40 }}>
-                  <Logout />
+                  <Logout sx={{ fontSize: 20 }} />
                 </ListItemIcon>
                 <ListItemText 
                   primary="Logout"
-                  primaryTypographyProps={{ fontSize: '0.9rem', color: 'white' }}
+                  primaryTypographyProps={{ fontSize: '0.875rem', color: 'white', fontWeight: 400 }}
                 />
               </ListItemButton>
             </ListItem>
@@ -293,58 +316,96 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </Drawer>
 
       {/* Main Content Area */}
-      <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          minWidth: 0,
+          overflow: 'hidden'
+        }}
+      >
         {/* Enhanced Top Bar */}
-        <Paper sx={{ 
-          borderRadius: 0, 
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          borderBottom: '1px solid #e5e7eb'
-        }}>
+        <Paper 
+          sx={{ 
+            borderRadius: 0, 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            borderBottom: '1px solid #e5e7eb',
+            flexShrink: 0,
+            zIndex: 10
+          }}
+        >
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            px: 3,
-            py: 2
+            px: { xs: 2, sm: 3 },
+            py: 2,
+            minHeight: 72
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
               {isMobile && (
-                <IconButton onClick={toggleDrawer} sx={{ mr: 2 }}>
+                <IconButton onClick={toggleDrawer} sx={{ mr: 1 }}>
                   <MenuIcon />
                 </IconButton>
               )}
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e' }}>
-                  Welcome back, {user?.name?.split(' ')[0] || 'Admin'}!
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: '#1a237e',
+                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {location.pathname === '/admin' 
+                    ? 'Dashboard' 
+                    : menuItems.find(item => isActive(item.path))?.text || 'Admin Panel'}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                  Manage your school's digital presence
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: '#6b7280',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {location.pathname === '/admin' 
+                    ? `Welcome back, ${user?.name?.split(' ')[0] || 'Admin'}!` 
+                    : menuItems.find(item => isActive(item.path))?.description || 'Manage your school'}
                 </Typography>
               </Box>
             </Box>
             
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
               <Tooltip title="Notifications">
-                <IconButton>
-                  <Badge badgeContent={3} color="error">
-                    <Notifications sx={{ color: '#6b7280' }} />
+                <IconButton size="small">
+                  <Badge badgeContent={0} color="error">
+                    <Notifications sx={{ color: '#6b7280', fontSize: 20 }} />
                   </Badge>
                 </IconButton>
               </Tooltip>
               
               <Tooltip title="Settings">
-                <IconButton>
-                  <Settings sx={{ color: '#6b7280' }} />
+                <IconButton size="small">
+                  <Settings sx={{ color: '#6b7280', fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
               
               <Tooltip title="User Menu">
-                <IconButton onClick={handleMenuOpen}>
+                <IconButton onClick={handleMenuOpen} size="small">
                   <Avatar sx={{ 
-                    width: 40, 
-                    height: 40, 
+                    width: 36, 
+                    height: 36, 
                     bgcolor: '#1a237e',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    fontSize: '0.875rem'
                   }}>
                     {user?.name?.charAt(0) || 'A'}
                   </Avatar>
@@ -354,19 +415,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </Box>
         </Paper>
 
-        {/* Page Content */}
+        {/* Page Content - Scrollable with proper padding */}
         <Box sx={{ 
           flex: 1, 
-          p: 3,
-          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-          minHeight: 'calc(100vh - 80px)',
-          overflow: 'auto',
-          position: 'relative',
-          zIndex: 1
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          bgcolor: '#f8fafc',
+          position: 'relative'
         }}>
-          <Container maxWidth="xl" sx={{ height: '100%', pb: 4 }}>
+          <Box sx={{ 
+            p: { xs: 2, sm: 3 },
+            pb: { xs: 4, sm: 6 },
+            maxWidth: '100%',
+            minHeight: 'calc(100vh - 72px)'
+          }}>
             {children}
-          </Container>
+          </Box>
         </Box>
       </Box>
 
@@ -388,7 +452,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             mt: 1,
             borderRadius: 2,
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb'
+            border: '1px solid #e5e7eb',
+            minWidth: 200
           }
         }}
       >
@@ -401,11 +466,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </Typography>
         </Box>
         <MenuItem onClick={handleGoHome} sx={{ px: 2, py: 1.5 }}>
-          <Home sx={{ mr: 2, color: '#6b7280' }} />
+          <Home sx={{ mr: 2, color: '#6b7280', fontSize: 20 }} />
           Go to Website
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ px: 2, py: 1.5 }}>
-          <Logout sx={{ mr: 2, color: '#6b7280' }} />
+          <Logout sx={{ mr: 2, color: '#6b7280', fontSize: 20 }} />
           Logout
         </MenuItem>
       </Menu>
