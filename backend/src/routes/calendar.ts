@@ -5,150 +5,53 @@ import { authMiddleware, requireRole } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get all terms
+// Get all terms (Note: Term model doesn't exist, returning empty array for now)
 router.get('/terms', async (req, res) => {
   try {
-    const { year } = req.query;
-    
-    const where: any = {};
-    if (year) {
-      where.year = parseInt(year as string);
-    }
-
-    const terms = await prisma.term.findMany({
-      where,
-      include: {
-        events: {
-          orderBy: { startDate: 'asc' }
-        }
-      },
-      orderBy: { termNumber: 'asc' }
-    });
-
-    return res.json(terms);
+    // Term model doesn't exist in schema, return empty array
+    // This can be implemented later if needed
+    return res.json([]);
   } catch (error) {
     console.error('Error fetching terms:', error);
     return res.status(500).json({ error: 'Failed to fetch terms' });
   }
 });
 
-// Get active term
+// Get active term (Note: Term model doesn't exist, returning null for now)
 router.get('/terms/active', async (req, res) => {
   try {
-    const activeTerm = await prisma.term.findFirst({
-      where: { isActive: true },
-      include: {
-        events: {
-          orderBy: { startDate: 'asc' }
-        }
-      }
-    });
-
-    if (!activeTerm) {
-      return res.status(404).json({ error: 'No active term found' });
-    }
-
-    return res.json(activeTerm);
+    // Term model doesn't exist in schema, return null
+    return res.status(404).json({ error: 'No active term found' });
   } catch (error) {
     console.error('Error fetching active term:', error);
     return res.status(500).json({ error: 'Failed to fetch active term' });
   }
 });
 
-// Create new term
+// Create new term (DISABLED: Term model doesn't exist)
 router.post('/terms',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    try {
-      const { year, termNumber, name, startDate, endDate, description } = req.body;
-
-      // Check if term already exists
-      const existingTerm = await prisma.term.findUnique({
-        where: {
-          year_termNumber: {
-            year: parseInt(year),
-            termNumber: parseInt(termNumber)
-          }
-        }
-      });
-
-      if (existingTerm) {
-        return res.status(400).json({ error: 'Term already exists for this year' });
-      }
-
-      const term = await prisma.term.create({
-        data: {
-          year: parseInt(year),
-          termNumber: parseInt(termNumber),
-          name,
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          description
-        }
-      });
-
-      return res.status(201).json(term);
-    } catch (error) {
-      console.error('Error creating term:', error);
-      return res.status(500).json({ error: 'Failed to create term' });
-    }
+    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
   }
 );
 
-// Update term
+// Update term (DISABLED: Term model doesn't exist)
 router.put('/terms/:id',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { name, startDate, endDate, description, isActive } = req.body;
-
-      const term = await prisma.term.update({
-        where: { id },
-        data: {
-          name,
-          startDate: startDate ? new Date(startDate) : undefined,
-          endDate: endDate ? new Date(endDate) : undefined,
-          description,
-          isActive
-        }
-      });
-
-      return res.json(term);
-    } catch (error) {
-      console.error('Error updating term:', error);
-      return res.status(500).json({ error: 'Failed to update term' });
-    }
+    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
   }
 );
 
-// Set active term
+// Set active term (DISABLED: Term model doesn't exist)
 router.patch('/terms/:id/activate',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    try {
-      const { id } = req.params;
-
-      // Deactivate all other terms
-      await prisma.term.updateMany({
-        where: { isActive: true },
-        data: { isActive: false }
-      });
-
-      // Activate the selected term
-      const term = await prisma.term.update({
-        where: { id },
-        data: { isActive: true }
-      });
-
-      return res.json(term);
-    } catch (error) {
-      console.error('Error activating term:', error);
-      return res.status(500).json({ error: 'Failed to activate term' });
-    }
+    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
   }
 );
 
@@ -158,7 +61,6 @@ router.get('/events', async (req, res) => {
     const { 
       year, 
       month, 
-      termId, 
       category, 
       type, 
       grade,
@@ -188,9 +90,7 @@ router.get('/events', async (req, res) => {
       };
     }
 
-    if (termId) {
-      where.termId = termId;
-    }
+    // Note: termId filter removed as Term model doesn't exist
 
     if (category) {
       where.category = category;
@@ -216,9 +116,6 @@ router.get('/events', async (req, res) => {
 
     const events = await prisma.academicCalendar.findMany({
       where,
-      include: {
-        term: true
-      },
       orderBy: { startDate: 'asc' }
     });
 
@@ -247,9 +144,7 @@ router.post('/events',
         grade,
         category,
         location,
-        time,
-        facebookLink,
-        termId
+        time
       } = req.body;
 
       const event = await prisma.academicCalendar.create({
@@ -265,9 +160,8 @@ router.post('/events',
           grade: grade || 'all',
           category,
           location,
-          time,
-          facebookLink,
-          termId
+          time
+          // Note: facebookLink and termId are not in AcademicCalendar schema
         }
       });
 
@@ -298,9 +192,7 @@ router.put('/events/:id',
         grade,
         category,
         location,
-        time,
-        facebookLink,
-        termId
+        time
       } = req.body;
 
       const event = await prisma.academicCalendar.update({
@@ -317,9 +209,8 @@ router.put('/events/:id',
           grade,
           category,
           location,
-          time,
-          facebookLink,
-          termId
+          time
+          // Note: facebookLink and termId are not in AcademicCalendar schema
         }
       });
 
@@ -363,9 +254,6 @@ router.get('/events/upcoming', async (req, res) => {
           gte: today
         }
       },
-      include: {
-        term: true
-      },
       orderBy: { startDate: 'asc' },
       take: parseInt(limit as string)
     });
@@ -392,9 +280,6 @@ router.get('/events/range', async (req, res) => {
           gte: new Date(startDate as string),
           lte: new Date(endDate as string)
         }
-      },
-      include: {
-        term: true
       },
       orderBy: { startDate: 'asc' }
     });

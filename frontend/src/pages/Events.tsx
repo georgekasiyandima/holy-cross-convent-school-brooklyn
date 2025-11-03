@@ -1,20 +1,19 @@
-import React from 'react';
-import EnhancedSchoolCalendar from '../components/EnhancedSchoolCalendar';
-import ReturnToHome from '../components/ReturnToHome';
-import PageBanner from '../components/PageBanner';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+/**
+ * DEPRECATED: Events page redirects to School Hub
+ * This page is kept for backward compatibility but redirects to the unified School Hub
+ */
 const Events: React.FC = () => {
-  return (
-    <>
-      <PageBanner
-        title="School Events"
-        subtitle="Stay updated with all our upcoming events and activities"
-        backgroundImage="/Event.jpg"
-      />
-      <ReturnToHome />
-      <EnhancedSchoolCalendar />
-    </>
-  );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to School Hub (Calendar & Events tab)
+    navigate('/school-hub', { replace: true });
+  }, [navigate]);
+
+  return null; // Component doesn't render anything, just redirects
 };
 
-export default Events; 
+export default Events;

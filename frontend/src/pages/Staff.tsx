@@ -555,16 +555,14 @@ const Staff: React.FC = () => {
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
           {/* Return to Home */}
           <Box sx={{ 
+            position: 'absolute',
+            top: 16,
+            left: 16,
             '& .MuiTypography-root': {
               color: 'white !important',
               textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-              backgroundColor: 'rgba(0,0,0,0.3)',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              backdropFilter: 'blur(10px)',
               display: 'inline-block',
               '&:hover': {
-                backgroundColor: 'rgba(0,0,0,0.5)',
                 transform: 'translateX(-2px)',
               }
             }
@@ -596,46 +594,12 @@ const Staff: React.FC = () => {
                 fontSize: { xs: '1.1rem', sm: '1.3rem' },
                 lineHeight: 1.6,
                 color: 'white',
-                textShadow: '1px 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5)',
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                padding: '16px 24px',
-                borderRadius: '8px',
-                backdropFilter: 'blur(10px)'
+                textShadow: '1px 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5)'
               }}
             >
               Meet the dedicated educators and support staff who are committed to nurturing 
               excellence, building character, and inspiring faith in our students.
             </Typography>
-            
-            {/* Decorative Elements */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              mt: 4,
-              gap: 2
-            }}>
-              <Box sx={{ 
-                width: 60, 
-                height: 4, 
-                background: 'linear-gradient(90deg, #ffd700 0%, #d32f2f 100%)',
-                borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-              }} />
-              <Box sx={{ 
-                width: 8, 
-                height: 8, 
-                background: '#ffd700',
-                borderRadius: '50%',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-              }} />
-              <Box sx={{ 
-                width: 60, 
-                height: 4, 
-                background: 'linear-gradient(90deg, #ffed4e 0%, #ffd700 100%)',
-                borderRadius: 2
-              }} />
-            </Box>
           </Box>
         </Container>
       </Box>

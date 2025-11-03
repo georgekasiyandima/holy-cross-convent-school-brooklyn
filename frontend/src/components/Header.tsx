@@ -162,10 +162,9 @@ const navigationItems: NavigationItem[] = [
     name: 'School Hub',
     type: 'dropdown',
     items: [
-      { name: 'Events', path: '/events' },
-      { name: 'Calendar', path: '/calendar' },
-      { name: 'Gallery', path: '/gallery' },
-      { name: 'School Announcements', path: '/news' }
+      { name: 'Calendar & Events', path: '/school-hub' },
+      { name: 'Announcements', path: '/school-hub#announcements' },
+      { name: 'Gallery', path: '/school-hub#gallery' }
     ]
   },
   {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Typography, Box, Card, CardContent, Button, Paper, styled } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Box, Card, CardContent, Button, Paper, styled, CircularProgress } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -13,6 +13,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
 import OptimizedImage from '../components/OptimizedImage';
+import DocumentsService from '../services/documentsService';
 
 const Banner = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -36,20 +37,13 @@ const Banner = styled(Box)(({ theme }) => ({
   '& > *': { position: 'relative', zIndex: 1 }
 }));
 
-// Image paths - these should be uploaded to backend/uploads/documents
-// Admin can upload mission, vision, and holy cross family images via document upload
-// The images should be named: mission-statement.jpg, vision-statement.jpg, holy-cross-family-statement.jpg
-// Using proxy path that works in both dev and production
-const getImagePath = (filename: string) => {
-  const apiUrl = process.env.REACT_APP_API_URL || '';
-  // In production, API_URL might include /api, so we handle both cases
-  const baseUrl = apiUrl ? (apiUrl.includes('/api') ? apiUrl.replace('/api', '') : apiUrl) : '';
-  return baseUrl ? `${baseUrl}/uploads/documents/${filename}` : `/uploads/documents/${filename}`;
+// Helper function to get document image URL from API response or fallback
+const getDocumentImageUrl = (document: any, fallback: string): string => {
+  if (document && document.fileUrl) {
+    return DocumentsService.getDocumentDownloadUrl(document.fileUrl);
+  }
+  return fallback;
 };
-
-const missionImageUrl = getImagePath('mission-statement.jpg');
-const visionImageUrl = getImagePath('vision-statement.jpg');
-const holyCrossFamilyImageUrl = getImagePath('holy-cross-family-statement.jpg');
 
 const quickFacts = [
   { icon: <AccessTimeIcon color="primary" />, label: 'School Hours', value: '07:45 – 14:30 (Mon–Fri)' },
@@ -68,12 +62,109 @@ const galleryImages = [
   'cultra07.jpg'
 ];
 
-const Info: React.FC = () => (
-  <>
-    <SEO 
-      title="School Info - Holy Cross Convent School Brooklyn" 
-      description="Learn about Holy Cross Convent School Brooklyn, our mission, vision, and community values." 
-    />
+const Info: React.FC = () => {
+  const [missionDoc, setMissionDoc] = useState<any>(null);
+  const [visionDoc, setVisionDoc] = useState<any>(null);
+  const [holyCrossFamilyDoc, setHolyCrossFamilyDoc] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fallback image URLs (from public folder)
+  const missionFallback = '/HCCMS.jpeg';
+  const visionFallback = '/HCCVS.jpeg';
+  const holyCrossFamilyFallback = '/HCCFS.jpeg';
+
+  useEffect(() => {
+    const fetchStatements = async () => {
+      try {
+        setLoading(true);
+        
+        // Try multiple possible categories for each statement
+        // This allows flexibility in how documents are categorized
+        const categoryVariations = {
+          mission: ['mission', 'mission-statement', 'statement'],
+          vision: ['vision', 'vision-statement', 'statement'],
+          holyCrossFamily: ['holy-cross-family', 'holy cross family', 'family', 'statement']
+        };
+
+        // Fetch all possible categories and find matching documents
+        const allCategoryPromises: Promise<any>[] = [];
+        const categoryList: string[] = [];
+        
+        // Collect unique categories to fetch
+        const uniqueCategories = new Set<string>();
+        Object.values(categoryVariations).forEach(cats => cats.forEach(cat => uniqueCategories.add(cat)));
+        uniqueCategories.forEach(cat => {
+          categoryList.push(cat);
+          allCategoryPromises.push(DocumentsService.getDocumentsByCategory(cat).catch(() => ({ success: false, data: [] })));
+        });
+
+        const responses = await Promise.allSettled(allCategoryPromises);
+        
+        // Flatten all documents
+        const allDocs: any[] = [];
+        responses.forEach((response, index) => {
+          if (response.status === 'fulfilled' && response.value?.data) {
+            allDocs.push(...response.value.data);
+          }
+        });
+
+        // Find mission document
+        const missionDoc = allDocs.find((doc: any) => 
+          doc.title.toLowerCase().includes('mission') && 
+          !doc.title.toLowerCase().includes('vision')
+        );
+        if (missionDoc) {
+          setMissionDoc(missionDoc);
+          console.log('Found mission document:', missionDoc);
+        }
+
+        // Find vision document
+        const visionDoc = allDocs.find((doc: any) => 
+          doc.title.toLowerCase().includes('vision') &&
+          !doc.title.toLowerCase().includes('mission')
+        );
+        if (visionDoc) {
+          setVisionDoc(visionDoc);
+          console.log('Found vision document:', visionDoc);
+        }
+
+        // Find Holy Cross Family document
+        const holyCrossFamilyDoc = allDocs.find((doc: any) => 
+          (doc.title.toLowerCase().includes('holy cross') || 
+           doc.title.toLowerCase().includes('family')) &&
+          !doc.title.toLowerCase().includes('mission') &&
+          !doc.title.toLowerCase().includes('vision')
+        );
+        if (holyCrossFamilyDoc) {
+          setHolyCrossFamilyDoc(holyCrossFamilyDoc);
+          console.log('Found Holy Cross Family document:', holyCrossFamilyDoc);
+        }
+
+        if (!missionDoc && !visionDoc && !holyCrossFamilyDoc) {
+          console.warn('No statement documents found. Make sure documents are uploaded with categories: mission, vision, or holy-cross-family');
+        }
+      } catch (error) {
+        console.error('Error fetching statement documents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatements();
+  }, []);
+
+  // Get image URLs - use document from API if available, otherwise use fallback
+  // Defined as constants to ensure they're always available
+  const missionImageUrl: string = getDocumentImageUrl(missionDoc, missionFallback);
+  const visionImageUrl: string = getDocumentImageUrl(visionDoc, visionFallback);
+  const holyCrossFamilyImageUrl: string = getDocumentImageUrl(holyCrossFamilyDoc, holyCrossFamilyFallback);
+
+  return (
+    <>
+      <SEO 
+        title="School Info - Holy Cross Convent School Brooklyn" 
+        description="Learn about Holy Cross Convent School Brooklyn, our mission, vision, and community values." 
+      />
     
     {/* Return to Home - positioned outside banner to avoid clash */}
     <Box sx={{ 
@@ -173,51 +264,57 @@ const Info: React.FC = () => (
         </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <Box
-            component="img"
-            src={missionImageUrl}
-            alt="Mission Statement"
-            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src !== missionImageUrl) return; // Prevent infinite loop
-              target.src = '/HCCMS.jpeg';
-            }}
-            sx={{
-              borderRadius: 2,
-              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-              maxWidth: '100%',
-              height: 'auto',
-              width: '100%',
-              objectFit: 'contain',
-              display: 'block',
-              mx: 'auto'
-            }}
-          />
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box
+              component="img"
+              src={missionImageUrl}
+              alt="Mission Statement"
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src === missionFallback) return; // Prevent infinite loop
+                target.src = missionFallback;
+              }}
+              sx={{
+                borderRadius: 2,
+                boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+                maxWidth: '100%',
+                height: 'auto',
+                width: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          )}
         </Box>
       </Paper>
 
       {/* Vision Statement - as Image */}
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 4, 
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: 4, 
           mb: 4, 
           background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
           borderRadius: 3,
-          border: '2px solid #d32f2f',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
-            borderRadius: '12px 12px 0 0',
-          }
-        }}
-      >
+        border: '2px solid #d32f2f',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+          borderRadius: '12px 12px 0 0',
+        }
+      }}
+    >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <VisibilityIcon 
             sx={{ 
@@ -235,32 +332,38 @@ const Info: React.FC = () => (
             }}
           >
             Our Vision
-          </Typography>
+      </Typography>
         </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <Box
-            component="img"
-            src={visionImageUrl}
-            alt="Vision Statement"
-            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src !== visionImageUrl) return; // Prevent infinite loop
-              target.src = '/HCCVS.jpeg';
-            }}
-            sx={{
-              borderRadius: 2,
-              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-              maxWidth: '100%',
-              height: 'auto',
-              width: '100%',
-              objectFit: 'contain',
-              display: 'block',
-              mx: 'auto'
-            }}
-          />
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box
+              component="img"
+              src={visionImageUrl}
+              alt="Vision Statement"
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src === visionFallback) return; // Prevent infinite loop
+                target.src = visionFallback;
+              }}
+              sx={{
+                borderRadius: 2,
+                boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+                maxWidth: '100%',
+                height: 'auto',
+                width: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          )}
         </Box>
-      </Paper>
+    </Paper>
 
       {/* The Holy Cross Family Brooklyn Statement - as Image */}
       <Paper 
@@ -301,34 +404,40 @@ const Info: React.FC = () => (
             }}
           >
             The Holy Cross Family, Brooklyn
-          </Typography>
-        </Box>
+      </Typography>
+    </Box>
         
         <Box sx={{ textAlign: 'center' }}>
-          <Box
-            component="img"
-            src={holyCrossFamilyImageUrl}
-            alt="The Holy Cross Family, Brooklyn Statement"
-            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src !== holyCrossFamilyImageUrl) return; // Prevent infinite loop
-              target.src = '/HCCFS.jpeg';
-            }}
-            sx={{
-              borderRadius: 2,
-              boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-              maxWidth: '100%',
-              height: 'auto',
-              width: '100%',
-              objectFit: 'contain',
-              display: 'block',
-              mx: 'auto'
-            }}
-          />
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box
+              component="img"
+              src={holyCrossFamilyImageUrl}
+              alt="The Holy Cross Family, Brooklyn Statement"
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src === holyCrossFamilyFallback) return; // Prevent infinite loop
+                target.src = holyCrossFamilyFallback;
+              }}
+              sx={{
+                borderRadius: 2,
+                boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
+                maxWidth: '100%',
+                height: 'auto',
+                width: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          )}
         </Box>
       </Paper>
 
-      {/* Quick Facts */}
+    {/* Quick Facts */}
       <Box sx={{ mb: 6 }}>
         <Typography 
           variant="h4" 
@@ -346,11 +455,11 @@ const Info: React.FC = () => (
           flexWrap: 'wrap', 
           gap: 2 
         }}>
-          {quickFacts.map((fact) => (
-            <Box
-              key={fact.label}
-              sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }}
-            >
+      {quickFacts.map((fact) => (
+        <Box
+          key={fact.label}
+          sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }}
+        >
               <Card sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -365,19 +474,19 @@ const Info: React.FC = () => (
                 <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
                   {fact.icon}
                 </Box>
-                <Box>
+            <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a237e' }}>
-                    {fact.label}
-                  </Typography>
+                {fact.label}
+              </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {fact.value}
                   </Typography>
-                </Box>
-              </Card>
             </Box>
-          ))}
+          </Card>
         </Box>
-      </Box>
+      ))}
+        </Box>
+    </Box>
 
       {/* Quick Gallery */}
       <Box sx={{ mb: 6 }}>
@@ -442,9 +551,9 @@ const Info: React.FC = () => (
                 }}
               />
             </Card>
-          ))}
-        </Box>
+        ))}
       </Box>
+    </Box>
 
       {/* Logo Symbolism */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -466,7 +575,7 @@ const Info: React.FC = () => (
             }}
           >
             Discover Our Heritage
-          </Typography>
+      </Typography>
           <Typography 
             variant="body1" 
             sx={{ 
@@ -477,10 +586,10 @@ const Info: React.FC = () => (
             }}
           >
             Learn about the rich symbolism and meaning behind our school logo, representing our values and Catholic heritage.
-          </Typography>
-          <Button 
-            variant="contained" 
-            onClick={() => window.location.href = '/logo-symbolism'}
+      </Typography>
+      <Button 
+        variant="contained" 
+        onClick={() => window.location.href = '/logo-symbolism'}
             sx={{
               backgroundColor: '#1a237e',
               color: '#fff',
@@ -495,13 +604,14 @@ const Info: React.FC = () => (
               },
               transition: 'all 0.3s ease'
             }}
-          >
-            View Logo Symbolism
-          </Button>
+      >
+        View Logo Symbolism
+      </Button>
         </Paper>
-      </Box>
-    </Container>
+    </Box>
+  </Container>
   </>
 );
+};
 
 export default Info;

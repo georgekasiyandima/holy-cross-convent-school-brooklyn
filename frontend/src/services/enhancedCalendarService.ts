@@ -99,7 +99,7 @@ class EnhancedCalendarService {
     }
   }
 
-  // Get calendar events with filters
+  // Get calendar events with filters (uses unified endpoint)
   async getEvents(filters: CalendarFilters = {}): Promise<CalendarEvent[]> {
     try {
       const params = new URLSearchParams();
@@ -109,34 +109,137 @@ class EnhancedCalendarService {
         }
       });
 
-      const url = `${BASE}/api/calendar/events${params.toString() ? `?${params.toString()}` : ''}`;
+      // Use unified school-hub endpoint
+      const url = `${BASE}/api/school-hub/events${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await axios.get(url);
-      return response.data;
+      
+      // Transform unified events to CalendarEvent format
+      if (response.data.success && response.data.data) {
+        return response.data.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          description: event.description || '',
+          startDate: new Date(event.startDate).toISOString(),
+          endDate: event.endDate ? new Date(event.endDate).toISOString() : new Date(event.startDate).toISOString(),
+          type: event.type || 'OTHER',
+          isHoliday: event.isHoliday || false,
+          isExam: event.isExam || false,
+          isPublicHoliday: event.isPublicHoliday || false,
+          grade: event.grade || 'all',
+          category: event.category || 'academic',
+          location: event.location || '',
+          time: event.time || '',
+          facebookLink: event.facebookLink || '',
+          termId: event.termId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }));
+      }
+      
+      // Fallback to old format if response is not unified format
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Error fetching events:', error);
-      throw new Error('Failed to fetch events');
+      // Fallback to old endpoint
+      try {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            params.append(key, value.toString());
+          }
+        });
+        const fallbackUrl = `${BASE}/api/calendar/events${params.toString() ? `?${params.toString()}` : ''}`;
+        const fallbackResponse = await axios.get(fallbackUrl);
+        return fallbackResponse.data;
+      } catch (fallbackError) {
+        throw new Error('Failed to fetch events');
+      }
     }
   }
 
-  // Get upcoming events
+  // Get upcoming events (uses unified endpoint)
   async getUpcomingEvents(limit: number = 10): Promise<CalendarEvent[]> {
     try {
-      const response = await axios.get(`${BASE}/api/calendar/events/upcoming?limit=${limit}`);
-      return response.data;
+      // Use unified school-hub endpoint
+      const response = await axios.get(`${BASE}/api/school-hub/events/upcoming?limit=${limit}`);
+      
+      // Transform unified events to CalendarEvent format
+      if (response.data.success && response.data.data) {
+        return response.data.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          description: event.description || '',
+          startDate: new Date(event.startDate).toISOString(),
+          endDate: event.endDate ? new Date(event.endDate).toISOString() : new Date(event.startDate).toISOString(),
+          type: event.type || 'OTHER',
+          isHoliday: event.isHoliday || false,
+          isExam: event.isExam || false,
+          isPublicHoliday: event.isPublicHoliday || false,
+          grade: event.grade || 'all',
+          category: event.category || 'academic',
+          location: event.location || '',
+          time: event.time || '',
+          facebookLink: event.facebookLink || '',
+          termId: event.termId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }));
+      }
+      
+      // Fallback to old format
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Error fetching upcoming events:', error);
-      throw new Error('Failed to fetch upcoming events');
+      // Fallback to old endpoint
+      try {
+        const fallbackResponse = await axios.get(`${BASE}/api/calendar/events/upcoming?limit=${limit}`);
+        return fallbackResponse.data;
+      } catch (fallbackError) {
+        throw new Error('Failed to fetch upcoming events');
+      }
     }
   }
 
-  // Get events by date range
+  // Get events by date range (uses unified endpoint)
   async getEventsByDateRange(startDate: string, endDate: string): Promise<CalendarEvent[]> {
     try {
-      const response = await axios.get(`${BASE}/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`);
-      return response.data;
+      // Use unified school-hub endpoint
+      const response = await axios.get(`${BASE}/api/school-hub/events?startDate=${startDate}&endDate=${endDate}`);
+      
+      // Transform unified events to CalendarEvent format
+      if (response.data.success && response.data.data) {
+        return response.data.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          description: event.description || '',
+          startDate: new Date(event.startDate).toISOString(),
+          endDate: event.endDate ? new Date(event.endDate).toISOString() : new Date(event.startDate).toISOString(),
+          type: event.type || 'OTHER',
+          isHoliday: event.isHoliday || false,
+          isExam: event.isExam || false,
+          isPublicHoliday: event.isPublicHoliday || false,
+          grade: event.grade || 'all',
+          category: event.category || 'academic',
+          location: event.location || '',
+          time: event.time || '',
+          facebookLink: event.facebookLink || '',
+          termId: event.termId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }));
+      }
+      
+      // Fallback to old format
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Error fetching events by date range:', error);
-      throw new Error('Failed to fetch events by date range');
+      // Fallback to old endpoint
+      try {
+        const fallbackResponse = await axios.get(`${BASE}/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`);
+        return fallbackResponse.data;
+      } catch (fallbackError) {
+        throw new Error('Failed to fetch events by date range');
+      }
     }
   }
 

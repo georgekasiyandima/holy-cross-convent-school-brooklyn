@@ -169,17 +169,47 @@ const CalendarManagement: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      // Use unified school-hub endpoint
       const [eventsRes, termsRes] = await Promise.all([
-        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events`),
-        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms`)
+        fetch(`${apiUrl}/api/school-hub/events`),
+        fetch(`${apiUrl}/api/calendar/terms`)
       ]);
 
       if (!eventsRes.ok || !termsRes.ok) {
         throw new Error('Failed to fetch data');
       }
 
-      const eventsData = await eventsRes.json();
+      const eventsResponse = await eventsRes.json();
       const termsData = await termsRes.json();
+
+      // Transform unified events format to CalendarEvent format
+      let eventsData: CalendarEvent[] = [];
+      if (eventsResponse.success && eventsResponse.data) {
+        eventsData = eventsResponse.data
+          .filter((event: any) => event.source === 'academic') // Only show academic calendar events in management
+          .map((event: any) => ({
+            id: event.id,
+            title: event.title,
+            description: event.description || '',
+            startDate: new Date(event.startDate).toISOString(),
+            endDate: event.endDate ? new Date(event.endDate).toISOString() : new Date(event.startDate).toISOString(),
+            type: event.type || 'OTHER',
+            isHoliday: event.isHoliday || false,
+            isExam: event.isExam || false,
+            isPublicHoliday: event.isPublicHoliday || false,
+            grade: event.grade || 'all',
+            category: event.category || 'academic',
+            location: event.location || '',
+            time: event.time || '',
+            facebookLink: event.facebookLink || '',
+            termId: event.termId
+          }));
+      } else if (Array.isArray(eventsResponse)) {
+        // Fallback to old format
+        eventsData = eventsResponse;
+      }
 
       setEvents(eventsData);
       setTerms(termsData);
@@ -195,10 +225,12 @@ const CalendarManagement: React.FC = () => {
     e.preventDefault();
     try {
       const adminToken = localStorage.getItem('adminToken');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       
+      // Use unified school-hub endpoint
       const url = editingEvent 
-        ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events/${editingEvent.id}`
-        : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events`;
+        ? `${apiUrl}/api/school-hub/events/${editingEvent.id}`
+        : `${apiUrl}/api/school-hub/events`;
       
       const method = editingEvent ? 'PUT' : 'POST';
       
@@ -211,12 +243,14 @@ const CalendarManagement: React.FC = () => {
         body: JSON.stringify({
           ...eventForm,
           startDate: eventForm.startDate.toISOString(),
-          endDate: eventForm.endDate.toISOString()
+          endDate: eventForm.endDate.toISOString(),
+          eventType: 'academic' // Specify we're creating academic calendar events
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save event');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save event');
       }
 
       setSuccess(editingEvent ? 'Event updated successfully' : 'Event created successfully');
@@ -224,7 +258,7 @@ const CalendarManagement: React.FC = () => {
       resetEventForm();
       fetchData();
     } catch (err) {
-      setError('Failed to save event');
+      setError(err instanceof Error ? err.message : 'Failed to save event');
       console.error('Error saving event:', err);
     }
   };
@@ -271,7 +305,9 @@ const CalendarManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/events/${id}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      // Use unified school-hub endpoint
+      const response = await fetch(`${apiUrl}/api/school-hub/events/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -279,13 +315,14 @@ const CalendarManagement: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete event');
       }
 
       setSuccess('Event deleted successfully');
       fetchData();
     } catch (err) {
-      setError('Failed to delete event');
+      setError(err instanceof Error ? err.message : 'Failed to delete event');
       console.error('Error deleting event:', err);
     }
   };
