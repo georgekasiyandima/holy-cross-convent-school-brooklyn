@@ -381,7 +381,7 @@ const Donate: React.FC = () => {
                           {tier.name}
                         </Typography>
                         <Typography variant="h4" sx={{ mb: 2, color: tier.color, fontWeight: 700 }}>
-                          ${tier.amount}
+                          R{tier.amount}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
                           {tier.benefits.map((benefit, index) => (
@@ -422,7 +422,7 @@ const Donate: React.FC = () => {
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                             <Typography variant="body2">Progress</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              ${project.raised.toLocaleString()} / ${project.target.toLocaleString()}
+                              R{project.raised.toLocaleString()} / R{project.target.toLocaleString()}
                             </Typography>
                           </Box>
                           <Box sx={{ 
@@ -458,12 +458,12 @@ const Donate: React.FC = () => {
                 </Typography>
                 <TextField
                   fullWidth
-                  label="Donation Amount ($)"
+                  label="Donation Amount (R)"
                   type="number"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(Number(e.target.value))}
                   InputProps={{
-                    startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                    startAdornment: <Typography sx={{ mr: 1 }}>R</Typography>,
                   }}
                   sx={{ maxWidth: 300 }}
                 />
@@ -603,7 +603,7 @@ const Donate: React.FC = () => {
                     </Box>
                     <Box sx={{ flex: '1 1 200px', minWidth: 0 }}>
                       <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>
-                        ${getSelectedAmount().toLocaleString()}
+                        R{getSelectedAmount().toLocaleString()}
                       </Typography>
                     </Box>
                   </Box>
@@ -626,14 +626,83 @@ const Donate: React.FC = () => {
         keywords="donate, school funding, Holy Cross Convent School, education support, charitable giving"
       />
       
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Return to Home */}
-        <ReturnToHome />
-        
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h3" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          position: 'relative',
+          minHeight: '400px',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'url("/edu2.jpg") center/cover no-repeat',
+          backgroundPosition: 'center 40%',
+          textAlign: 'center',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(135deg, rgba(26,35,126,.80), rgba(211,47,47,.60))',
+            zIndex: 0
+          },
+          '& > *': { position: 'relative', zIndex: 1 }
+        }}
+      >
+        {/* Return to Home - positioned to avoid header clash */}
+        <Box sx={{ 
+          position: 'fixed', 
+          top: { xs: 80, sm: 100 }, 
+          left: 16, 
+          zIndex: 1000,
+          '& .MuiTypography-root': {
+            color: 'white !important',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(26, 35, 126, 0.7)',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            display: 'inline-block',
+            backdropFilter: 'blur(4px)',
+            '&:hover': {
+              transform: 'translateX(-2px)',
+              backgroundColor: 'rgba(26, 35, 126, 0.9)',
+            },
+            transition: 'all 0.3s ease'
+          }
+        }}>
+          <ReturnToHome />
+        </Box>
+
+        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
+          <Typography 
+            variant="h1" 
+            sx={{ 
+              fontWeight: 900,
+              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+              mb: 2,
+              color: '#ffd700',
+              textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+              letterSpacing: '0.5px'
+            }}
+          >
             Support Our School
           </Typography>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              color: '#ffffff',
+              fontWeight: 600,
+              textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+              fontSize: { xs: '1.5rem', md: '2rem' }
+            }}
+          >
+            Your generosity makes a difference
+          </Typography>
+        </Container>
+      </Box>
+
+      <Container maxWidth="lg" sx={{ py: 6, mt: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
             Your generous donations help us provide quality education, maintain our facilities, 
             and create opportunities for our students to thrive.
@@ -701,7 +770,7 @@ const Donate: React.FC = () => {
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ textAlign: 'center', mb: 2 }}>
-              Your donation of ${getSelectedAmount().toLocaleString()} has been successfully processed.
+              Your donation of R{getSelectedAmount().toLocaleString()} has been successfully processed.
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
               You will receive a confirmation email shortly. Thank you for supporting our school!

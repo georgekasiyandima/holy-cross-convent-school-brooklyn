@@ -275,7 +275,7 @@ const History: React.FC = () => {
                 </Typography>
                 <QuoteBox sx={{ mt: 3 }}>
                   <Typography variant="body1" sx={{ pl: 2 }}>
-                    "The need of the time is the will of God"
+                    &quot;The need of the time is the will of God&quot;
                   </Typography>
                 </QuoteBox>
               </CardContent>
@@ -306,7 +306,7 @@ const History: React.FC = () => {
                 </Typography>
                 <QuoteBox sx={{ mt: 3 }}>
                   <Typography variant="body1" sx={{ pl: 2 }}>
-                    "Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit."
+                    &quot;Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit.&quot;
                   </Typography>
                 </QuoteBox>
               </CardContent>
@@ -335,7 +335,7 @@ const History: React.FC = () => {
                 </Typography>
                 <QuoteBox sx={{ mt: 3 }}>
                   <Typography variant="body1" sx={{ pl: 2 }}>
-                    "May Jesus live in our hearts." (Mother Bernarda)
+                    &quot;May Jesus live in our hearts.&quot; (Mother Bernarda)
                   </Typography>
                 </QuoteBox>
               </CardContent>
