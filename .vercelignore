@@ -1,35 +1,37 @@
-# Ignore ALL documentation files from Vercel builds
+# CRITICAL: Ignore root package.json completely
+# Vercel should ONLY use frontend/package.json
+package.json
+package-lock.json
+
+# Ignore ALL documentation files
 *.md
 
-# Ignore backend files (frontend-only deployment)
+# Ignore backend completely
 backend/
 
-# Ignore root package.json (Vercel should use frontend/package.json only)
-/package.json
-/package-lock.json
-
 # Ignore root node_modules
-/node_modules
+node_modules/
 
 # Ignore database files
 *.db
 *.sqlite
 *.db-journal
 
-# Ignore other non-essential files
-.env.local
-.env.development.local
-.env.test.local
-*.log
-.DS_Store
-
 # Ignore deployment scripts
 deploy*.sh
 *.sh
-!frontend/**/*.sh
 
 # Ignore docker files
 docker-compose.yml
 Dockerfile
 nginx.conf
+
+# Ignore other files
+.env.local
+.env.development.local
+.env.test.local
+*.log
+.DS_Store
+.git
+.github
 
