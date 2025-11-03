@@ -383,7 +383,7 @@ const Academic: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/acad04.jpg"
+              src="/academics1.jpg"
               alt="Academic support"
               sx={{
                 width: '100%',

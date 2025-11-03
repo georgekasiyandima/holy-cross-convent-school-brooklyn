@@ -295,100 +295,77 @@ const ServiceEthos: React.FC = () => {
           </Typography>
         </Paper>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/ethos005.jpg" 
-                alt="Supporting Rural Children"
-                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Learning Together
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Building connections and understanding through shared educational experiences.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/ethos005.jpg"
+              alt="Supporting Rural Children"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/etho009.jpg" 
-                alt="Community Support"
-                sx={{ height: 400, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Unity in Service
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Coming together as a community to support children facing challenges.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/etho009.jpg"
+              alt="Community Support"
+              sx={{
+                width: '100%',
+                height: 400,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/etho007.jpg" 
-                alt="Rural School Support"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Empowering Futures
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Providing resources to help rural children access quality education.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/etho007.jpg"
+              alt="Rural School Support"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/etho002.jpg" 
-                alt="Barefoot School Initiative"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Stand in Solidarity
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Demonstrating compassion and understanding for children in need.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ overflow: 'hidden' }}>
-              <CardMedia 
-                component="img" 
-                image="/etho6.jpg" 
-                alt="Rural Education Support"
-                sx={{ height: 300, objectFit: 'cover', objectPosition: 'center' }}
-              />
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                  Community Impact
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Making a lasting difference in the lives of rural learners.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box
+              component="img"
+              src="/etho002.jpg"
+              alt="Barefoot School Initiative"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
           </Grid>
         </Grid>
       </Container>
@@ -486,6 +463,42 @@ const ServiceEthos: React.FC = () => {
                 component="img"
                 src="/ETHOS4.jpg"
                 alt="Community Support"
+                sx={{
+                  width: '100%',
+                  height: 300,
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  display: 'block',
+                  mx: 'auto'
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box
+                component="img"
+                src="/ethos001.jpg"
+                alt="Church Outreach"
+                sx={{
+                  width: '100%',
+                  height: 300,
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  display: 'block',
+                  mx: 'auto'
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box
+                component="img"
+                src="/ethos003.jpg"
+                alt="Church Service"
                 sx={{
                   width: '100%',
                   height: 300,
