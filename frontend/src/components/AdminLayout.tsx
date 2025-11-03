@@ -163,15 +163,27 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Box sx={{ 
-              p: 1, 
+              p: 0.5, 
               borderRadius: 2, 
               bgcolor: 'rgba(255,255,255,0.1)', 
               mr: 2,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              width: 48,
+              height: 48,
+              overflow: 'hidden'
             }}>
-              <AdminPanelSettings sx={{ fontSize: 28, color: '#ffd700' }} />
+              <Box
+                component="img"
+                src="/L1.png"
+                alt="Holy Cross School Logo"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain'
+                }}
+              />
             </Box>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', fontSize: '1.1rem' }}>
