@@ -16,8 +16,7 @@ import {
   Badge,
   Tooltip,
   useTheme,
-  useMediaQuery,
-  Divider
+  useMediaQuery
 } from '@mui/material';
 import { 
   AdminPanelSettings, 
@@ -421,16 +420,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           overflowY: 'auto',
           overflowX: 'hidden',
           bgcolor: '#f8fafc',
-          position: 'relative'
+          position: 'relative',
+          p: { xs: 2, sm: 3 },
+          pb: { xs: 6, sm: 8 }
         }}>
-          <Box sx={{ 
-            p: { xs: 2, sm: 3 },
-            pb: { xs: 4, sm: 6 },
-            maxWidth: '100%',
-            minHeight: 'calc(100vh - 72px)'
-          }}>
-            {children}
-          </Box>
+          {children}
         </Box>
       </Box>
 
