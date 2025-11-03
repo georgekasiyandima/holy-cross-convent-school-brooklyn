@@ -242,7 +242,7 @@ const Cultural: React.FC = () => {
           Arts & Culture in Action
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={6}>
             <Box
               component="img"
@@ -252,8 +252,11 @@ const Cultural: React.FC = () => {
                 width: '100%',
                 height: 400,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -261,14 +264,17 @@ const Cultural: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/cultra001.jpg"
+              src="/cultural01.jpg"
               alt="Cultural Activity"
               sx={{
                 width: '100%',
                 height: 400,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -282,8 +288,11 @@ const Cultural: React.FC = () => {
                 width: '100%',
                 height: 300,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -291,14 +300,17 @@ const Cultural: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/cultra002.jpg"
+              src="/cultra07.jpg"
               alt="Cultural Activity"
               sx={{
                 width: '100%',
                 height: 300,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -306,14 +318,17 @@ const Cultural: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/cultra004.jpg"
+              src="/cultra05.jpg"
               alt="Cultural Activity"
               sx={{
                 width: '100%',
                 height: 300,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
