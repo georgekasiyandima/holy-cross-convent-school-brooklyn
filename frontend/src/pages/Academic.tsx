@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { School, BookOpen, Groups, Lightbulb, Favorite, CheckCircle } from '@mui/icons-material';
+import { School, MenuBook, Groups, Lightbulb, Favorite, CheckCircle } from '@mui/icons-material';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 
@@ -268,7 +268,7 @@ const Academic: React.FC = () => {
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <BookOpen sx={{ fontSize: 40 }} />
+                    <MenuBook sx={{ fontSize: 40 }} />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Foundation Phase (R–3)
