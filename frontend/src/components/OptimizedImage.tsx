@@ -16,6 +16,7 @@ interface OptimizedImageProps {
   height?: number;
   variant?: 'avatar' | 'image' | 'thumbnail';
   fallbackText?: string;
+  fallbackSrc?: string; // Fallback image URL if primary image fails
   config?: {
     width?: number;
     height?: number;
@@ -42,6 +43,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   height = 200,
   variant = 'image',
   fallbackText,
+  fallbackSrc,
   config,
   onLoad,
   onError,
@@ -53,6 +55,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [imageUrl, setImageUrl] = useState<string | null>(src || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
   const mountedRef = useRef(true);
@@ -89,16 +92,28 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       console.warn(`Failed to load image: ${src}`, err);
       
       if (mountedRef.current) {
+        // If fallback is available and we haven't tried it yet, use it
+        if (fallbackSrc && !usingFallback) {
+          setUsingFallback(true);
+          setImageUrl(fallbackSrc);
+          setLoading(false);
+          onLoad?.();
+          return;
+        }
         setError(true);
         setLoading(false);
         onError?.();
       }
     }
-  }, [src, config, onLoad, onError]);
+  }, [src, fallbackSrc, usingFallback, config, onLoad, onError]);
 
   useEffect(() => {
+    // Reset fallback state when src changes
+    if (usingFallback && src !== imageUrl) {
+      setUsingFallback(false);
+    }
     loadImage();
-  }, [loadImage, retryCount]);
+  }, [loadImage, retryCount, src]);
 
   const handleRetry = () => {
     if (retryCount < maxRetries) {
@@ -107,6 +122,13 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   const handleImageError = () => {
+    // If we have a fallback and we're not already using it, try the fallback
+    if (fallbackSrc && !usingFallback && imageUrl !== fallbackSrc) {
+      setUsingFallback(true);
+      setImageUrl(fallbackSrc);
+      setLoading(false);
+      return;
+    }
     setError(true);
     setLoading(false);
     onError?.();
