@@ -90,17 +90,17 @@ export class GalleryService {
     return await prisma.album.delete({ where: { id } });
   }
 
-  static async createGalleryItem(data: CreateGalleryItemData) {
+  static async createGalleryItem(data: CreateGalleryItemData & { albumId?: string }) {
     const tagsJson = data.tags ? JSON.stringify(data.tags) : null;
-    const { uploadedBy, ...createData } = data;
+    const { uploadedBy, albumId, ...createData } = data;
     
     return await prisma.galleryItem.create({
       data: {
         ...createData,
-        category: data.category as any, // Cast to enum type
+        category: data.category,
         tags: tagsJson,
-        uploader: uploadedBy ? { connect: { id: uploadedBy } } : undefined,
-        album: (data as any).albumId ? { connect: { id: (data as any).albumId } } : undefined,
+        uploadedBy: uploadedBy || null,
+        albumId: albumId || null,
       },
     });
   }

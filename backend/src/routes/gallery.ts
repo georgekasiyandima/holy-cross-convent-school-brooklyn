@@ -43,19 +43,19 @@ const upload = multer({
 });
 
 // Gallery item types
-enum GalleryItemType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO'
-}
+const GalleryItemType = {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO'
+} as const;
 
 // Gallery categories
-enum GalleryCategory {
-  EVENTS = 'EVENTS',
-  SPORTS = 'SPORTS',
-  ACADEMIC = 'ACADEMIC',
-  CULTURAL = 'CULTURAL',
-  GENERAL = 'GENERAL'
-}
+const GalleryCategory = {
+  EVENTS: 'EVENTS',
+  SPORTS: 'SPORTS',
+  ACADEMIC: 'ACADEMIC',
+  CULTURAL: 'CULTURAL',
+  GENERAL: 'GENERAL'
+} as const;
 
 // Get all gallery items
 router.get('/', async (req, res) => {
