@@ -444,8 +444,8 @@ const ServiceEthos: React.FC = () => {
             </Typography>
           </Paper>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={3} justifyContent="center">
+            <Grid item xs={12} md={6}>
               <Box
                 component="img"
                 src="/ETHOS1.jpg"
@@ -454,13 +454,16 @@ const ServiceEthos: React.FC = () => {
                   width: '100%',
                   height: 400,
                   objectFit: 'cover',
+                  objectPosition: 'center',
                   borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  display: 'block',
+                  mx: 'auto'
                 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <Box
                 component="img"
                 src="/ETHOS2.jpg"
@@ -469,8 +472,11 @@ const ServiceEthos: React.FC = () => {
                   width: '100%',
                   height: 400,
                   objectFit: 'cover',
+                  objectPosition: 'center',
                   borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  display: 'block',
+                  mx: 'auto'
                 }}
               />
             </Grid>
@@ -482,10 +488,13 @@ const ServiceEthos: React.FC = () => {
                 alt="Community Support"
                 sx={{
                   width: '100%',
-                  height: 400,
+                  height: 300,
                   objectFit: 'cover',
+                  objectPosition: 'center',
                   borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  display: 'block',
+                  mx: 'auto'
                 }}
               />
             </Grid>

@@ -361,7 +361,7 @@ const Academic: React.FC = () => {
           Learning in Action
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={6}>
             <Box
               component="img"
@@ -371,8 +371,11 @@ const Academic: React.FC = () => {
                 width: '100%',
                 height: 400,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -386,8 +389,11 @@ const Academic: React.FC = () => {
                 width: '100%',
                 height: 400,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
@@ -401,8 +407,47 @@ const Academic: React.FC = () => {
                 width: '100%',
                 height: 300,
                 objectFit: 'cover',
+                objectPosition: 'center',
                 borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Box
+              component="img"
+              src="/acadms2.jpg"
+              alt="Academic activities"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Box
+              component="img"
+              src="/acads1.jpg"
+              alt="Academic excellence"
+              sx={{
+                width: '100%',
+                height: 300,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                display: 'block',
+                mx: 'auto'
               }}
             />
           </Grid>
