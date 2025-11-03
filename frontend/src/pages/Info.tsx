@@ -176,6 +176,7 @@ const Info: React.FC = () => (
           <OptimizedImage
             src={missionImageUrl}
             alt="Mission Statement"
+            fallbackSrc="/HCCMS.jpeg"
             width={800}
             height={600}
             variant="image"
@@ -191,10 +192,8 @@ const Info: React.FC = () => (
               boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
               maxWidth: '100%',
               height: 'auto',
-              width: '100%'
-            }}
-            onError={() => {
-              // Fallback handled by component's error state
+              width: '100%',
+              objectFit: 'contain'
             }}
           />
         </Box>
@@ -262,7 +261,8 @@ const Info: React.FC = () => (
               boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
               maxWidth: '100%',
               height: 'auto',
-              width: '100%'
+              width: '100%',
+              objectFit: 'contain'
             }}
           />
         </Box>
@@ -330,7 +330,8 @@ const Info: React.FC = () => (
               boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
               maxWidth: '100%',
               height: 'auto',
-              width: '100%'
+              width: '100%',
+              objectFit: 'contain'
             }}
           />
         </Box>

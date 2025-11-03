@@ -254,7 +254,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       sx={{
         width,
         height,
-        objectFit: 'cover',
+        objectFit: config?.fit === 'contain' ? 'contain' : 'cover',
         borderRadius: 2,
         ...sx
       }}
