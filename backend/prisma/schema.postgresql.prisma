@@ -1,0 +1,360 @@
+// PostgreSQL schema for production deployment
+// This schema uses PostgreSQL-specific features
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("VIEWER") // ADMIN, EDITOR, VIEWER
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model StaffMember {
+  id           String  @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  role         String?
+  grade        String?
+  subjects     String? // JSON string for subjects array
+  category     String  @default("TEACHING") // LEADERSHIP, TEACHING, ADMIN, SUPPORT
+  imageUrl     String?
+  favoriteQuote String?
+  order        Int     @default(0)
+  isActive     Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("staff_members")
+}
+
+model BoardMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  type        String   @default("MEMBER") // EXECUTIVE, REPRESENTATIVE, MEMBER
+  email       String?
+  bio         String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("board_members")
+}
+
+model NewsArticle {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  summary     String?
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("news_articles")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  imageUrl    String?
+  category    String   @default("ACADEMIC") // ACADEMIC, SPIRITUAL, CELEBRATION, SPORTS, CULTURAL, COMMUNITY, EXTRA_MURAL, HOLIDAY
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("events")
+}
+
+model AcademicCalendar {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  type        String   @default("OTHER") // TERM_START, TERM_END, HOLIDAY, EXAM, SPORTS_DAY, CULTURAL_DAY, PARENT_MEETING, OTHER
+  isHoliday   Boolean  @default(false)
+  isExam      Boolean  @default(false)
+  isPublicHoliday Boolean @default(false)
+  grade       String?  @default("all")
+  category    String   @default("academic")
+  location    String?
+  time        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("academic_calendar")
+}
+
+model Term {
+  id          String   @id @default(cuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  year        Int
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("terms")
+}
+
+model Application {
+  id              Int      @id @default(autoincrement())
+  
+  // Learner Information
+  surname         String
+  christianName   String
+  dateOfBirth     DateTime
+  placeOfBirth    String
+  gradeApplying   String
+  year            String
+  lastGradePassed String?
+  hasRepeated     Boolean  @default(false)
+  repeatedGrade   String?
+  
+  // Mother's Information
+  motherFullName     String
+  motherAddress      String
+  motherHomePhone    String?
+  motherWorkPhone    String?
+  motherCellPhone    String
+  
+  // Father's Information
+  fatherFullName     String
+  fatherAddress      String
+  fatherHomePhone    String?
+  fatherWorkPhone    String?
+  fatherCellPhone    String
+  
+  // Responsible Party (if not parents)
+  responsiblePartyName         String?
+  responsiblePartyAddress      String?
+  responsiblePartyRelationship String?
+  responsiblePartyHomePhone    String?
+  responsiblePartyWorkPhone    String?
+  responsiblePartyCellPhone    String?
+  
+  // Learner Address (if different from parents)
+  learnerAddress String?
+  
+  // Religious Information
+  religiousDenomination String?
+  isBaptised           Boolean @default(false)
+  parishChurch         String?
+  refugeeStatus        Boolean @default(false)
+  homeLanguage         String?
+  
+  // Family Information
+  numberOfChildren     String?
+  childrenAges         String?
+  siblingsAtHolyCross  Boolean @default(false)
+  siblingName          String?
+  siblingGrade         String?
+  
+  // Employment Details
+  motherOccupation         String?
+  motherPlaceOfEmployment  String?
+  motherWorkTel            String?
+  motherWorkCell           String?
+  motherEmail              String?
+  
+  fatherOccupation         String?
+  fatherPlaceOfEmployment  String?
+  fatherWorkTel            String?
+  fatherWorkCell           String?
+  fatherEmail              String?
+  
+  responsiblePartyOccupation         String?
+  responsiblePartyPlaceOfEmployment  String?
+  responsiblePartyWorkTel            String?
+  responsiblePartyWorkCell           String?
+  responsiblePartyEmail              String?
+  
+  selfEmployedDetails String?
+  maritalStatus       String?
+  
+  // Current School Information
+  currentSchool         String?
+  currentSchoolAddress  String?
+  currentSchoolTel      String?
+  currentSchoolContact  String?
+  
+  // Payment Method
+  paymentMethod String?
+  
+  // Application Status
+  status String @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED, ENROLLED
+  notes  String?
+  
+  // Timestamps
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Document references
+  documents ApplicationDocument[]
+
+  @@map("applications")
+}
+
+model ApplicationDocument {
+  id            Int      @id @default(autoincrement())
+  applicationId Int
+  fileName      String
+  originalName  String
+  filePath      String
+  fileType      String
+  fileSize      Int
+  documentType  String   // BIRTH_CERTIFICATE, BAPTISM_CERTIFICATE, SCHOOL_REPORT, ID_COPY, etc.
+  uploadedAt    DateTime @default(now())
+  
+  // Relations
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_documents")
+}
+
+model DocumentType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isRequired  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("document_types")
+}
+
+model SchoolStatistics {
+  id          String   @id @default(cuid())
+  label       String   @unique
+  value       String
+  icon        String?
+  type        String   @default("number") // number, percentage, text
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("school_statistics")
+}
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("GENERAL") // EVENTS, SPORTS, ACADEMIC, CULTURAL, GENERAL, CLASS_PHOTOS
+  type        String   @default("IMAGE") // IMAGE, VIDEO
+  filePath    String
+  fileName    String
+  originalName String
+  fileSize    Int
+  mimeType    String
+  tags        String? // JSON array stored as string
+  isPublished Boolean  @default(true)
+  uploadedBy  String?
+  albumId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  coverImageFor Album[] @relation("CoverImage")
+
+  @@map("gallery_items")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  albumType   String   @default("GENERAL") // GENERAL, CLASS
+  classGrade  String?
+  coverImageId String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       GalleryItem[]
+  coverImage  GalleryItem? @relation("CoverImage", fields: [coverImageId], references: [id])
+
+  @@map("albums")
+}
+
+model Newsletter {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  imageUrl    String?
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("newsletters")
+}
+
+model Policy {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String   @default("GENERAL") // GENERAL, ADMISSIONS, ACADEMIC, CONDUCT, SAFETY
+  pdfUrl      String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("policies")
+}
+
+model Vacancy {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  requirements String?
+  department  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("vacancies")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  pdfUrl      String
+  year        Int
+  category    String   @default("ANNUAL") // ANNUAL, QUARTERLY, MONTHLY
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reports")
+}
+

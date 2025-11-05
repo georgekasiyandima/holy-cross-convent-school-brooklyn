@@ -44,4 +44,7 @@ EXPOSE 5000
 ENV PORT 5000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "dist/server.js"]
+# Run migrations before starting server
+RUN npm run prisma:generate:prod
+
+CMD ["sh", "-c", "npm run prisma:deploy && node dist/server.production.js"]
