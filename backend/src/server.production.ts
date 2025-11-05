@@ -70,32 +70,46 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static(uploadsDir));
 
-// Auth routes
+// API Routes
 app.use('/api/auth', authRoutes);
-
-// Admissions routes
 app.use('/api/admissions', admissionsRoutes);
-
-// Application documents routes
 app.use('/api/application-documents', applicationDocumentsRoutes);
-
-// Staff routes
 app.use('/api/staff', staffRoutes);
-
-// Documents routes
 app.use('/api/documents', documentsRoutes);
-
-// School Hub routes (unified calendar & events)
 app.use('/api/school-hub', schoolHubRoutes);
-
-// Calendar routes (terms, etc.)
 app.use('/api/calendar', calendarRoutes);
-
-// Gallery routes
 app.use('/api/gallery', galleryRoutes);
-
-// Vacancies routes
 app.use('/api/vacancies', vacanciesRoutes);
+
+// Board Members API (simple endpoint for backward compatibility)
+app.get('/api/board', async (req, res, next) => {
+  try {
+    const boardMembers = await prisma.boardMember.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' }
+    });
+    res.json(boardMembers);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Board Members by Type (for backward compatibility)
+app.get('/api/board/type/:type', async (req, res, next) => {
+  try {
+    const { type } = req.params;
+    const boardMembers = await prisma.boardMember.findMany({
+      where: { 
+        isActive: true,
+        type: type.toUpperCase()
+      },
+      orderBy: { order: 'asc' }
+    });
+    res.json(boardMembers);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -113,18 +127,21 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'production',
-    version: '1.0.0'
+    version: '1.0.0',
+    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
   });
 });
 
-// Note: Staff, Board, News, Events, and Calendar APIs are handled by their respective route files
-// (staffRoutes, boardRoutes, etc.) which are already mounted above
-
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Error handling middleware (must be last)
-app.use(errorHandler);
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.path}`
+  });
+});
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
@@ -144,9 +161,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡️[server]: Server is running on port ${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'production'}`);
   console.log(`🔗 Health check: http://0.0.0.0:${PORT}/api/health`);
-  console.log(`📊 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
-  console.log(`Database path: ${dbPath}`);
-  console.log(`Database exists: ${fs.existsSync(dbPath)}`);
+  console.log(`📊 Database: ${process.env.DATABASE_URL ? 'Connected (PostgreSQL)' : 'Not configured'}`);
 });
 
 export { app, server };

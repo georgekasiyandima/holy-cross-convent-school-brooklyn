@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: holy-cross-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run prisma:generate:prod && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: holy-cross-db
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: BASE_URL
+        sync: false
+
+databases:
+  - name: holy-cross-db
+    plan: free
+    databaseName: holycross_db
+    user: holycross_user
+
