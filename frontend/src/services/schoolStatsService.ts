@@ -222,8 +222,8 @@ class SchoolStatsService {
       },
       {
         id: 'fallback-2',
-        label: 'Students',
-        value: '300+',
+        label: 'Learners',
+        value: '250+',
         icon: 'People',
         type: 'number'
       },

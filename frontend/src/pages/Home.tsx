@@ -55,6 +55,11 @@ import SchoolStatistics from '../components/SchoolStatistics';
 import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
 import PillarCarousel from '../components/PillarCarousel';
+import HomeAnnouncements from '../components/HomeAnnouncements';
+import GradeRSpotlight from '../components/home/GradeRSpotlight';
+import QuickStatsBanner from '../components/home/QuickStatsBanner';
+import WhyChooseSection from '../components/home/WhyChooseSection';
+import CTASection from '../components/home/CTASection';
 import { holyCrossBrand, pillarColors } from '../theme/branding';
 import { getBackgroundImageUrl } from '../utils/staticFiles';
 
@@ -202,32 +207,6 @@ const HeritageSection = styled(Box)(({ theme }) => ({
   }
 }));
 
-const GradeRSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
-  padding: theme.spacing(8, 0),
-  position: 'relative',
-  borderTop: '4px solid #d32f2f',
-  borderBottom: '4px solid #d32f2f',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '2px',
-    background: 'linear-gradient(90deg, #d32f2f 0%, #ffd700 50%, #d32f2f 100%)',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '2px',
-    background: 'linear-gradient(90deg, #d32f2f 0%, #ffd700 50%, #d32f2f 100%)',
-  }
-}));
-
 const TimelineCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
   border: '1px solid #e3f2fd',
@@ -348,7 +327,7 @@ const Home: React.FC = () => {
     { year: '1959', title: 'Foundation', description: 'Holy Cross Convent School established in Brooklyn' },
     { year: '1980s', title: 'Expansion', description: 'New facilities and programs added' },
     { year: '2000s', title: 'Modernization', description: 'Digital learning and technology integration' },
-    { year: '2024', title: 'Today', description: 'Continuing legacy of excellence and innovation' }
+    { year: '2025', title: 'Today', description: 'Continuing legacy of excellence and innovation' }
   ];
 
 
@@ -590,7 +569,120 @@ const Home: React.FC = () => {
         </Container>
       </HeroSection>
 
-      {/* Heritage Section */}
+      {/* Quick Stats Banner */}
+      <QuickStatsBanner animate={animateStats} />
+
+      {/* Latest Announcements & Events Section */}
+      <HomeAnnouncements announcementsLimit={3} eventsLimit={3} />
+
+      {/* Grade R Spotlight - Prominent Section */}
+      <GradeRSpotlight />
+
+      {/* Five Pillars of Excellence Section */}
+      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<AutoAwesome />}
+              label="Five Pillars of Excellence"
+              sx={{
+                backgroundColor: holyCrossBrand.signatureBlue,
+                color: 'white',
+                fontWeight: 600,
+                mb: 3,
+                px: 2,
+                py: 3,
+                fontSize: '1rem'
+              }}
+            />
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              sx={{ 
+                color: holyCrossBrand.signatureBlue, 
+                fontWeight: 800, 
+                mb: 2,
+                fontSize: 'clamp(2rem, 5vw, 3rem)'
+              }}
+            >
+              Our Pillars of Excellence
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#666', 
+                maxWidth: '700px', 
+                mx: 'auto',
+                fontWeight: 400
+              }}
+            >
+              Discover the five foundational pillars that shape every learner's journey at Holy Cross
+            </Typography>
+          </Box>
+          
+          <PillarCarousel />
+        </Container>
+      </Box>
+
+      {/* Why Choose Holy Cross Section - Merged Features */}
+      <WhyChooseSection />
+
+      {/* School Highlights Section */}
+      <SchoolHighlights />
+
+      {/* Learner Showcase Section - Single Featured Video */}
+      {learnerVideos.length > 0 && (
+        <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
+          <Container maxWidth="lg">
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+              <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
+                Learner Achievements
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+                Watch our learners showcase their talents and achievements
+              </Typography>
+            </Box>
+
+            {/* Featured Video - Single Video Only */}
+            <Card sx={{ maxWidth: '900px', mx: 'auto', boxShadow: 3, background: 'linear-gradient(135deg, #e3eafc 0%, #fffde7 100%)' }}>
+              <CardContent>
+                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, textAlign: 'center' }}>
+                  {learnerVideos[0].title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#555', mb: 3, textAlign: 'center' }}>
+                  {learnerVideos[0].description}
+                </Typography>
+                
+                <VideoContainer>
+                  <div dangerouslySetInnerHTML={{ __html: learnerVideos[0].embedCode }} />
+                </VideoContainer>
+                
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Facebook />}
+                    href={learnerVideos[0].facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      borderColor: '#1a237e',
+                      color: '#1a237e',
+                      '&:hover': {
+                        borderColor: '#ffd700',
+                        backgroundColor: '#fffde7'
+                      }
+                    }}
+                  >
+                    View on Facebook
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Container>
+        </Box>
+      )}
+
+      {/* Heritage Section - Condensed */}
       <HeritageSection>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -607,11 +699,11 @@ const Home: React.FC = () => {
               }}
             />
             <Typography variant="h3" component="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
-              A Legacy of Excellence
+              A Legacy of Excellence Since 1959
             </Typography>
-            <Typography variant="h6" sx={{ color: '#666', maxWidth: '600px', mx: 'auto' }}>
-              From our founding in 1959 to today, we've maintained our commitment to 
-              Catholic values while embracing educational innovation.
+            <Typography variant="h6" sx={{ color: '#666', maxWidth: '700px', mx: 'auto', lineHeight: 1.7 }}>
+              From our founding to today, we've maintained our commitment to Catholic values 
+              while embracing educational innovation. Our rich history shapes our future.
             </Typography>
           </Box>
 
@@ -811,444 +903,8 @@ const Home: React.FC = () => {
         </Container>
       </HeritageSection>
 
-      {/* Grade R Promotion Section */}
-      <GradeRSection>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Chip
-              icon={<ChildCare />}
-              label="Special Focus: Grade R Learners"
-              sx={{
-                backgroundColor: '#d32f2f',
-                color: 'white',
-                fontWeight: 600,
-                mb: 3,
-                px: 2,
-                py: 1,
-                fontSize: '1.1rem'
-              }}
-            />
-            <Typography 
-              variant="h3" 
-              component="h2" 
-              sx={{ 
-                color: '#d32f2f', 
-                fontWeight: 700, 
-                mb: 3,
-                fontSize: { xs: '2rem', md: '2.5rem' }
-              }}
-            >
-              We're Actively Seeking Grade R Learners!
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: '#666', 
-                mb: 4, 
-                maxWidth: '800px', 
-                mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' },
-                lineHeight: 1.6
-              }}
-            >
-              Join our nurturing early childhood education program designed to provide the perfect foundation 
-              for your child's educational journey. Our Grade R program focuses on holistic development 
-              in a caring, faith-based environment.
-            </Typography>
-          </Box>
-
-          {/* Grade R Features Grid */}
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
-            gap: 4, 
-            mb: 6 
-          }}>
-            {/* Feature 1 */}
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '2px solid #d32f2f',
-              borderRadius: 3,
-              p: 3,
-              textAlign: 'center',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
-              }
-            }}>
-              <Star sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
-              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
-                Holistic Development
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
-                Focus on cognitive, emotional, social, and physical development through 
-                play-based learning and structured activities.
-              </Typography>
-            </Card>
-
-            {/* Feature 2 */}
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '2px solid #d32f2f',
-              borderRadius: 3,
-              p: 3,
-              textAlign: 'center',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
-              }
-            }}>
-              <Group sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
-              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
-                Small Class Sizes
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
-                Individual attention and personalized learning with experienced teachers 
-                who understand early childhood development.
-              </Typography>
-            </Card>
-
-            {/* Feature 3 */}
-            <Card sx={{ 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              border: '2px solid #d32f2f',
-              borderRadius: 3,
-              p: 3,
-              textAlign: 'center',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: '0 12px 40px rgba(211, 47, 47, 0.2)',
-              }
-            }}>
-              <Schedule sx={{ fontSize: 60, color: '#ffd700', mb: 2 }} />
-              <Typography variant="h5" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2 }}>
-                Flexible Schedule
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', lineHeight: 1.6 }}>
-                Half-day and full-day options available to accommodate different 
-                family needs and preferences.
-              </Typography>
-            </Card>
-      </Box>
-
-          {/* Call to Action */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                color: '#d32f2f', 
-                fontWeight: 600, 
-                mb: 3 
-              }}
-            >
-              Ready to Start Your Child's Educational Journey?
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666', 
-                mb: 4, 
-                maxWidth: '600px', 
-                mx: 'auto' 
-              }}
-            >
-              Apply now and give your child the best start to their educational journey. 
-              Our Grade R program is designed to prepare them for success in Grade 1 and beyond.
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/admissions')}
-              startIcon={<SchoolIcon />}
-              sx={{
-                backgroundColor: '#d32f2f',
-                color: 'white',
-                px: 6,
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                borderRadius: 3,
-                boxShadow: '0 8px 25px rgba(211, 47, 47, 0.3)',
-                '&:hover': {
-                  backgroundColor: '#b71c1c',
-                  transform: 'translateY(-3px)',
-                  boxShadow: '0 12px 35px rgba(211, 47, 47, 0.4)'
-                },
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              Apply for Grade R
-            </Button>
-          </Box>
-        </Container>
-      </GradeRSection>
-
-      {/* School Statistics Section */}
-      <SchoolStatistics animate={animateStats} />
-
-      {/* Five Pillars of Excellence Section */}
-      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Chip
-              icon={<AutoAwesome />}
-              label="Five Pillars of Excellence"
-              sx={{
-                backgroundColor: holyCrossBrand.signatureBlue,
-                color: 'white',
-                fontWeight: 600,
-                mb: 3,
-                px: 2,
-                py: 3,
-                fontSize: '1rem'
-              }}
-            />
-            <Typography 
-              variant="h3" 
-              component="h2" 
-              sx={{ 
-                color: holyCrossBrand.signatureBlue, 
-                fontWeight: 800, 
-                mb: 2,
-                fontSize: 'clamp(2rem, 5vw, 3rem)'
-              }}
-            >
-              Our Pillars of Excellence
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: '#666', 
-                maxWidth: '700px', 
-                mx: 'auto',
-                fontWeight: 400
-              }}
-            >
-              Discover the five foundational pillars that shape every learner's journey at Holy Cross
-            </Typography>
-          </Box>
-          
-          <PillarCarousel />
-        </Container>
-      </Box>
-
-      {/* School Highlights Section */}
-      <SchoolHighlights />
-
-      {/* Enhanced Features Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ color: '#1a237e', fontWeight: 700, mb: 6 }}>
-          Why Choose Holy Cross?
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 4 }}>
-          <Slide direction="up" in timeout={800}>
-            <Card sx={{ height: '100%', textAlign: 'center', p: 3 }}>
-              <CardContent>
-                <Book sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                  Academic Excellence
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Rigorous curriculum designed to challenge and inspire learners to reach their full potential.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Slide>
-          <Slide direction="up" in timeout={1000}>
-            <Card sx={{ height: '100%', textAlign: 'center', p: 3 }}>
-              <CardContent>
-                <People sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                  Community
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  A supportive community that values diversity, inclusion, and mutual respect.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Slide>
-          <Slide direction="up" in timeout={1200}>
-            <Card sx={{ height: '100%', textAlign: 'center', p: 3 }}>
-              <CardContent>
-                <School sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                  Faith-Based Education
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Rooted in Catholic values while welcoming learners of all faiths and backgrounds.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Slide>
-          <Slide direction="up" in timeout={1400}>
-            <Card sx={{ height: '100%', textAlign: 'center', p: 3 }}>
-              <CardContent>
-                <Event sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
-                <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
-                  Extracurricular Activities
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Rich opportunities in sports, arts, and leadership development.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Slide>
-        </Box>
-      </Container>
-
-
-      {/* Learner Showcase Section */}
-      {learnerVideos.length > 0 && (
-        <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
-          <Container maxWidth="lg">
-            <Box sx={{ textAlign: 'center', mb: 6 }}>
-              <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
-                Learner Achievements
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                Watch our learners showcase their talents and achievements
-              </Typography>
-            </Box>
-
-            {/* Featured Video */}
-            <Card sx={{ mb: 6, boxShadow: 3, background: 'linear-gradient(135deg, #e3eafc 0%, #fffde7 100%)' }}>
-              <CardContent>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, textAlign: 'center' }}>
-                  {learnerVideos[0].title}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#555', mb: 3, textAlign: 'center' }}>
-                  {learnerVideos[0].description}
-                </Typography>
-                
-                <VideoContainer>
-                  <div dangerouslySetInnerHTML={{ __html: learnerVideos[0].embedCode }} />
-                </VideoContainer>
-                
-                <Box sx={{ textAlign: 'center', mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Facebook />}
-                    href={learnerVideos[0].facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      borderColor: '#1a237e',
-                      color: '#1a237e',
-                      '&:hover': {
-                        borderColor: '#ffd700',
-                        backgroundColor: '#fffde7'
-                      }
-                    }}
-                  >
-                    View on Facebook
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-
-            {/* Video Gallery */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
-              {learnerVideos.slice(1).map((video) => (
-                <VideoCard key={video.id} onClick={() => handleVideoClick(video)}>
-                  <CardContent>
-                    <VideoThumbnail>
-                      <div className="play-button">
-                        <PlayArrow sx={{ fontSize: 30 }} />
-                      </div>
-                    </VideoThumbnail>
-                    <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mt: 2, mb: 1 }}>
-                      {video.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#555', mb: 2 }}>
-                      {video.description}
-                    </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                      <Chip 
-                        label="Learner Achievement" 
-                        size="small" 
-                        color="secondary" 
-                        variant="outlined"
-                      />
-                      {video.date && (
-                        <Chip 
-                          label={video.date} 
-                          size="small" 
-                          variant="outlined"
-                        />
-                      )}
-                    </Stack>
-                  </CardContent>
-                </VideoCard>
-              ))}
-            </Box>
-          </Container>
-        </Box>
-      )}
-
-      {/* Contact Information Section */}
-      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)', color: 'white' }}>
-        <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom sx={{ fontWeight: 700, mb: 6, color: '#ffd700' }}>
-            Get in Touch
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4, justifyContent: 'center', mb: 4 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <LocationOn sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
-                Visit Us
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                162 Koeberg Road<br />
-                Brooklyn, Cape Town<br />
-                7405 South Africa
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Phone sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
-                Call Us
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                +27 21 511 4337
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Email sx={{ fontSize: 60, mb: 2, color: '#ffd700' }} />
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'white' }}>
-                Email Us
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                admin@holycrossbrooklyn.co.za
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleContactClick}
-              sx={{
-                background: holyCrossBrand.primaryGradient,
-                color: '#ffffff',
-                px: 6,
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: holyCrossBrand.buttonStyles.primary.hoverBoxShadow
-                },
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              Send Us a Message
-            </Button>
-          </Box>
-        </Container>
-      </Box>
+      {/* Unified CTA Section */}
+      <CTASection />
 
       {/* Video Dialog */}
       <Dialog

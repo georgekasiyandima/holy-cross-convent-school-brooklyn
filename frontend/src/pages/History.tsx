@@ -67,13 +67,14 @@ const QuoteBox = styled(Box)(({ theme }) => ({
   borderRadius: theme.spacing(1),
   position: 'relative',
   '&::before': {
-    content: '"""',
+    content: '"\\201C"', // Left double quotation mark (Unicode)
     fontSize: '3rem',
     color: '#ffd700',
     position: 'absolute',
     top: '-10px',
     left: '20px',
     fontFamily: 'serif',
+    lineHeight: 1,
   },
 }));
 
@@ -186,6 +187,38 @@ const History: React.FC = () => {
       <Container maxWidth="xl" sx={{ py: 6, mt: 4 }}>
         {/* Page Header - with proper spacing from hero */}
         <Box sx={{ textAlign: 'center', mb: 8, mt: 4 }}>
+        <Typography 
+            variant="h3" 
+            component="h2" 
+          gutterBottom
+          sx={{ 
+            color: '#1a237e', 
+            fontWeight: 700,
+              fontSize: { xs: '2rem', md: '2.5rem' },
+              mb: 2
+          }}
+        >
+          <HistoryIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
+            Spanning Over 125 Years
+        </Typography>
+        <Typography 
+            variant="body1" 
+          color="text.secondary" 
+          sx={{ 
+            maxWidth: '800px', 
+            mx: 'auto',
+            mb: 3,
+            fontSize: '1.2rem',
+              lineHeight: 1.8
+          }}
+        >
+            From humble beginnings in a small room to a thriving educational institution, Holy Cross Convent School Brooklyn continues to uphold the values and vision of our founders.
+        </Typography>
+      </Box>
+
+      {/* Founding Figures Section */}
+      <HistorySection>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
             variant="h3" 
             component="h2" 
@@ -193,287 +226,266 @@ const History: React.FC = () => {
             sx={{ 
               color: '#1a237e', 
               fontWeight: 700,
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              mb: 2
+              fontSize: { xs: '1.75rem', md: '2.5rem' },
             }}
           >
-            <HistoryIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
-            Spanning Over 125 Years
+            <ChurchIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
+            Our Founding Figures
           </Typography>
           <Typography 
             variant="body1" 
             color="text.secondary" 
             sx={{ 
-              maxWidth: '800px', 
-              mx: 'auto',
               mb: 3,
-              fontSize: '1.2rem',
-              lineHeight: 1.8
+              maxWidth: '600px', 
+              mx: 'auto',
+              fontSize: '1.1rem',
             }}
           >
-            From humble beginnings in a small room to a thriving educational institution, Holy Cross Convent School Brooklyn continues to uphold the values and vision of our founders.
+            The visionaries who shaped our mission and values
           </Typography>
         </Box>
 
-        {/* Founding Figures Section */}
-        <HistorySection>
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography 
-              variant="h3" 
-              component="h2" 
-              gutterBottom
-              sx={{ 
-                color: '#1a237e', 
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-              }}
-            >
-              <ChurchIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
-              Our Founding Figures
-            </Typography>
-            <Typography 
-              variant="body1" 
-              color="text.secondary" 
-              sx={{ 
-                mb: 3,
-                maxWidth: '600px', 
-                mx: 'auto',
-                fontSize: '1.1rem',
-              }}
-            >
-              The visionaries who shaped our mission and values
-            </Typography>
-          </Box>
-
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: 4 
-          }}>
-            {/* Fr Theodosius Fiorentini */}
-            <HistoricalCard>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400, background: 'transparent' }}>
-                <CardMedia
-                  component="img"
-                  sx={{ objectFit: 'contain', maxHeight: 400, maxWidth: '90%' }}
-                  image="/Fr Theodosius.jpg"
-                  alt="Fr Theodosius Fiorentini"
-                />
-              </Box>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
-                  Fr Theodosius Fiorentini, O.F.M. Capuchin
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  <strong>(1808-1865)</strong> - One of the most prominent and influential men in the history of the Church in his time. He was passionate about Christ, Education and family life.
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  In his vision Father Theodosius saw a new society on the way, a society that was more humane and just according to the understanding of the Gospel.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Notwithstanding the obstacles, attacks and failures, and convinced about his mission in the church, he was determined to take the wheel of time into his own hands.
-                </Typography>
-                <QuoteBox sx={{ mt: 3 }}>
-                  <Typography variant="body1" sx={{ pl: 2 }}>
-                    &quot;The need of the time is the will of God&quot;
-                  </Typography>
-                </QuoteBox>
-              </CardContent>
-            </HistoricalCard>
-
-            {/* Mother Bernarda */}
-            <HistoricalCard>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400, background: 'transparent' }}>
-                <CardMedia
-                  component="img"
-                  sx={{ objectFit: 'contain', maxHeight: 400, maxWidth: '90%' }}
-                  image="/Bernarda BG.jpg"
-                  alt="Mother Bernarda Heimgartner"
-                />
-              </Box>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
-                  Mother Bernarda Heimgartner
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  <strong>(1822-1863)</strong> - Founder of the Sisters of the Holy Cross in Menzingen, Switzerland.
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Mother Bernarda's concern was for a holistic Christian education, especially for girls of working-class families. By raising the educational level of girls, the position of women in society would gradually improve and a deepening of the Christian faith would take place.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  People of her time should receive a clear orientation built on faith.
-                </Typography>
-                <QuoteBox sx={{ mt: 3 }}>
-                  <Typography variant="body1" sx={{ pl: 2 }}>
-                    &quot;Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit.&quot;
-                  </Typography>
-                </QuoteBox>
-              </CardContent>
-            </HistoricalCard>
-
-            {/* Sister Philomena */}
-            <HistoricalCard>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          gap: 4 
+        }}>
+          {/* Fr Theodosius Fiorentini */}
+          <HistoricalCard>
               <CardMedia
                 component="img"
-                sx={{ objectFit: 'cover', height: 400 }}
-                image="/Philomena.jpg"
-                alt="Sister Philomena Burgess"
+                sx={{ 
+                  objectFit: 'cover',
+                  height: { xs: 300, sm: 350, md: 400 },
+                  width: '100%',
+                  display: 'block'
+                }}
+                image="/Fr Theodosius.jpg"
+                alt="Fr Theodosius Fiorentini"
               />
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
-                  Sister Philomena Burgess
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
+                Fr Theodosius Fiorentini, O.F.M. Capuchin
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <strong>(1808-1865)</strong> - One of the most prominent and influential men in the history of the Church in his time. He was passionate about Christ, Education and family life.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                In his vision Father Theodosius saw a new society on the way, a society that was more humane and just according to the understanding of the Gospel.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Notwithstanding the obstacles, attacks and failures, and convinced about his mission in the church, he was determined to take the wheel of time into his own hands.
+              </Typography>
+              <QuoteBox sx={{ mt: 3 }}>
+                <Typography variant="body1" sx={{ pl: 2 }}>
+                    &quot;The need of the time is the will of God&quot;
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  The first teacher and principal of Holy Cross Convent School Brooklyn, who began our educational journey in 1959.
+              </QuoteBox>
+            </CardContent>
+          </HistoricalCard>
+
+          {/* Mother Bernarda */}
+          <HistoricalCard>
+              <CardMedia
+                component="img"
+                sx={{ 
+                  objectFit: 'cover',
+                  height: { xs: 300, sm: 350, md: 400 },
+                  width: '100%',
+                  display: 'block'
+                }}
+                image="/Bernarda BG.jpg"
+                alt="Mother Bernarda Heimgartner"
+              />
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
+                Mother Bernarda Heimgartner
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <strong>(1822-1863)</strong> - Founder of the Sisters of the Holy Cross in Menzingen, Switzerland.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Mother Bernarda&apos;s concern was for a holistic Christian education, especially for girls of working-class families. By raising the educational level of girls, the position of women in society would gradually improve and a deepening of the Christian faith would take place.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                People of her time should receive a clear orientation built on faith.
+              </Typography>
+              <QuoteBox sx={{ mt: 3 }}>
+                <Typography variant="body1" sx={{ pl: 2 }}>
+                    &quot;Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit.&quot;
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Sister Philomena started with one class in a small room attached to the local parish church, laying the foundation for what would become a thriving educational institution.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Her dedication and vision continue to inspire our school community today.
-                </Typography>
-                <QuoteBox sx={{ mt: 3 }}>
-                  <Typography variant="body1" sx={{ pl: 2 }}>
+              </QuoteBox>
+            </CardContent>
+          </HistoricalCard>
+
+          {/* Sister Philomena */}
+          <HistoricalCard>
+            <CardMedia
+              component="img"
+                sx={{ 
+                  objectFit: 'cover',
+                  height: { xs: 300, sm: 350, md: 400 },
+                  width: '100%',
+                  display: 'block'
+                }}
+              image="/Philomena.jpg"
+              alt="Sister Philomena Burgess"
+            />
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
+                Sister Philomena Burgess
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                The first teacher and principal of Holy Cross Convent School Brooklyn, who began our educational journey in 1959.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Sister Philomena started with one class in a small room attached to the local parish church, laying the foundation for what would become a thriving educational institution.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Her dedication and vision continue to inspire our school community today.
+              </Typography>
+              <QuoteBox sx={{ mt: 3 }}>
+                <Typography variant="body1" sx={{ pl: 2 }}>
                     &quot;May Jesus live in our hearts.&quot; (Mother Bernarda)
-                  </Typography>
-                </QuoteBox>
-              </CardContent>
-            </HistoricalCard>
-          </Box>
-        </HistorySection>
+                </Typography>
+              </QuoteBox>
+            </CardContent>
+          </HistoricalCard>
+        </Box>
+      </HistorySection>
 
-        {/* Congregation History Section */}
-        <HistorySection>
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography 
-              variant="h3" 
-              component="h2" 
-              gutterBottom
-              sx={{ 
-                color: '#1a237e', 
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-              }}
-            >
-              <SchoolIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
-              Our Congregation
-            </Typography>
-          </Box>
-
-          <Box sx={{ maxWidth: '900px', mx: 'auto' }}>
-            <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
-              The Congregation of the Sisters of the Holy Cross is a Swiss Congregation founded in Switzerland. The South African Province of the Congregation was founded from the General Motherhouse in Switzerland in 1883. This was the first time that a Catholic religious congregation had embarked upon missionary activity outside the confines of Europe.
-            </Typography>
-            
-            <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 4, fontWeight: 600, color: '#1a237e' }}>
-              Therefore we celebrate, this year, and with great joy and thanksgiving our 125 years of loving service in a variety of apostolic works throughout our S. African Province.
-            </Typography>
-          </Box>
-        </HistorySection>
-
-        {/* School Timeline Section */}
-        <HistorySection>
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography 
-              variant="h3" 
-              component="h2" 
-              gutterBottom
-              sx={{ 
-                color: '#1a237e', 
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-              }}
-            >
-              <HistoryIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
-              Our School's Journey
-            </Typography>
-          </Box>
-
-          <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-            <TimelineItem>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                1959 - The Beginning
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                Our school was founded with one class in a small room attached to the local parish church. Sister Philomena Burgess was the first teacher & principal.
-              </Typography>
-            </TimelineItem>
-
-            <TimelineItem>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                1959 - Expansion
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                Fr Ward's double garage was turned into a second classroom. Later that year a large portion of the school was built.
-              </Typography>
-            </TimelineItem>
-
-            <TimelineItem>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                April 3, 1960 - Blessing
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                Archbishop Owen McCann blessed the school and Holy Mass was introduced that same decade.
-              </Typography>
-            </TimelineItem>
-
-            <TimelineItem>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                October 1961 - First Communion
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                The first group of pupils had their First Holy Communion, marking a significant milestone in our spiritual journey.
-              </Typography>
-            </TimelineItem>
-
-            <TimelineItem>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
-                Today - Continuing the Legacy
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                Sr Eileen Kenny still teaches Religious Education at our school, continuing the tradition of faith-based education established by our founders.
-              </Typography>
-            </TimelineItem>
-          </Box>
-        </HistorySection>
-
-        {/* Legacy Section */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          py: 6, 
-          backgroundColor: 'rgba(26, 35, 126, 0.05)',
-          borderRadius: theme.spacing(2),
-          mt: 4
-        }}>
+      {/* Congregation History Section */}
+      <HistorySection>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
-            variant="h4" 
+            variant="h3" 
             component="h2" 
             gutterBottom
             sx={{ 
               color: '#1a237e', 
               fontWeight: 700,
-              mb: 3
+              fontSize: { xs: '1.75rem', md: '2.5rem' },
             }}
           >
-            Our Legacy Continues
-          </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              fontSize: '1.2rem',
-              maxWidth: '800px', 
-              mx: 'auto',
-              lineHeight: 1.8,
-              color: 'text.secondary'
-            }}
-          >
-            From humble beginnings in a small room to a thriving educational institution, Holy Cross Convent School Brooklyn continues to uphold the values and vision of our founders. We remain committed to providing holistic Christian education that nurtures both the mind and the soul.
+            <SchoolIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
+            Our Congregation
           </Typography>
         </Box>
-      </Container>
+
+        <Box sx={{ maxWidth: '900px', mx: 'auto' }}>
+          <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
+            The Congregation of the Sisters of the Holy Cross is a Swiss Congregation founded in Switzerland. The South African Province of the Congregation was founded from the General Motherhouse in Switzerland in 1883. This was the first time that a Catholic religious congregation had embarked upon missionary activity outside the confines of Europe.
+          </Typography>
+          
+          <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 4, fontWeight: 600, color: '#1a237e' }}>
+            Therefore we celebrate, this year, and with great joy and thanksgiving our 125 years of loving service in a variety of apostolic works throughout our S. African Province.
+          </Typography>
+        </Box>
+      </HistorySection>
+
+      {/* School Timeline Section */}
+      <HistorySection>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography 
+            variant="h3" 
+            component="h2" 
+            gutterBottom
+            sx={{ 
+              color: '#1a237e', 
+              fontWeight: 700,
+              fontSize: { xs: '1.75rem', md: '2.5rem' },
+            }}
+          >
+            <HistoryIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
+            Our School's Journey
+          </Typography>
+        </Box>
+
+        <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
+          <TimelineItem>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+              1959 - The Beginning
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+              Our school was founded with one class in a small room attached to the local parish church. Sister Philomena Burgess was the first teacher & principal.
+            </Typography>
+          </TimelineItem>
+
+          <TimelineItem>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+              1959 - Expansion
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+              Fr Ward's double garage was turned into a second classroom. Later that year a large portion of the school was built.
+            </Typography>
+          </TimelineItem>
+
+          <TimelineItem>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+              April 3, 1960 - Blessing
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+              Archbishop Owen McCann blessed the school and Holy Mass was introduced that same decade.
+            </Typography>
+          </TimelineItem>
+
+          <TimelineItem>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+              October 1961 - First Communion
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+              The first group of pupils had their First Holy Communion, marking a significant milestone in our spiritual journey.
+            </Typography>
+          </TimelineItem>
+
+          <TimelineItem>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
+              Today - Continuing the Legacy
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+              Sr Eileen Kenny still teaches Religious Education at our school, continuing the tradition of faith-based education established by our founders.
+            </Typography>
+          </TimelineItem>
+        </Box>
+      </HistorySection>
+
+      {/* Legacy Section */}
+      <Box sx={{ 
+        textAlign: 'center', 
+        py: 6, 
+        backgroundColor: 'rgba(26, 35, 126, 0.05)',
+        borderRadius: theme.spacing(2),
+        mt: 4
+      }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          gutterBottom
+          sx={{ 
+            color: '#1a237e', 
+            fontWeight: 700,
+            mb: 3
+          }}
+        >
+          Our Legacy Continues
+        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            fontSize: '1.2rem',
+            maxWidth: '800px', 
+            mx: 'auto',
+            lineHeight: 1.8,
+            color: 'text.secondary'
+          }}
+        >
+          From humble beginnings in a small room to a thriving educational institution, Holy Cross Convent School Brooklyn continues to uphold the values and vision of our founders. We remain committed to providing holistic Christian education that nurtures both the mind and the soul.
+        </Typography>
+      </Box>
+    </Container>
     </>
   );
 };
 
-export default History;
+export default History; 

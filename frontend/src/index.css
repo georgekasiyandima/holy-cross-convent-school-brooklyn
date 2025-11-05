@@ -1,7 +1,6 @@
 body {
   margin: 0;
-  font-family: 'Lato', 'Open Sans', 'Inter', 'Source Sans Pro', 'Segoe UI', 'Roboto', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

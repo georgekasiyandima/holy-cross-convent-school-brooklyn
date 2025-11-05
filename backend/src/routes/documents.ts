@@ -52,10 +52,39 @@ const upload = multer({
   }
 });
 
+// Get all published documents (public)
+router.get('/all', async (req: Request, res: Response) => {
+  try {
+    const documents = await documentService.getAllPublishedDocuments();
+    
+    res.json({
+      success: true,
+      data: documents,
+      count: documents.length
+    });
+  } catch (error) {
+    console.error('Error fetching all documents:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch documents'
+    });
+  }
+});
+
 // Get all documents by category (public)
+// IMPORTANT: This route must come AFTER /all to avoid route conflicts
 router.get('/:category', async (req: Request, res: Response) => {
   try {
     const { category } = req.params;
+    
+    // Guard: prevent /all from being matched as a category
+    if (category === 'all') {
+      return res.status(404).json({
+        success: false,
+        error: 'Route not found. Use /api/documents/all to get all documents.'
+      });
+    }
+    
     const { published } = req.query;
     
     const isPublished = published === 'false' ? false : true;

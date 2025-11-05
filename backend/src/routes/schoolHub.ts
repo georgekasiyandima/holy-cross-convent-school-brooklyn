@@ -556,5 +556,229 @@ router.delete('/events/:id', authMiddleware, requireEditor, async (req: AuthRequ
   }
 });
 
+/**
+ * GET /api/school-hub/announcements
+ * Unified endpoint that fetches both NewsArticles and Newsletters as announcements
+ * 
+ * Query params:
+ * - limit: Number of announcements to return (default: 10)
+ * - priority: Filter by priority (LOW, NORMAL, HIGH, URGENT)
+ * - type: Filter by type ('news' or 'newsletter')
+ * - published: Only return published items (default: true)
+ */
+router.get('/announcements', async (req, res, next) => {
+  try {
+    const { limit = 10, priority, type, published = 'true' } = req.query;
+    const limitNum = Math.min(Number(limit), 50); // Max 50 items
+
+    const announcements: any[] = [];
+
+    // Fetch NewsArticles if type is 'news' or not specified
+    if (!type || type === 'news') {
+      const newsWhere: any = {};
+      
+      if (published === 'true') {
+        newsWhere.isPublished = true;
+        newsWhere.publishedAt = { lte: new Date() };
+      }
+
+      if (priority) {
+        newsWhere.priority = priority;
+      }
+
+      const newsArticles = await prisma.newsArticle.findMany({
+        where: newsWhere,
+        orderBy: { publishedAt: 'desc' },
+        take: Math.ceil(limitNum / 2),
+      });
+
+      // Transform NewsArticles to unified format
+      newsArticles.forEach(article => {
+        announcements.push({
+          id: article.id,
+          title: article.title,
+          content: article.content,
+          summary: article.summary || article.content.substring(0, 150) + '...',
+          imageUrl: article.imageUrl || null,
+          type: 'news',
+          priority: article.priority || 'NORMAL',
+          publishedAt: article.publishedAt || article.createdAt,
+          createdAt: article.createdAt,
+          updatedAt: article.updatedAt,
+        });
+      });
+    }
+
+    // Fetch Newsletters if type is 'newsletter' or not specified
+    if (!type || type === 'newsletter') {
+      const newsletterWhere: any = {};
+      
+      if (published === 'true') {
+        newsletterWhere.status = 'SENT'; // Only show sent newsletters
+      }
+
+      if (priority) {
+        newsletterWhere.priority = priority;
+      }
+
+      try {
+        const newsletters = await prisma.newsletter.findMany({
+          where: newsletterWhere,
+          orderBy: [
+            { sentAt: 'desc' },
+            { createdAt: 'desc' }
+          ],
+          take: Math.ceil(limitNum / 2),
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        // Transform Newsletters to unified format
+        newsletters.forEach(newsletter => {
+          const content = newsletter.content || '';
+          announcements.push({
+            id: newsletter.id,
+            title: newsletter.title,
+            content: content,
+            summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
+            imageUrl: null,
+            type: 'newsletter',
+            priority: newsletter.priority || 'NORMAL',
+            publishedAt: (newsletter as any).sentAt || newsletter.createdAt,
+            createdAt: newsletter.createdAt,
+            updatedAt: newsletter.updatedAt,
+            author: newsletter.author,
+          });
+        });
+      } catch (newsletterError: any) {
+        // If Newsletter model doesn't exist or has issues, skip newsletters
+        console.warn('Newsletter fetching skipped:', newsletterError.message);
+      }
+    }
+
+    // Sort by publishedAt descending
+    announcements.sort((a, b) => 
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    );
+
+    // Limit results
+    const limitedAnnouncements = announcements.slice(0, limitNum);
+
+    res.json({
+      success: true,
+      data: limitedAnnouncements,
+      count: limitedAnnouncements.length,
+      total: announcements.length,
+    });
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    next(createError('Failed to fetch announcements', 500));
+  }
+});
+
+/**
+ * GET /api/school-hub/announcements/latest
+ * Get latest announcements (for home page)
+ * 
+ * Query params:
+ * - limit: Number of announcements to return (default: 5)
+ */
+router.get('/announcements/latest', async (req, res, next) => {
+  try {
+    const { limit = 5 } = req.query;
+    const limitNum = Math.min(Number(limit), 10); // Max 10 items
+
+    const announcements: any[] = [];
+
+    // Fetch latest published news articles
+    const newsArticles = await prisma.newsArticle.findMany({
+      where: {
+        isPublished: true,
+        publishedAt: { lte: new Date() },
+      },
+      orderBy: { publishedAt: 'desc' },
+      take: Math.ceil(limitNum / 2),
+    });
+
+    newsArticles.forEach(article => {
+      announcements.push({
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        summary: article.summary || article.content.substring(0, 150) + '...',
+        imageUrl: article.imageUrl || null,
+        type: 'news',
+        priority: article.priority || 'NORMAL',
+        publishedAt: article.publishedAt || article.createdAt,
+        createdAt: article.createdAt,
+      });
+    });
+
+    // Fetch latest sent newsletters
+    try {
+      const newsletters = await prisma.newsletter.findMany({
+        where: {
+          status: 'SENT',
+        },
+        orderBy: [
+          { sentAt: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        take: Math.ceil(limitNum / 2),
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      newsletters.forEach(newsletter => {
+        const content = newsletter.content || '';
+        announcements.push({
+          id: newsletter.id,
+          title: newsletter.title,
+          content: content,
+          summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
+          imageUrl: null,
+          type: 'newsletter',
+          priority: newsletter.priority || 'NORMAL',
+          publishedAt: (newsletter as any).sentAt || newsletter.createdAt,
+          createdAt: newsletter.createdAt,
+          author: newsletter.author,
+        });
+      });
+    } catch (newsletterError: any) {
+      // If Newsletter model doesn't exist or has issues, skip newsletters
+      console.warn('Newsletter fetching skipped:', newsletterError.message);
+    }
+
+    // Sort by publishedAt descending and limit
+    announcements.sort((a, b) => 
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    );
+
+    const latest = announcements.slice(0, limitNum);
+
+    res.json({
+      success: true,
+      data: latest,
+      count: latest.length,
+    });
+  } catch (error) {
+    console.error('Error fetching latest announcements:', error);
+    next(createError('Failed to fetch latest announcements', 500));
+  }
+});
+
 export default router;
 

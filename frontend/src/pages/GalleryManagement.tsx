@@ -27,7 +27,10 @@ import {
   Tooltip,
   Menu,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  FormControlLabel,
+  Switch,
+  Checkbox
 } from '@mui/material';
 import {
   Add,
@@ -43,27 +46,15 @@ import {
   Download,
   Share,
   Tag,
-  Category
+  Category,
+  Facebook,
+  Instagram,
+  Twitter,
+  MusicNote
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
-
-interface GalleryItem {
-  id: string;
-  title: string;
-  description?: string;
-  category: 'EVENTS' | 'SPORTS' | 'ACADEMIC' | 'CULTURAL' | 'GENERAL';
-  type: 'IMAGE' | 'VIDEO';
-  filePath: string;
-  fileName: string;
-  originalName: string;
-  fileSize: number;
-  mimeType: string;
-  tags: string[];
-  isPublished: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import GalleryService, { GalleryItem, Album } from '../services/galleryService';
 
 const UploadArea = styled(Box)(({ theme }) => ({
   border: '2px dashed #ccc',
@@ -115,6 +106,7 @@ const GalleryManagement: React.FC = () => {
     category: 'GENERAL' as GalleryItem['category'],
     tags: '',
     albumId: '',
+    postToSocial: false,
   });
   const [albums, setAlbums] = useState<{ id: string; title: string; albumType: string; classGrade?: string }[]>([]);
   const [albumType, setAlbumType] = useState<'GENERAL' | 'CLASS'>('GENERAL');
@@ -136,17 +128,23 @@ const GalleryManagement: React.FC = () => {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (filterCategory !== 'all') params.append('category', filterCategory);
-      if (searchTerm) params.append('search', searchTerm);
-      
-      const response = await fetch(`/api/gallery?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch gallery items');
-      
-      const data = await response.json();
-      setItems(data.items || []);
-    } catch (err) {
-      setError('Failed to load gallery items');
+      setError(null);
+      const response = await GalleryService.getGalleryItems({
+        category: filterCategory !== 'all' ? filterCategory : undefined,
+        isPublished: undefined, // Get all items for admin
+        limit: 100
+      });
+      // Filter by search term on client side
+      let filteredItems = response.items;
+      if (searchTerm) {
+        filteredItems = filteredItems.filter(item =>
+          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+      }
+      setItems(filteredItems);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load gallery items');
       console.error('Error fetching items:', err);
     } finally {
       setLoading(false);
@@ -155,13 +153,17 @@ const GalleryManagement: React.FC = () => {
 
   const fetchAlbums = async () => {
     try {
-      const params = new URLSearchParams();
-      if (albumType) params.append('albumType', albumType);
-      if (classGrade) params.append('classGrade', classGrade);
-      const response = await fetch(`/api/gallery/albums?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch albums');
-      const data = await response.json();
-      setAlbums(data || []);
+      const albums = await GalleryService.getAlbums({
+        albumType: albumType,
+        classGrade: classGrade || undefined,
+        isPublished: undefined // Get all albums for admin
+      });
+      setAlbums(albums.map(album => ({
+        id: album.id,
+        title: album.title,
+        albumType: album.albumType,
+        classGrade: album.classGrade
+      })));
     } catch (err) {
       console.error('Error fetching albums:', err);
     }
@@ -185,46 +187,36 @@ const GalleryManagement: React.FC = () => {
 
     try {
       setUploadProgress(0);
-      const formDataToSend = new FormData();
-      formDataToSend.append('file', selectedFile);
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('tags', formData.tags);
-      if (formData.albumId) formDataToSend.append('albumId', formData.albumId);
-
-      const response = await fetch('/api/gallery/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
-        body: formDataToSend,
+      setError(null);
+      
+      const tagsArray = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+      
+      await GalleryService.uploadGalleryItem(selectedFile, {
+        title: formData.title,
+        description: formData.description || undefined,
+        category: formData.category,
+        tags: tagsArray.length > 0 ? tagsArray : undefined,
+        albumId: formData.albumId || undefined,
+        isPublished: true,
+        postToSocial: formData.postToSocial
       });
 
-      if (!response.ok) throw new Error('Upload failed');
-
-      setSuccess('File uploaded successfully');
+      setSuccess('File uploaded successfully' + (formData.postToSocial ? ' and posted to social media!' : ''));
       setUploadDialogOpen(false);
       setSelectedFile(null);
-      setFormData({ title: '', description: '', category: 'GENERAL', tags: '', albumId: '' });
+      setFormData({ title: '', description: '', category: 'GENERAL', tags: '', albumId: '', postToSocial: false });
       fetchItems();
-    } catch (err) {
-      setError('Failed to upload file');
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(0), 1000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload file');
       console.error('Upload error:', err);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/gallery/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Delete failed');
-
+      await GalleryService.deleteGalleryItem(id);
       setSuccess('Item deleted successfully');
       fetchItems();
     } catch (err) {
@@ -362,7 +354,7 @@ const GalleryManagement: React.FC = () => {
                       <CardMedia
                         component="img"
                         height="200"
-                        image={`/uploads/gallery/${item.fileName}`}
+                        image={GalleryService.getItemImageUrl(item.fileName)}
                         alt={item.title}
                         sx={{ objectFit: 'cover' }}
                       />
@@ -551,7 +543,37 @@ const GalleryManagement: React.FC = () => {
                   value={formData.tags}
                   onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                   placeholder="e.g., sports, awards, graduation"
+                  sx={{ mb: 2 }}
                 />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.postToSocial}
+                      onChange={(e) => setFormData(prev => ({ ...prev, postToSocial: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Share sx={{ fontSize: 20 }} />
+                      <Typography variant="body1">
+                        Post to Social Media
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                        <Facebook sx={{ fontSize: 18, color: '#1877F2' }} />
+                        <Instagram sx={{ fontSize: 18, color: '#E4405F' }} />
+                        <Twitter sx={{ fontSize: 18, color: '#1DA1F2' }} />
+                        <MusicNote sx={{ fontSize: 18, color: '#000000' }} />
+                      </Box>
+                    </Box>
+                  }
+                  sx={{ mb: 2 }}
+                />
+                {formData.postToSocial && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Image will be posted to configured social media platforms after upload.
+                  </Alert>
+                )}
               </Box>
             )}
           </DialogContent>

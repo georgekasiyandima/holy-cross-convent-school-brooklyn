@@ -7,23 +7,21 @@ import {
   IconButton,
   Button,
   Chip,
-  Avatar,
   Paper,
   Stack,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   Alert,
   CircularProgress,
-  Fade,
-  Tabs,
-  Tab,
-  Divider
+  Menu,
+  MenuItem,
+  Container,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   ChevronLeft,
@@ -37,12 +35,13 @@ import {
   Groups,
   LocationOn,
   AccessTime,
-  ViewModule,
-  ViewWeek,
-  ViewDay,
   Refresh,
   CalendarToday,
-  FilterList
+  FilterList,
+  Download,
+  PictureAsPdf,
+  TableChart,
+  CalendarMonth as CalendarMonthIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import EnhancedCalendarService, { CalendarEvent, Term, CalendarMonth } from '../services/enhancedCalendarService';
@@ -51,12 +50,15 @@ import EnhancedCalendarService, { CalendarEvent, Term, CalendarMonth } from '../
 // STYLED COMPONENTS
 //---------------------------------------------------------
 const CalendarContainer = styled(Box)(({ theme }) => ({
+  width: '100%',
   maxWidth: '100%',
   margin: '0 auto',
   padding: theme.spacing(2),
   backgroundColor: '#f8f9fa',
   borderRadius: theme.spacing(2),
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  overflow: 'hidden',
+  boxSizing: 'border-box',
 }));
 
 const CalendarHeader = styled(Box)(({ theme }) => ({
@@ -68,13 +70,25 @@ const CalendarHeader = styled(Box)(({ theme }) => ({
   backgroundColor: '#1a237e',
   color: 'white',
   borderRadius: theme.spacing(1),
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
 }));
 
 const CalendarGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: theme.spacing(1),
+  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+  gap: theme.spacing(0.5),
   marginBottom: theme.spacing(2),
+  width: '100%',
+  overflow: 'hidden',
+  boxSizing: 'border-box',
+  [theme.breakpoints.down('sm')]: {
+    gap: theme.spacing(0.25),
+  },
 }));
 
 const DayHeader = styled(Box)(({ theme }) => ({
@@ -94,10 +108,23 @@ const DayCell = styled(Paper)<{ isCurrentMonth: boolean; isToday: boolean; isWee
   backgroundColor: isToday ? '#e8f5e8' : isWeekend ? '#f5f5f5' : 'white',
   border: isToday ? '2px solid #4caf50' : '1px solid #e0e0e0',
   opacity: isCurrentMonth ? 1 : 0.5,
+  overflow: 'hidden',
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
   '&:hover': {
     backgroundColor: '#e3f2fd',
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  },
+  [theme.breakpoints.down('md')]: {
+    minHeight: '100px',
+    padding: theme.spacing(0.75),
+  },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: '80px',
+    padding: theme.spacing(0.5),
+    fontSize: '0.75rem',
   },
 }));
 
@@ -123,17 +150,18 @@ const EventDialog = styled(Dialog)(({ theme }) => ({
 // MAIN COMPONENT
 //---------------------------------------------------------
 const EnhancedSchoolCalendar: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [terms, setTerms] = useState<Term[]>([]);
   const [activeTerm, setActiveTerm] = useState<Term | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterGrade, setFilterGrade] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [downloadMenuAnchor, setDownloadMenuAnchor] = useState<null | HTMLElement>(null);
 
   const calendarService = EnhancedCalendarService;
 
@@ -145,14 +173,12 @@ const EnhancedSchoolCalendar: React.FC = () => {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
 
-      const [eventsData, termsData, activeTermData] = await Promise.all([
+      const [eventsData, activeTermData] = await Promise.all([
         calendarService.getEventsByMonth(year, month),
-        calendarService.getTerms(year),
         calendarService.getActiveTerm()
       ]);
 
       setEvents(eventsData);
-      setTerms(termsData);
       setActiveTerm(activeTermData);
     } catch (err) {
       setError('Failed to load calendar data');
@@ -160,7 +186,7 @@ const EnhancedSchoolCalendar: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentDate]);
+  }, [currentDate, calendarService]);
 
   useEffect(() => {
     loadData();
@@ -246,6 +272,153 @@ const EnhancedSchoolCalendar: React.FC = () => {
     }
   };
 
+  // Download functions
+  const downloadAsCSV = () => {
+    const filteredEvents = getFilteredEvents();
+    const csvHeader = 'Title,Date,Start Date,End Date,Category,Type,Location,Grade,Description\n';
+    const csvRows = filteredEvents.map(event => {
+      const startDate = new Date(event.startDate).toLocaleDateString('en-ZA');
+      const endDate = new Date(event.endDate).toLocaleDateString('en-ZA');
+      const date = startDate === endDate ? startDate : `${startDate} - ${endDate}`;
+      return `"${event.title}","${date}","${startDate}","${endDate}","${event.category || ''}","${event.type}","${event.location || ''}","${event.grade}","${(event.description || '').replace(/"/g, '""')}"`;
+    }).join('\n');
+
+    const csvContent = csvHeader + csvRows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `calendar-${formatDate(currentDate).replace(/\s+/g, '-')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setDownloadMenuAnchor(null);
+  };
+
+  const downloadAsICS = () => {
+    const filteredEvents = getFilteredEvents();
+    let icsContent = 'BEGIN:VCALENDAR\n';
+    icsContent += 'VERSION:2.0\n';
+    icsContent += 'PRODID:-//Holy Cross Convent School//Calendar//EN\n';
+    icsContent += 'CALSCALE:GREGORIAN\n';
+    icsContent += 'METHOD:PUBLISH\n';
+
+    filteredEvents.forEach(event => {
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
+      
+      // Format dates for ICS (YYYYMMDDTHHmmss)
+      const formatICSDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      icsContent += 'BEGIN:VEVENT\n';
+      icsContent += `UID:${event.id}@holycrossbrooklyn.co.za\n`;
+      icsContent += `DTSTART:${formatICSDate(startDate)}\n`;
+      icsContent += `DTEND:${formatICSDate(endDate)}\n`;
+      icsContent += `SUMMARY:${event.title}\n`;
+      if (event.description) {
+        icsContent += `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}\n`;
+      }
+      if (event.location) {
+        icsContent += `LOCATION:${event.location}\n`;
+      }
+      icsContent += `CATEGORIES:${event.category || 'GENERAL'}\n`;
+      icsContent += 'END:VEVENT\n';
+    });
+
+    icsContent += 'END:VCALENDAR\n';
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `calendar-${formatDate(currentDate).replace(/\s+/g, '-')}.ics`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setDownloadMenuAnchor(null);
+  };
+
+  const downloadAsPDF = () => {
+    // For PDF, we'll create a simple HTML table and use browser print
+    const filteredEvents = getFilteredEvents();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>School Calendar - ${formatDate(currentDate)}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #1a237e; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #1a237e; color: white; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>Holy Cross Convent School Calendar</h1>
+          <h2>${formatDate(currentDate)}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredEvents.map(event => {
+                const startDate = new Date(event.startDate);
+                const endDate = new Date(event.endDate);
+                const date = startDate.toDateString() === endDate.toDateString() 
+                  ? startDate.toLocaleDateString('en-ZA')
+                  : `${startDate.toLocaleDateString('en-ZA')} - ${endDate.toLocaleDateString('en-ZA')}`;
+                return `
+                  <tr>
+                    <td>${date}</td>
+                    <td>${event.title}</td>
+                    <td>${event.category || 'N/A'}</td>
+                    <td>${event.type.replace('_', ' ')}</td>
+                    <td>${event.location || 'N/A'}</td>
+                    <td>${event.grade}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+    setDownloadMenuAnchor(null);
+  };
+
+  const handleDownloadClick = (event: React.MouseEvent<HTMLElement>) => {
+    setDownloadMenuAnchor(event.currentTarget);
+  };
+
+  const handleDownloadMenuClose = () => {
+    setDownloadMenuAnchor(null);
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -260,40 +433,74 @@ const EnhancedSchoolCalendar: React.FC = () => {
   const grades = ['all', '0', '1', '2', '3', '4', '5', '6', '7'];
 
   return (
-    <CalendarContainer>
-      <CalendarHeader>
-        <Box display="flex" alignItems="center" gap={2}>
-          <CalendarToday />
-          <Typography variant="h5" fontWeight="bold">
-            School Calendar
-          </Typography>
-          {activeTerm && (
-            <Chip 
-              label={`${activeTerm.name} ${activeTerm.year}`} 
-              color="secondary" 
-              size="small"
-            />
-          )}
-        </Box>
-        
-        <Box display="flex" alignItems="center" gap={1}>
-          <IconButton onClick={handleRefresh} color="inherit">
-            <Refresh />
-          </IconButton>
-          <IconButton onClick={() => setShowFilters(!showFilters)} color="inherit">
-            <FilterList />
-          </IconButton>
-          <IconButton onClick={handlePreviousMonth} color="inherit">
-            <ChevronLeft />
-          </IconButton>
-          <Button onClick={handleToday} startIcon={<Today />} color="inherit">
-            Today
-          </Button>
-          <IconButton onClick={handleNextMonth} color="inherit">
-            <ChevronRight />
-          </IconButton>
-        </Box>
-      </CalendarHeader>
+    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 }, py: 2 }}>
+      <CalendarContainer>
+        <CalendarHeader>
+          <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+            <CalendarToday />
+            <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold">
+              School Calendar
+            </Typography>
+            {activeTerm && (
+              <Chip 
+                label={`${activeTerm.name} ${activeTerm.year}`} 
+                color="secondary" 
+                size="small"
+              />
+            )}
+          </Box>
+          
+          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+            <IconButton onClick={handleRefresh} color="inherit" size={isMobile ? "small" : "medium"}>
+              <Refresh />
+            </IconButton>
+            <IconButton onClick={() => setShowFilters(!showFilters)} color="inherit" size={isMobile ? "small" : "medium"}>
+              <FilterList />
+            </IconButton>
+            <Button
+              onClick={handleDownloadClick}
+              startIcon={<Download />}
+              color="inherit"
+              size={isMobile ? "small" : "medium"}
+              sx={{ minWidth: 'auto' }}
+            >
+              {!isMobile && 'Download'}
+            </Button>
+            <Menu
+              anchorEl={downloadMenuAnchor}
+              open={Boolean(downloadMenuAnchor)}
+              onClose={handleDownloadMenuClose}
+            >
+              <MenuItem onClick={downloadAsPDF}>
+                <ListItemIcon>
+                  <PictureAsPdf fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Download as PDF</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={downloadAsCSV}>
+                <ListItemIcon>
+                  <TableChart fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Download as CSV/Excel</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={downloadAsICS}>
+                <ListItemIcon>
+                  <CalendarMonthIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Download as iCalendar (.ics)</ListItemText>
+              </MenuItem>
+            </Menu>
+            <IconButton onClick={handlePreviousMonth} color="inherit" size={isMobile ? "small" : "medium"}>
+              <ChevronLeft />
+            </IconButton>
+            <Button onClick={handleToday} startIcon={<Today />} color="inherit" size={isMobile ? "small" : "medium"}>
+              {!isMobile && 'Today'}
+            </Button>
+            <IconButton onClick={handleNextMonth} color="inherit" size={isMobile ? "small" : "medium"}>
+              <ChevronRight />
+            </IconButton>
+          </Box>
+        </CalendarHeader>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -510,7 +717,8 @@ const EnhancedSchoolCalendar: React.FC = () => {
           </>
         )}
       </EventDialog>
-    </CalendarContainer>
+      </CalendarContainer>
+    </Container>
   );
 };
 

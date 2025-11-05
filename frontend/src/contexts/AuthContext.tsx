@@ -67,9 +67,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async (): Promise<boolean> => {
     try {
-      const response = await axios.get('https://holy-cross-convent-school-brooklyn.onrender.com/api/auth/me');
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        return false;
+      }
+      
+      const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       return response.data.success;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Auth check failed:', error.response?.data || error.message);
+      // Clear invalid token
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      delete axios.defaults.headers.common['Authorization'];
       return false;
     }
   };

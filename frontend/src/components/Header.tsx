@@ -164,7 +164,7 @@ const navigationItems: NavigationItem[] = [
     items: [
       { name: 'Calendar & Events', path: '/school-hub' },
       { name: 'Announcements', path: '/school-hub#announcements' },
-      { name: 'Gallery', path: '/school-hub#gallery' }
+      { name: 'Gallery', path: '/gallery' }
     ]
   },
   {

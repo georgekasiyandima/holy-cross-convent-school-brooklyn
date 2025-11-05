@@ -44,6 +44,21 @@ class DocumentsService {
   }
 
   /**
+   * Get all published documents (fallback method)
+   */
+  async getAllPublishedDocuments(): Promise<DocumentsResponse> {
+    try {
+      const response = await axios.get<DocumentsResponse>(
+        `${API_BASE_URL}/documents/all`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all documents:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all policy documents (for Forms & Fees page)
    * Also fetches documents from other categories that might be relevant
    */

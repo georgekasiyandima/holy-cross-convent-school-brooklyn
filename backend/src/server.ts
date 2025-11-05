@@ -14,6 +14,7 @@ import documentsRoutes from './routes/documents';
 import schoolHubRoutes from './routes/schoolHub';
 import calendarRoutes from './routes/calendar';
 import galleryRoutes from './routes/gallery';
+import vacanciesRoutes from './routes/vacancies';
 import { errorHandler } from './middleware/errorHandler';
 import dotenv from 'dotenv';
 
@@ -39,11 +40,15 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// CORS
+// CORS - Allow all origins in development for easier debugging
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? (process.env.FRONTEND_URL || 'http://localhost:3000')
+    : true, // Allow all origins in development
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
 
@@ -76,6 +81,9 @@ app.use('/api/calendar', calendarRoutes);
 
 // Gallery routes
 app.use('/api/gallery', galleryRoutes);
+
+// Vacancies routes
+app.use('/api/vacancies', vacanciesRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

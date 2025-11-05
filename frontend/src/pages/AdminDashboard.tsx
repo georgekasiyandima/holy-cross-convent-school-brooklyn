@@ -17,7 +17,8 @@ import {
   PhotoLibrary,
   Email,
   Upload,
-  School
+  School,
+  Work
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -71,6 +72,13 @@ const AdminDashboard: React.FC = () => {
       icon: <Email sx={{ fontSize: 40 }} />,
       color: '#2196f3',
       path: '/admin/newsletters'
+    },
+    {
+      title: 'Vacancy Management',
+      description: 'Post and manage job openings',
+      icon: <Work sx={{ fontSize: 40 }} />,
+      color: '#ff6f00',
+      path: '/admin/vacancies'
     },
     {
       title: 'School Statistics',

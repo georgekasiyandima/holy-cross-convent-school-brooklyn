@@ -65,6 +65,39 @@ export class DocumentService {
     }
   }
 
+  async getAllPublishedDocuments(): Promise<Document[]> {
+    try {
+      const documents = await prisma.document.findMany({
+        where: {
+          isPublished: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return documents.map(doc => ({
+        id: doc.id,
+        title: doc.title,
+        description: doc.description || '',
+        fileName: doc.fileName,
+        fileUrl: doc.fileUrl,
+        fileSize: doc.fileSize,
+        mimeType: doc.mimeType,
+        category: doc.category,
+        tags: JSON.parse(doc.tags || '[]') as string[],
+        isPublished: doc.isPublished,
+        authorId: doc.authorId,
+        authorName: doc.authorName,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
+      }));
+    } catch (error) {
+      console.error('Error fetching all published documents:', error);
+      throw new Error('Failed to fetch documents');
+    }
+  }
+
   async getDocumentById(id: string): Promise<Document | null> {
     try {
       const document = await prisma.document.findUnique({

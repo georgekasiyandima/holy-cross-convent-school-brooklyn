@@ -11,34 +11,37 @@ import { styled } from '@mui/material/styles';
 import {
   CalendarToday,
   Announcement,
-  PhotoLibrary,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import EnhancedSchoolCalendar from '../components/EnhancedSchoolCalendar';
 import News from './News';
-import Gallery from './Gallery';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 
 // Styled components
 const HeroSection = styled(Box)(({ theme }) => ({
-  backgroundImage: 'url("/ROBT02.jpg")',
+  backgroundImage: 'url("/edu2.jpg")',
   backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  backgroundPosition: 'center 40%',
   backgroundRepeat: 'no-repeat',
   color: 'white',
+  minHeight: '500px',
   padding: theme.spacing(10, 0),
   position: 'relative',
   overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   '&::before': {
     content: '""',
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.75) 0%, rgba(57, 73, 171, 0.65) 100%)',
+    inset: 0,
+    background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.80), rgba(211, 47, 47, 0.60))',
     zIndex: 0,
+  },
+  '& > *': {
+    position: 'relative',
+    zIndex: 1,
   },
 }));
 
@@ -78,8 +81,6 @@ const SchoolHub: React.FC = () => {
     const hash = location.hash;
     if (hash === '#announcements') {
       setActiveTab(1);
-    } else if (hash === '#gallery') {
-      setActiveTab(2);
     } else {
       setActiveTab(0);
     }
@@ -88,7 +89,7 @@ const SchoolHub: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
     // Update URL hash for bookmarking/sharing
-    const hashMap = ['', '#announcements', '#gallery'];
+    const hashMap = ['', '#announcements'];
     navigate(`/school-hub${hashMap[newValue]}`, { replace: true });
   };
 
@@ -108,38 +109,74 @@ const SchoolHub: React.FC = () => {
               <Typography
                 variant="h1"
                 sx={{
-                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
-                  fontWeight: 800,
-                  mb: 3,
-                  color: '#ffffff',
-                  textShadow: '2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)',
-                  fontFamily: '"Lato", "Open Sans", sans-serif'
+                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                  fontWeight: 900,
+                  mb: 2,
+                  color: '#ffd700',
+                  textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+                  letterSpacing: '0.5px'
                 }}
               >
                 School Hub
               </Typography>
               <Typography
-                variant="h5"
+                variant="h4"
+                sx={{
+                  maxWidth: '800px',
+                  mx: 'auto',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: { xs: '1.5rem', md: '2rem' },
+                  lineHeight: 1.6,
+                  textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+                  mb: 3
+                }}
+              >
+                Your Central Hub for School Life
+              </Typography>
+              <Typography
+                variant="h6"
                 sx={{
                   maxWidth: '700px',
                   mx: 'auto',
                   color: '#ffffff',
-                  fontWeight: 500,
-                  fontSize: { xs: '1.1rem', sm: '1.3rem' },
+                  fontWeight: 400,
+                  fontSize: { xs: '1rem', sm: '1.2rem' },
                   lineHeight: 1.6,
-                  textShadow: '1px 1px 4px rgba(0, 0, 0, 0.8)',
-                  fontFamily: '"Lato", "Open Sans", sans-serif'
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
                 }}
               >
-                Your central place for events, calendar, announcements, and school gallery
+                Stay connected with events, announcements, and everything happening at Holy Cross
               </Typography>
             </Box>
           </Container>
         </Box>
       </HeroSection>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <ReturnToHome />
+      <Container maxWidth="xl" sx={{ py: 6, mt: 4 }}>
+        {/* Return to Home - positioned to avoid header clash */}
+        <Box sx={{ 
+          position: 'fixed', 
+          top: { xs: 80, sm: 100 }, 
+          left: 16, 
+          zIndex: 1000,
+          '& .MuiTypography-root': {
+            color: 'white !important',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(26, 35, 126, 0.7)',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            display: 'inline-block',
+            backdropFilter: 'blur(4px)',
+            '&:hover': {
+              transform: 'translateX(-2px)',
+              backgroundColor: 'rgba(26, 35, 126, 0.9)',
+            },
+            transition: 'all 0.3s ease'
+          }
+        }}>
+          <ReturnToHome />
+        </Box>
 
         {/* Tabs Navigation */}
         <Paper sx={{ mb: 4, borderRadius: 2, boxShadow: 2 }}>
@@ -177,11 +214,6 @@ const SchoolHub: React.FC = () => {
               label="Announcements"
               iconPosition="start"
             />
-            <Tab
-              icon={<PhotoLibrary sx={{ mb: 0.5 }} />}
-              label="Gallery"
-              iconPosition="start"
-            />
           </Tabs>
         </Paper>
 
@@ -192,10 +224,6 @@ const SchoolHub: React.FC = () => {
 
         <CustomTabPanel value={activeTab} index={1}>
           <News />
-        </CustomTabPanel>
-
-        <CustomTabPanel value={activeTab} index={2}>
-          <Gallery />
         </CustomTabPanel>
       </Container>
     </>

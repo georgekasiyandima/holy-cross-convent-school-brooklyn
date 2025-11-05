@@ -45,6 +45,7 @@ import Cultural from './pages/Cultural';
 import ServiceEthos from './pages/ServiceEthos';
 import AfterSchoolProgram from './pages/AfterSchoolProgram';
 import Vacancies from './pages/Vacancies';
+import VacancyManagement from './pages/VacancyManagement';
 import ApplicationProcess from './pages/ApplicationProcess';
 
 // Extend Material-UI theme to include custom school colors
@@ -116,44 +117,44 @@ const theme = createTheme({
       darkRed: '#b71c1c',
     },
   },
-        typography: {
-          fontFamily: '"Lato", "Open Sans", "Inter", "Source Sans Pro", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
+  typography: {
+    fontFamily: '"Poppins", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif',
     h1: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 700,
       color: '#1a237e',
     },
     h2: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 600,
       color: '#1a237e',
     },
     h3: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 600,
       color: '#1a237e',
     },
     h4: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     h5: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     h6: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 500,
       color: '#1a237e',
     },
     body1: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 400,
     },
     body2: {
-      fontFamily: '"Lato", "Open Sans", sans-serif',
+      fontFamily: '"Poppins", sans-serif',
       fontWeight: 400,
     },
   },
@@ -253,6 +254,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/admin/calendar" element={<CalendarManagement />} />
         <Route path="/admin/gallery" element={<GalleryManagement />} />
         <Route path="/admin/newsletters" element={<NewsletterManagement />} />
+        <Route path="/admin/vacancies" element={<VacancyManagement />} />
       </Routes>
     );
   }

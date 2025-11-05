@@ -289,3 +289,27 @@ model Document {
 
   @@map("documents")
 }
+
+model Vacancy {
+  id            String   @id @default(cuid())
+  title         String
+  department    String   @default("TEACHING") // TEACHING, ADMIN, SUPPORT, LEADERSHIP
+  employmentType String  @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, TEMPORARY
+  location      String?  @default("Brooklyn, Cape Town")
+  description   String   // Full job description
+  requirements  String?  // JSON string for requirements array
+  responsibilities String? // JSON string for responsibilities array
+  qualifications String? // JSON string for qualifications array
+  salaryRange   String?  // e.g., "R200,000 - R350,000 per annum"
+  closingDate   DateTime?
+  startDate     DateTime?
+  isPublished   Boolean  @default(false)
+  isUrgent      Boolean  @default(false)
+  applicationEmail String? // Email for applications
+  applicationInstructions String? // Additional instructions
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("vacancies")
+}

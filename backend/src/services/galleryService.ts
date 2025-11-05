@@ -157,15 +157,23 @@ export class GalleryService {
   static async getGalleryItemById(id: string) {
     const item = await prisma.galleryItem.findUnique({
       where: { id },
+      include: { album: true }
     });
 
     if (!item) {
       return null;
     }
 
+    let parsedTags = [];
+    try {
+      parsedTags = item.tags ? (typeof item.tags === 'string' ? JSON.parse(item.tags) : item.tags) : [];
+    } catch {
+      parsedTags = [];
+    }
+
     return {
       ...item,
-      tags: item.tags ? JSON.parse(item.tags) : [],
+      tags: parsedTags,
     };
   }
 

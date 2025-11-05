@@ -123,36 +123,56 @@ router.post('/login', async (req, res, next) => {
 // Get current user
 router.get('/me', async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.header('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      throw createError('No token provided', 401);
+      return res.status(401).json({
+        success: false,
+        error: 'No token provided'
+      });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
-    
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        createdAt: true
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
+      
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+          createdAt: true
+        }
+      });
+
+      if (!user || !user.isActive) {
+        return res.status(401).json({
+          success: false,
+          error: 'User not found or inactive'
+        });
       }
-    });
 
-    if (!user || !user.isActive) {
-      throw createError('User not found or inactive', 401);
+      return res.json({
+        success: true,
+        data: { user }
+      });
+    } catch (jwtError: any) {
+      // JWT verification failed
+      return res.status(401).json({
+        success: false,
+        error: jwtError.message === 'jwt expired' ? 'Token expired' : 'Invalid token'
+      });
     }
-
-    res.json({
-      success: true,
-      data: { user }
+  } catch (error: any) {
+    console.error('Error in /me endpoint:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
     });
-  } catch (error) {
-    next(error);
   }
 });
 
