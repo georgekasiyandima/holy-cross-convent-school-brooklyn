@@ -63,7 +63,8 @@ const HeroSection = styled(Box)(({ theme }) => ({
 
 const GalleryContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+  paddingBottom: theme.spacing(8)
 }));
 
 const TabPanel = styled(Box)(({ theme }) => ({
@@ -252,7 +253,7 @@ const Gallery: React.FC = () => {
             transition: 'all 0.3s ease'
           }
         }}>
-          <ReturnToHome />
+      <ReturnToHome />
         </Box>
 
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 }, py: 8 }}>
@@ -410,12 +411,22 @@ const Gallery: React.FC = () => {
                       fontWeight: 800,
                       color: '#1a237e',
                       mb: 2,
-                      fontSize: { xs: '2rem', md: '2.5rem' }
+                      fontSize: { xs: '2rem', md: '2.5rem' },
+                      fontFamily: '"Poppins", sans-serif'
                     }}
                   >
                     Events & Occasions
                   </Typography>
-                  <Typography variant="h6" sx={{ color: '#666', maxWidth: '700px', mx: 'auto' }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: '#666', 
+                      maxWidth: '700px', 
+                      mx: 'auto',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400
+                    }}
+                  >
                     Celebrating our community through moments of joy, achievement, and togetherness
                   </Typography>
                   <Chip
@@ -428,7 +439,8 @@ const Gallery: React.FC = () => {
                       fontSize: '1rem',
                       px: 2,
                       py: 2,
-                      mt: 2
+                      mt: 2,
+                      fontFamily: '"Poppins", sans-serif'
                     }}
                   />
                 </Box>
@@ -436,7 +448,7 @@ const Gallery: React.FC = () => {
             </SectionHeader>
 
             {eventsAlbums.length === 0 ? (
-              <Alert severity="info" sx={{ mt: 4 }}>
+              <Alert severity="info" sx={{ mt: 4, fontFamily: '"Poppins", sans-serif' }}>
                 No event albums available yet. Event albums will appear here once uploaded.
               </Alert>
             ) : (
@@ -472,12 +484,22 @@ const Gallery: React.FC = () => {
                       fontWeight: 800,
                       color: '#1a237e',
                       mb: 2,
-                      fontSize: { xs: '2rem', md: '2.5rem' }
+                      fontSize: { xs: '2rem', md: '2.5rem' },
+                      fontFamily: '"Poppins", sans-serif'
                     }}
                   >
                     All Gallery
                   </Typography>
-                  <Typography variant="h6" sx={{ color: '#666', maxWidth: '700px', mx: 'auto' }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: '#666', 
+                      maxWidth: '700px', 
+                      mx: 'auto',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontWeight: 400
+                    }}
+                  >
                     Browse our complete collection of school life moments
                   </Typography>
                   <Chip
@@ -489,7 +511,8 @@ const Gallery: React.FC = () => {
                       fontSize: '1rem',
                       px: 2,
                       py: 2,
-                      mt: 2
+                      mt: 2,
+                      fontFamily: '"Poppins", sans-serif'
                     }}
                   />
                 </Box>
@@ -497,7 +520,7 @@ const Gallery: React.FC = () => {
             </SectionHeader>
 
             {allItems.length === 0 ? (
-              <Alert severity="info" sx={{ mt: 4 }}>
+              <Alert severity="info" sx={{ mt: 4, fontFamily: '"Poppins", sans-serif' }}>
                 No photos available yet. Photos will appear here once uploaded.
               </Alert>
             ) : (
@@ -510,4 +533,4 @@ const Gallery: React.FC = () => {
   );
 };
 
-export default Gallery;
+export default Gallery; 

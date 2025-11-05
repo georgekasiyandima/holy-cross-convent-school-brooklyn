@@ -195,8 +195,7 @@ router.post('/upload',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   upload.single('file'),
-  validateCreateGalleryItem,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       if (!req.file) {
         return res.status(400).json({ 
@@ -205,17 +204,47 @@ router.post('/upload',
         });
       }
 
+      // Validate required fields
+      if (!req.body.title || req.body.title.trim() === '') {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Title is required' 
+        });
+      }
+
+      // Validate category if provided
+      const validCategories = ['EVENTS', 'SPORTS', 'ACADEMIC', 'CULTURAL', 'GENERAL', 'CLASS_PHOTOS'];
+      if (req.body.category && !validCategories.includes(req.body.category)) {
+        return res.status(400).json({ 
+          success: false,
+          error: `Invalid category. Must be one of: ${validCategories.join(', ')}` 
+        });
+      }
+
+      next();
+    } catch (error: any) {
+      return res.status(400).json({ 
+        success: false,
+        error: error.message || 'Validation failed' 
+      });
+    }
+  },
+  async (req, res) => {
+    try {
       const { title, description, category, tags, albumId, isPublished } = req.body;
       
       // Determine file type
       const fileExtension = path.extname(req.file.originalname).toLowerCase();
       const isVideo = ['.mp4', '.mov', '.avi', '.webm'].includes(fileExtension);
       
-      const tagsArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : tags) : [];
+      const tagsArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : (Array.isArray(tags) ? tags : [])) : [];
+      
+      // Parse isPublished - handle string 'true'/'false' or boolean
+      const published = isPublished === undefined || isPublished === '' || isPublished === 'true' || isPublished === true;
       
       const item = await GalleryService.createGalleryItem({
-        title,
-        description,
+        title: title.trim(),
+        description: description?.trim() || undefined,
         category: category || GalleryCategory.GENERAL,
         type: isVideo ? GalleryItemType.VIDEO : GalleryItemType.IMAGE,
         filePath: req.file.path,
@@ -224,9 +253,9 @@ router.post('/upload',
         fileSize: req.file.size,
         mimeType: req.file.mimetype,
         tags: tagsArray,
-        isPublished: isPublished !== undefined ? isPublished === 'true' : true,
+        isPublished: published,
         uploadedBy: (req as any).user?.id,
-        ...(albumId ? { albumId } : {}),
+        ...(albumId && albumId !== '' ? { albumId } : {}),
       });
 
       // Parse tags from JSON if needed
@@ -237,9 +266,11 @@ router.post('/upload',
         parsedTags = [];
       }
       
+      // Ensure fileName is properly set
       const itemResponse = {
         ...item,
-        tags: parsedTags
+        tags: parsedTags,
+        fileName: item.fileName || req.file.filename
       };
 
       // Post to social media if requested and configured
@@ -268,8 +299,10 @@ router.post('/upload',
         ...(socialMediaResults && { socialMedia: socialMediaResults })
       });
     } catch (error: any) {
+      console.error('Error uploading gallery item:', error);
+      
       // Clean up uploaded file on error
-      if (req.file && fs.existsSync(req.file.path)) {
+      if (req.file && req.file.path && fs.existsSync(req.file.path)) {
         try {
           fs.unlinkSync(req.file.path);
         } catch (unlinkError) {
@@ -277,11 +310,11 @@ router.post('/upload',
         }
       }
       
-      console.error('Error uploading gallery item:', error);
       return res.status(500).json({ 
         success: false,
         error: 'Failed to upload gallery item',
-        message: error.message || 'Internal server error'
+        message: error.message || 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }

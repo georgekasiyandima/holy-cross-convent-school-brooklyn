@@ -1,6 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { authMiddleware, requireRole } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -216,37 +217,70 @@ router.post('/submit', async (req, res) => {
 });
 
 // Get all applications (admin only)
-router.get('/applications', async (req, res) => {
-  try {
-    // TODO: Add authentication middleware to ensure only admins can access
-    
-    const applications = await prisma.application.findMany({
-      orderBy: {
-        submittedAt: 'desc',
-      },
-    });
+router.get('/applications', 
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
+    try {
+      const applications = await prisma.application.findMany({
+        include: {
+          documents: {
+            select: {
+              id: true,
+              documentType: true,
+              originalName: true,
+              uploadedAt: true,
+            },
+            orderBy: {
+              uploadedAt: 'desc',
+            },
+          },
+        },
+        orderBy: {
+          submittedAt: 'desc',
+        },
+      });
 
-    res.json({
-      success: true,
-      applications,
-    });
-  } catch (error) {
-    console.error('Error fetching applications:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-    });
+      res.json({
+        success: true,
+        applications,
+      });
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
   }
-});
+);
 
 // Get application by ID (admin only)
-router.get('/applications/:id', async (req, res) => {
+router.get('/applications/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
   try {
     const { id } = req.params;
     
     const application = await prisma.application.findUnique({
       where: {
         id: parseInt(id),
+      },
+      include: {
+        documents: {
+          select: {
+            id: true,
+            documentType: true,
+            originalName: true,
+            fileSize: true,
+            uploadedAt: true,
+            downloadUrl: true,
+          },
+          orderBy: {
+            uploadedAt: 'desc',
+          },
+        },
       },
     });
 
@@ -271,7 +305,10 @@ router.get('/applications/:id', async (req, res) => {
 });
 
 // Update application status (admin only)
-router.patch('/applications/:id', async (req, res) => {
+router.patch('/applications/:id',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -294,6 +331,19 @@ router.patch('/applications/:id', async (req, res) => {
         notes: notes || null,
         updatedAt: new Date(),
       },
+      include: {
+        documents: {
+          select: {
+            id: true,
+            documentType: true,
+            originalName: true,
+            uploadedAt: true,
+          },
+          orderBy: {
+            uploadedAt: 'desc',
+          },
+        },
+      },
     });
 
     res.json({
@@ -310,7 +360,10 @@ router.patch('/applications/:id', async (req, res) => {
 });
 
 // Get application statistics (admin only)
-router.get('/statistics', async (req, res) => {
+router.get('/statistics',
+  authMiddleware,
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
+  async (req, res) => {
   try {
     const totalApplications = await prisma.application.count();
     const pendingApplications = await prisma.application.count({

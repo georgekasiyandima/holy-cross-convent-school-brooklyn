@@ -55,6 +55,7 @@ import {
 import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
 import GalleryService, { GalleryItem, Album } from '../services/galleryService';
+import CreateAlbumDialog from '../components/gallery/CreateAlbumDialog';
 
 const UploadArea = styled(Box)(({ theme }) => ({
   border: '2px dashed #ccc',
@@ -98,6 +99,7 @@ const GalleryManagement: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [createAlbumDialogOpen, setCreateAlbumDialogOpen] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -151,13 +153,32 @@ const GalleryManagement: React.FC = () => {
     }
   };
 
-  const fetchAlbums = async () => {
+  const fetchAlbums = async (category?: string) => {
     try {
-      const albums = await GalleryService.getAlbums({
+      // Get all albums for the selected album type
+      let albums = await GalleryService.getAlbums({
         albumType: albumType,
         classGrade: classGrade || undefined,
         isPublished: undefined // Get all albums for admin
       });
+      
+      // If category is provided, filter albums that have items with matching category
+      if (category && category !== 'all') {
+        // Get all items for this category
+        const items = await GalleryService.getGalleryItems({
+          category: category,
+          limit: 1000
+        });
+        
+        // Get unique album IDs from items that have this category
+        const albumIds = new Set(items.items.filter(item => item.albumId).map(item => item.albumId!));
+        
+        // Filter albums to only show those that have items with matching category
+        // OR show all albums if no category filter (to allow adding items to any album)
+        albums = albums.filter(album => albumIds.has(album.id));
+      }
+      // If no category or category is 'all', show all albums
+      
       setAlbums(albums.map(album => ({
         id: album.id,
         title: album.title,
@@ -466,7 +487,12 @@ const GalleryManagement: React.FC = () => {
                   <InputLabel>Category</InputLabel>
                   <Select
                     value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+                    onChange={(e) => {
+                      const newCategory = e.target.value as any;
+                      setFormData(prev => ({ ...prev, category: newCategory }));
+                      // Refresh albums list when category changes to show relevant albums
+                      fetchAlbums(newCategory);
+                    }}
                     label="Category"
                   >
                     {categories.map(cat => (
@@ -513,26 +539,8 @@ const GalleryManagement: React.FC = () => {
                   </FormControl>
                   <Button
                     variant="outlined"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch('/api/gallery/albums', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                          },
-                          body: JSON.stringify({
-                            title: formData.title || 'New Album',
-                            albumType,
-                            classGrade: albumType === 'CLASS' ? classGrade : undefined,
-                          })
-                        });
-                        if (!response.ok) throw new Error('Failed to create album');
-                        await fetchAlbums();
-                      } catch (e) {
-                        console.error('Create album failed', e);
-                      }
-                    }}
+                    startIcon={<Add />}
+                    onClick={() => setCreateAlbumDialogOpen(true)}
                   >
                     New Album
                   </Button>
@@ -631,6 +639,20 @@ const GalleryManagement: React.FC = () => {
         >
           <Add />
         </Fab>
+
+        {/* Create Album Dialog */}
+        <CreateAlbumDialog
+          open={createAlbumDialogOpen}
+          onClose={() => setCreateAlbumDialogOpen(false)}
+          onSuccess={async (album) => {
+            setSuccess(`Album "${album.title}" created successfully!`);
+            await fetchAlbums(formData.category);
+            // Auto-select the newly created album
+            setFormData(prev => ({ ...prev, albumId: album.id }));
+          }}
+          initialAlbumType={albumType}
+          initialCategory={formData.category}
+        />
       </Box>
     </AdminLayout>
   );

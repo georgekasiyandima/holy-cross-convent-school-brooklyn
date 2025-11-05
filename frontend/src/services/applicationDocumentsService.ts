@@ -104,10 +104,19 @@ class ApplicationDocumentsService {
 
   async getDocumentTypes(): Promise<{ success: boolean; data?: DocumentType[]; error?: string }> {
     try {
+      console.log('Fetching document types from:', `${this.baseUrl}/types`);
       const response = await fetch(`${this.baseUrl}/types`);
-      const result = await response.json();
-
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to fetch document types. Status:', response.status, 'Response:', errorText);
+        throw new Error(`Failed to fetch document types: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Document types received:', result);
+
+      if (!result.success) {
         throw new Error(result.error || 'Failed to fetch document types');
       }
 

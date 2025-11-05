@@ -23,14 +23,31 @@ import ImageLightbox from './ImageLightbox';
 const ImageCard = styled(Card)(({ theme }) => ({
   height: '100%',
   cursor: 'pointer',
-  borderRadius: theme.spacing(2),
+  background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+  border: 'none',
+  borderRadius: theme.spacing(3),
   overflow: 'hidden',
-  transition: 'all 0.3s ease',
-  border: '1px solid #e0e0e0',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    transform: 'scaleX(0)',
+    transition: 'transform 0.4s ease',
+    zIndex: 1
+  },
   '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: theme.shadows[8],
-    borderColor: '#1a237e',
+    transform: 'translateY(-12px) scale(1.02)',
+    boxShadow: '0 24px 48px rgba(211, 47, 47, 0.2)',
+    '&::before': {
+      transform: 'scaleX(1)',
+    },
     '& .image-overlay': {
       opacity: 1
     }
@@ -57,13 +74,14 @@ const ImageOverlay = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: 'rgba(26, 35, 126, 0.7)',
+  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(211, 47, 47, 0.75) 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   opacity: 0,
-  transition: 'opacity 0.3s ease',
-  zIndex: 1
+  transition: 'opacity 0.4s ease',
+  zIndex: 1,
+  backdropFilter: 'blur(2px)'
 }));
 
 interface ImageGridProps {
@@ -130,6 +148,15 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
             ? GalleryService.getItemImageUrl(item.fileName)
             : null;
 
+          // Debug: Log image URLs to help troubleshoot
+          if (item.type === 'IMAGE' && imageUrl) {
+            console.log('Gallery Image URL:', {
+              fileName: item.fileName,
+              imageUrl,
+              itemId: item.id
+            });
+          }
+
           return (
             <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
               <ImageCard onClick={() => handleImageClick(item, index)}>
@@ -140,10 +167,23 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
                         component="img"
                         image={imageUrl}
                         alt={item.title}
+                        onError={(e) => {
+                          console.error('Image failed to load:', {
+                            imageUrl,
+                            fileName: item.fileName,
+                            itemId: item.id
+                          });
+                          // Set a fallback or show error state
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                        onLoad={() => {
+                          console.log('Image loaded successfully:', imageUrl);
+                        }}
                         sx={{
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover'
+                          objectFit: 'cover',
+                          backgroundColor: '#f5f5f5'
                         }}
                       />
                       <ImageOverlay className="image-overlay">
@@ -159,17 +199,19 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
                     </Box>
                   )}
                 </ImageContainer>
-                <CardContent sx={{ p: 2 }}>
+                <CardContent sx={{ p: 3, pt: 2 }}>
                   <Typography
                     variant="subtitle1"
                     sx={{
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: '#1a237e',
-                      mb: 1,
+                      mb: 1.5,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '1rem'
                     }}
                   >
                     {item.title}
@@ -180,7 +222,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
                       size="small"
                       sx={{
                         fontSize: '0.75rem',
-                        height: 24
+                        height: 26,
+                        fontWeight: 600,
+                        backgroundColor: item.category === 'SPORTS' ? '#4caf50' :
+                                        item.category === 'ACADEMIC' ? '#ff9800' :
+                                        item.category === 'CULTURAL' ? '#9c27b0' :
+                                        item.category === 'EVENTS' ? '#2196f3' :
+                                        '#607d8b',
+                        color: '#ffffff'
                       }}
                     />
                   )}

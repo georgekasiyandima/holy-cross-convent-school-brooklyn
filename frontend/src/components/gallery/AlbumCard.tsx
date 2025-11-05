@@ -10,15 +10,32 @@ const AlbumCardContainer = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: theme.spacing(2),
+  background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+  border: 'none',
+  borderRadius: theme.spacing(3),
   overflow: 'hidden',
   cursor: 'pointer',
-  transition: 'all 0.3s ease',
-  border: '1px solid #e0e0e0',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
+    transform: 'scaleX(0)',
+    transition: 'transform 0.4s ease',
+    zIndex: 1
+  },
   '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: theme.shadows[8],
-    borderColor: '#1a237e'
+    transform: 'translateY(-12px) scale(1.02)',
+    boxShadow: '0 24px 48px rgba(211, 47, 47, 0.2)',
+    '&::before': {
+      transform: 'scaleX(1)',
+    }
   }
 }));
 
@@ -68,10 +85,43 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
         )}
       </Box>
       <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>{album.title}</Typography>
-        {album.description && <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>{album.description}</Typography>}
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 700, 
+            color: '#1a237e', 
+            mb: 1,
+            fontFamily: '"Poppins", sans-serif',
+            fontSize: '1.1rem'
+          }}
+        >
+          {album.title}
+        </Typography>
+        {album.description && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: '#666', 
+              mb: 2,
+              fontFamily: '"Poppins", sans-serif',
+              lineHeight: 1.6
+            }}
+          >
+            {album.description}
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Chip label={album.albumType === 'CLASS' ? 'Class Photos' : 'Event Album'} size="small" sx={{ bgcolor: album.albumType === 'CLASS' ? '#1a237e' : '#d32f2f', color: '#fff', fontWeight: 600 }} />
+          <Chip 
+            label={album.albumType === 'CLASS' ? 'Class Photos' : 'Event Album'} 
+            size="small" 
+            sx={{ 
+              bgcolor: album.albumType === 'CLASS' ? '#1a237e' : '#d32f2f', 
+              color: '#fff', 
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              height: 24
+            }} 
+          />
         </Box>
       </CardContent>
     </AlbumCardContainer>

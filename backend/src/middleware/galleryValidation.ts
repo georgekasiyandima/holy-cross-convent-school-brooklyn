@@ -4,13 +4,14 @@ import { z } from 'zod';
 // Validation schemas for gallery operations
 export const createGalleryItemSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
-  description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
+  description: z.string().max(1000, 'Description must be less than 1000 characters').optional().or(z.literal('')),
   category: z.enum(['EVENTS', 'SPORTS', 'ACADEMIC', 'CULTURAL', 'GENERAL', 'CLASS_PHOTOS'], {
     errorMap: () => ({ message: 'Invalid category' })
-  }),
-  tags: z.string().optional(),
-  albumId: z.string().optional(),
-  isPublished: z.boolean().optional().default(true),
+  }).optional(),
+  tags: z.string().optional().or(z.literal('')),
+  albumId: z.string().optional().or(z.literal('')),
+  isPublished: z.string().transform(val => val === 'true' || val === '' || val === undefined).optional().default(true),
+  postToSocial: z.string().optional(),
 });
 
 export const updateGalleryItemSchema = z.object({

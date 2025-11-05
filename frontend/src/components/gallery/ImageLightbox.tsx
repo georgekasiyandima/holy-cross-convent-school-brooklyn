@@ -91,6 +91,15 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     ? GalleryService.getItemImageUrl(item.fileName)
     : null;
 
+  // Debug: Log image URL
+  if (item && item.type === 'IMAGE' && imageUrl) {
+    console.log('Lightbox Image URL:', {
+      fileName: item.fileName,
+      imageUrl,
+      itemId: item.id
+    });
+  }
+
   const handleDownload = () => {
     if (imageUrl) {
       const link = document.createElement('a');

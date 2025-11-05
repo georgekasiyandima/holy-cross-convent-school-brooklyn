@@ -29,6 +29,11 @@ import {
   AccordionDetails,
   styled,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   School,
@@ -112,6 +117,8 @@ const ApplicationProcess: React.FC = () => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     // Learner Information
     surname: '',
@@ -222,8 +229,8 @@ const ApplicationProcess: React.FC = () => {
         missing.push('Surname');
       }
       if (isEmpty(formData.christianName)) {
-        errors.christianName = 'Christian Name is required';
-        missing.push('Christian Name');
+        errors.christianName = 'Name is required';
+        missing.push('Name');
       }
       if (isEmpty(formData.dateOfBirth)) {
         errors.dateOfBirth = 'Date of Birth is required';
@@ -266,6 +273,16 @@ const ApplicationProcess: React.FC = () => {
         errors.fatherAddress = 'At least one address is required';
         errors.responsiblePartyAddress = 'At least one address is required';
         missing.push('An address for at least one contact (Mother/Father/Responsible Party)');
+      }
+    } else if (step === 4) {
+      // Enforce contact number and name for previous school/creche for background checks
+      if (isEmpty(formData.currentSchoolTel)) {
+        errors.currentSchoolTel = 'Telephone number is required for background checks';
+        missing.push('Telephone Number of School/Creche');
+      }
+      if (isEmpty(formData.currentSchoolContact)) {
+        errors.currentSchoolContact = 'Contact name is required for background checks';
+        missing.push('Contact Name of School/Creche');
       }
     } else if (step === 5) {
       if (isEmpty(formData.paymentMethod)) {
@@ -349,7 +366,13 @@ const ApplicationProcess: React.FC = () => {
   const handleFinalSubmit = async () => {
     if (applicationId) {
       // Application already created, just show success message
-      alert('Application submitted successfully! We will contact you within 2-3 business days.');
+      setSuccessMessage(
+        `Application submitted successfully!\n\n` +
+        `Application ID: ${applicationId}\n\n` +
+        `Our admissions team will review your application and contact you within 2-3 business days.\n\n` +
+        `You will receive a phone call regarding the outcome of your application.`
+      );
+      setSuccessDialogOpen(true);
       // Reset form
       setFormData({
         // Learner Information
@@ -543,9 +566,16 @@ const ApplicationProcess: React.FC = () => {
       
       if (response.success) {
         // Set the application ID and move to document upload step
-        setApplicationId(response.applicationId || null);
+        const newApplicationId = response.applicationId || null;
+        setApplicationId(newApplicationId);
         setActiveStep(6); // Move to document upload step
-        alert('Application created successfully! Please upload your supporting documents.');
+        setSuccessMessage(
+          `Application created successfully!\n\n` +
+          `Application ID: ${newApplicationId}\n\n` +
+          `Please upload your supporting documents on the next step. You can upload multiple documents of different types.\n\n` +
+          `After uploading documents, you can review and finalize your application.`
+        );
+        setSuccessDialogOpen(true);
         setValidationError(null);
       } else {
         setValidationError(response.errors?.map((e: any) => e.message).join(', ') || 'Failed to create application.');
@@ -581,7 +611,7 @@ const ApplicationProcess: React.FC = () => {
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
                   fullWidth
-                  label="Christian Name of Learner"
+                  label="Name of Learner"
                   value={formData.christianName}
                   onChange={handleInputChange('christianName')}
                   required
@@ -1227,17 +1257,23 @@ const ApplicationProcess: React.FC = () => {
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
                   fullWidth
-                  label="Tel. No of School/Creche"
+                  label="Tel. No of School/Creche *"
                   value={formData.currentSchoolTel}
                   onChange={handleInputChange('currentSchoolTel')}
+                  required
+                  error={!!fieldErrors.currentSchoolTel}
+                  helperText={fieldErrors.currentSchoolTel || 'Required for background checks'}
                 />
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
                   fullWidth
-                  label="Contact name"
+                  label="Contact name *"
                   value={formData.currentSchoolContact}
                   onChange={handleInputChange('currentSchoolContact')}
+                  required
+                  error={!!fieldErrors.currentSchoolContact}
+                  helperText={fieldErrors.currentSchoolContact || 'Required for background checks'}
                 />
               </Box>
             </Box>
@@ -1256,6 +1292,19 @@ const ApplicationProcess: React.FC = () => {
               <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Method of Payment
               </Typography>
+              <Alert severity="info" sx={{ mb: 3 }}>
+                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
+                  <strong>Payment Instructions:</strong> Please make cash deposits into the school bank account:
+                </Typography>
+                <Box sx={{ pl: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Bank:</strong> FNB<br />
+                    <strong>Branch:</strong> 203309<br />
+                    <strong>Account Number:</strong> 54450670046<br />
+                    <strong>Reference:</strong> Name of Learner ({formData.christianName || '[Name]'})
+                  </Typography>
+                </Box>
+              </Alert>
               <FormControl fullWidth error={!!fieldErrors.paymentMethod}>
                 <InputLabel>Payment Method</InputLabel>
                 <Select
@@ -1263,8 +1312,8 @@ const ApplicationProcess: React.FC = () => {
                   onChange={handleSelectChange('paymentMethod')}
                   label="Payment Method"
                 >
+                  <MenuItem value="Cash Deposit">Cash Deposit</MenuItem>
                   <MenuItem value="Bank Stop Order">Bank Stop Order</MenuItem>
-                  <MenuItem value="Cash">Cash</MenuItem>
                   <MenuItem value="Direct Bank Deposit/EFT">Direct Bank Deposit/EFT</MenuItem>
                   <MenuItem value="Monthly">Monthly</MenuItem>
                   <MenuItem value="Quarterly">Quarterly</MenuItem>
@@ -1328,7 +1377,11 @@ const ApplicationProcess: React.FC = () => {
                     color={fieldErrors.agreeToTerms ? 'error' : 'primary'}
                   />
                 }
-                label="I agree to the school's terms and conditions"
+                label={
+                  <span>
+                    I agree to the school's terms and conditions <span style={{ color: '#d32f2f' }}>*</span>
+                  </span>
+                }
                 sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               />
               {fieldErrors.agreeToTerms && (
@@ -1344,7 +1397,11 @@ const ApplicationProcess: React.FC = () => {
                     color={fieldErrors.agreeToPrivacy ? 'error' : 'primary'}
                   />
                 }
-                label="I agree to the privacy policy and data processing"
+                label={
+                  <span>
+                    I agree to the privacy policy and data processing <span style={{ color: '#d32f2f' }}>*</span>
+                  </span>
+                }
                 sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
               />
               {fieldErrors.agreeToPrivacy && (
@@ -2028,6 +2085,37 @@ const ApplicationProcess: React.FC = () => {
           </Box>
         </Box>
       </Container>
+
+      {/* Success Dialog */}
+      <Dialog
+        open={successDialogOpen}
+        onClose={() => setSuccessDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontFamily: '"Poppins", sans-serif', color: '#4caf50', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle sx={{ fontSize: 32 }} />
+          Application Submitted Successfully
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: '"Poppins", sans-serif', whiteSpace: 'pre-line', fontSize: '1rem', lineHeight: 1.8 }}>
+            {successMessage}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setSuccessDialogOpen(false)}
+            variant="contained"
+            sx={{
+              fontFamily: '"Poppins", sans-serif',
+              backgroundColor: '#1a237e',
+              '&:hover': { backgroundColor: '#0d1458' }
+            }}
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

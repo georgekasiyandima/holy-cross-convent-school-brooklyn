@@ -330,11 +330,29 @@ const AdminApplicationManagement: React.FC = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications`);
-      setApplications(response.data);
-    } catch (err) {
+      setError(null);
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined
+        }
+      });
+      
+      // Backend returns { success: true, applications: [...] }
+      if (response.data.success && Array.isArray(response.data.applications)) {
+        setApplications(response.data.applications);
+      } else if (Array.isArray(response.data)) {
+        // Fallback if response is directly an array
+        setApplications(response.data);
+      } else {
+        console.error('Unexpected response format:', response.data);
+        setApplications([]);
+        setError('Invalid response format from server');
+      }
+    } catch (err: any) {
       console.error('Error fetching applications:', err);
-      setError('Failed to load applications');
+      setError(err.response?.data?.message || 'Failed to load applications. Please check your connection and try again.');
+      setApplications([]);
     } finally {
       setLoading(false);
     }
@@ -342,18 +360,37 @@ const AdminApplicationManagement: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/statistics`);
-      setStats(response.data);
-    } catch (err) {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/statistics`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined
+        }
+      });
+      
+      // Backend returns { success: true, statistics: {...} }
+      if (response.data.success && response.data.statistics) {
+        setStats(response.data.statistics);
+      } else if (response.data.statistics) {
+        setStats(response.data.statistics);
+      } else {
+        console.error('Unexpected stats response format:', response.data);
+      }
+    } catch (err: any) {
       console.error('Error fetching stats:', err);
+      // Stats are not critical, so we don't show error to user
     }
   };
 
   const updateApplicationStatus = async (applicationId: number, status: string, notes?: string) => {
     try {
+      const token = localStorage.getItem('adminToken');
       await axios.patch(`${API_BASE_URL_WITH_PREFIX}/admissions/applications/${applicationId}`, {
         status,
         notes
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined
+        }
       });
       
       // Update local state
@@ -813,6 +850,14 @@ const AdminApplicationManagement: React.FC = () => {
                             startIcon={<Download />}
                             href={`${API_BASE_URL_WITH_PREFIX}/application-documents/download/${doc.id}`}
                             target="_blank"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const token = localStorage.getItem('adminToken');
+                              window.open(
+                                `${API_BASE_URL_WITH_PREFIX}/application-documents/download/${doc.id}`,
+                                '_blank'
+                              );
+                            }}
                           >
                             Download
                           </Button>

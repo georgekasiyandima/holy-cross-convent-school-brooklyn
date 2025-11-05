@@ -95,10 +95,22 @@ class GalleryService {
 
   // Get image URL helper (public method)
   getItemImageUrl(fileName: string): string {
+    if (!fileName) {
+      return '/placeholder-image.jpg'; // Fallback for missing images
+    }
     if (fileName.startsWith('http')) {
       return fileName;
     }
-    return `${API_URL}/uploads/gallery/${fileName}`;
+    // Construct the URL - ensure we use the correct base URL
+    // API_URL might be "http://localhost:5000" or include "/api"
+    let baseUrl = API_URL;
+    if (baseUrl.includes('/api')) {
+      baseUrl = baseUrl.replace('/api', '');
+    }
+    // Remove trailing slash if present
+    baseUrl = baseUrl.replace(/\/$/, '');
+    // Return the full URL
+    return `${baseUrl}/uploads/gallery/${encodeURIComponent(fileName)}`;
   }
 
   // Get gallery items with filters
@@ -176,23 +188,32 @@ class GalleryService {
         }
       );
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         // Ensure tags is always an array
         const item = response.data.data;
+        if (!item) {
+          throw new Error('Invalid response: no data returned');
+        }
         if (item && typeof item.tags === 'string') {
           try {
             item.tags = JSON.parse(item.tags);
           } catch {
             item.tags = [];
           }
+        } else if (!item.tags) {
+          item.tags = [];
         }
         return item;
       }
-      throw new Error(response.data.error || 'Failed to upload gallery item');
+      throw new Error(response.data?.error || response.data?.message || 'Failed to upload gallery item');
     } catch (error: any) {
       console.error('Error uploading gallery item:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to upload gallery item';
-      throw new Error(errorMessage);
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        const errorMessage = errorData.error || errorData.message || error.message || 'Failed to upload gallery item';
+        throw new Error(errorMessage);
+      }
+      throw new Error(error.message || 'Failed to upload gallery item');
     }
   }
 

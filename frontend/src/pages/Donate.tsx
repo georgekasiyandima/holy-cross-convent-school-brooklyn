@@ -550,28 +550,42 @@ const Donate: React.FC = () => {
                 <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
                   Payment Method
                 </Typography>
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <strong>Payment Instructions:</strong> Please make cash deposits into the school bank account:
+                  </Typography>
+                  <Box sx={{ pl: 2 }}>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      <strong>Bank:</strong> FNB<br />
+                      <strong>Branch:</strong> 203309<br />
+                      <strong>Account Number:</strong> 54450670046<br />
+                      <strong>Reference:</strong> {donorInfo.firstName || '[Name]'} {donorInfo.lastName || ''} - Donation
+                    </Typography>
+                  </Box>
+                </Alert>
                 <FormControl component="fieldset">
+                  <FormLabel component="legend">Payment Method</FormLabel>
                   <RadioGroup
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   >
                     <FormControlLabel
-                      value="card"
+                      value="cash"
                       control={<Radio />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Payment sx={{ mr: 1 }} />
-                          Credit/Debit Card
+                          Cash Deposit (FNB Account)
                         </Box>
                       }
                     />
                     <FormControlLabel
-                      value="paypal"
+                      value="eft"
                       control={<Radio />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Receipt sx={{ mr: 1 }} />
-                          PayPal
+                          EFT / Direct Deposit
                         </Box>
                       }
                     />

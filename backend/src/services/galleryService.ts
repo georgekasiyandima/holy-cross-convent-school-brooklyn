@@ -36,6 +36,19 @@ export class GalleryService {
     isPublished?: boolean;
     coverImageId?: string;
   }) {
+    // Check for duplicate album name (same title and albumType)
+    const existingAlbum = await prisma.album.findFirst({
+      where: {
+        title: data.title,
+        albumType: data.albumType || 'GENERAL',
+        ...(data.classGrade ? { classGrade: data.classGrade } : { classGrade: null })
+      }
+    });
+
+    if (existingAlbum) {
+      throw new Error(`An album with the name "${data.title}" already exists for this type. Please use a different name.`);
+    }
+
     return await prisma.album.create({
       data: {
         title: data.title,

@@ -19,7 +19,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormLabel,
+  Divider,
 } from '@mui/material';
 import {
   CloudUpload,
@@ -28,6 +34,7 @@ import {
   AttachFile,
   CheckCircle,
   Error as ErrorIcon,
+  Description,
 } from '@mui/icons-material';
 import applicationDocumentsService, { ApplicationDocument, DocumentType } from '../services/applicationDocumentsService';
 
@@ -49,11 +56,24 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [documentSubmissionMethod, setDocumentSubmissionMethod] = useState<'upload' | 'hardcopy'>('upload');
+  const [loadingDocumentTypes, setLoadingDocumentTypes] = useState(true);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
 
   useEffect(() => {
-    loadDocuments();
-    loadDocumentTypes();
+    if (applicationId) {
+      loadDocuments();
+      loadDocumentTypes();
+    }
   }, [applicationId]);
+
+  // Reload document types when dialog opens if they're not loaded
+  useEffect(() => {
+    if (uploadDialogOpen && documentTypes.length === 0 && !loadingDocumentTypes) {
+      loadDocumentTypes();
+    }
+  }, [uploadDialogOpen]);
 
   const loadDocuments = async () => {
     const result = await applicationDocumentsService.getDocuments(applicationId);
@@ -64,9 +84,53 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
   };
 
   const loadDocumentTypes = async () => {
-    const result = await applicationDocumentsService.getDocumentTypes();
-    if (result.success && result.data) {
-      setDocumentTypes(result.data);
+    try {
+      setLoadingDocumentTypes(true);
+      const result = await applicationDocumentsService.getDocumentTypes();
+      if (result.success && result.data) {
+        setDocumentTypes(result.data);
+        setError(null);
+      } else {
+        console.error('Failed to load document types:', result.error);
+        setError(result.error || 'Failed to load document types');
+        // Fallback to default document types if API fails
+        setDocumentTypes([
+          { value: 'BIRTH_CERTIFICATE', label: 'Birth Certificate' },
+          { value: 'BAPTISM_CERTIFICATE', label: 'Baptism Certificate' },
+          { value: 'SCHOOL_REPORT', label: 'School Report' },
+          { value: 'ID_COPY_MOTHER', label: 'ID Copy - Mother' },
+          { value: 'ID_COPY_FATHER', label: 'ID Copy - Father' },
+          { value: 'PROOF_OF_RESIDENCE', label: 'Proof of Residence' },
+          { value: 'IMMUNIZATION_CERTIFICATE', label: 'Immunization Certificate' },
+          { value: 'SALARY_SLIP_MOTHER', label: 'Salary Slip - Mother' },
+          { value: 'SALARY_SLIP_FATHER', label: 'Salary Slip - Father' },
+          { value: 'BANK_STATEMENT', label: 'Bank Statement' },
+          { value: 'TAX_CLEARANCE', label: 'Tax Clearance' },
+          { value: 'VISA_DOCUMENT', label: 'Visa Document' },
+          { value: 'OTHER', label: 'Other' },
+        ]);
+      }
+    } catch (err: any) {
+      console.error('Error loading document types:', err);
+      setError('Failed to load document types. Please refresh the page.');
+      // Fallback to default document types
+      setDocumentTypes([
+        { value: 'BIRTH_CERTIFICATE', label: 'Birth Certificate' },
+        { value: 'BAPTISM_CERTIFICATE', label: 'Baptism Certificate' },
+        { value: 'SCHOOL_REPORT', label: 'School Report' },
+        { value: 'ID_COPY_MOTHER', label: 'ID Copy - Mother' },
+        { value: 'ID_COPY_FATHER', label: 'ID Copy - Father' },
+        { value: 'PROOF_OF_RESIDENCE', label: 'Proof of Residence' },
+        { value: 'IMMUNIZATION_CERTIFICATE', label: 'Immunization Certificate' },
+        { value: 'SALARY_SLIP_MOTHER', label: 'Salary Slip - Mother' },
+        { value: 'SALARY_SLIP_FATHER', label: 'Salary Slip - Father' },
+        { value: 'BANK_STATEMENT', label: 'Bank Statement' },
+        { value: 'TAX_CLEARANCE', label: 'Tax Clearance' },
+        { value: 'VISA_DOCUMENT', label: 'Visa Document' },
+        { value: 'OTHER', label: 'Other' },
+      ]);
+    } finally {
+      setLoadingDocumentTypes(false);
     }
   };
 
@@ -75,6 +139,28 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
     if (file) {
       setSelectedFile(file);
       setError(null);
+      // Reset file input to allow selecting the same file again
+      event.target.value = '';
+    }
+  };
+
+  const handleDialogClose = () => {
+    setUploadDialogOpen(false);
+    setSelectedFile(null);
+    setSelectedDocumentType('');
+    setDocumentSubmissionMethod('upload');
+    setError(null);
+    // Reload document types when dialog opens again
+    if (documentTypes.length === 0 && !loadingDocumentTypes) {
+      loadDocumentTypes();
+    }
+  };
+
+  const handleDialogOpen = () => {
+    setUploadDialogOpen(true);
+    // Ensure document types are loaded
+    if (documentTypes.length === 0 && !loadingDocumentTypes) {
+      loadDocumentTypes();
     }
   };
 
@@ -111,9 +197,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
 
       if (result.success) {
         setSuccess('Document uploaded successfully');
-        setSelectedFile(null);
-        setSelectedDocumentType('');
-        setUploadDialogOpen(false);
+        handleDialogClose();
         await loadDocuments();
         setTimeout(() => setSuccess(null), 3000);
       } else {
@@ -128,17 +212,30 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
     }
   };
 
-  const handleDelete = async (documentId: number) => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
-      const result = await applicationDocumentsService.deleteDocument(documentId);
-      if (result.success) {
-        setSuccess('Document deleted successfully');
-        await loadDocuments();
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(result.error || 'Delete failed');
-      }
+  const handleDeleteClick = (documentId: number) => {
+    setDocumentToDelete(documentId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!documentToDelete) return;
+
+    const result = await applicationDocumentsService.deleteDocument(documentToDelete);
+    if (result.success) {
+      setSuccess('Document deleted successfully');
+      await loadDocuments();
+      setTimeout(() => setSuccess(null), 3000);
+    } else {
+      setError(result.error || 'Delete failed');
     }
+    
+    setDeleteConfirmOpen(false);
+    setDocumentToDelete(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setDocumentToDelete(null);
   };
 
   const handleDownload = (doc: ApplicationDocument) => {
@@ -179,8 +276,8 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
           <Button
             variant="contained"
             startIcon={<CloudUpload />}
-            onClick={() => setUploadDialogOpen(true)}
-            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
+            onClick={handleDialogOpen}
+            sx={{ fontFamily: '"Poppins", sans-serif' }}
           >
             Upload Document
           </Button>
@@ -254,7 +351,7 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
                   </IconButton>
                   <IconButton
                     edge="end"
-                    onClick={() => handleDelete(document.id)}
+                    onClick={() => handleDeleteClick(document.id)}
                     color="error"
                   >
                     <Delete />
@@ -267,79 +364,239 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
       </Paper>
 
       {/* Upload Dialog */}
-      <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-          Upload Document
+      <Dialog open={uploadDialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600 }}>
+          Submit Supporting Document
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Document Type</InputLabel>
-              <Select
-                value={selectedDocumentType}
-                onChange={(e) => setSelectedDocumentType(e.target.value)}
-                label="Document Type"
-                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
+            {/* Submission Method Selection */}
+            <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend" sx={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, mb: 1 }}>
+                How would you like to submit this document?
+              </FormLabel>
+              <RadioGroup
+                value={documentSubmissionMethod}
+                onChange={(e) => {
+                  setDocumentSubmissionMethod(e.target.value as 'upload' | 'hardcopy');
+                  setSelectedFile(null);
+                  setSelectedDocumentType('');
+                  setError(null);
+                }}
               >
-                {documentTypes.map((type) => (
-                  <MenuItem key={type.value} value={type.value} sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                    {type.label}
-                  </MenuItem>
-                ))}
-              </Select>
+                <FormControlLabel
+                  value="upload"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CloudUpload />
+                      <Typography sx={{ fontFamily: '"Poppins", sans-serif' }}>
+                        Upload digital copy
+                      </Typography>
+                    </Box>
+                  }
+                />
+                <FormControlLabel
+                  value="hardcopy"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Description />
+                      <Typography sx={{ fontFamily: '"Poppins", sans-serif' }}>
+                        Bring hard copy to school
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </RadioGroup>
             </FormControl>
 
-            <input
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt,.csv"
-              style={{ display: 'none' }}
-              id="file-upload"
-              type="file"
-              onChange={handleFileSelect}
-            />
-            <label htmlFor="file-upload">
-              <Button
-                variant="outlined"
-                component="span"
-                startIcon={<CloudUpload />}
-                fullWidth
-                sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
-              >
-                {selectedFile ? selectedFile.name : 'Select File'}
-              </Button>
-            </label>
+            <Divider sx={{ my: 3 }} />
 
-            {selectedFile && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                  Selected: {selectedFile.name} ({applicationDocumentsService.formatFileSize(selectedFile.size)})
-                </Typography>
-              </Box>
-            )}
+            {documentSubmissionMethod === 'upload' ? (
+              <>
+                {/* Document Type Selection */}
+                <FormControl fullWidth sx={{ mb: 3 }} required>
+                  <InputLabel id="document-type-label" sx={{ fontFamily: '"Poppins", sans-serif' }}>
+                    Document Type *
+                  </InputLabel>
+                  <Select
+                    labelId="document-type-label"
+                    value={selectedDocumentType}
+                    onChange={(e) => {
+                      setSelectedDocumentType(e.target.value);
+                      setError(null);
+                    }}
+                    label="Document Type *"
+                    sx={{ fontFamily: '"Poppins", sans-serif' }}
+                  >
+                    {loadingDocumentTypes ? (
+                      <MenuItem value="" disabled>
+                        Loading document types...
+                      </MenuItem>
+                    ) : documentTypes.length === 0 ? (
+                      <MenuItem value="" disabled>
+                        No document types available
+                      </MenuItem>
+                    ) : (
+                      documentTypes.map((type) => (
+                        <MenuItem key={type.value} value={type.value} sx={{ fontFamily: '"Poppins", sans-serif' }}>
+                          {type.label}
+                        </MenuItem>
+                      ))
+                    )}
+                  </Select>
+                </FormControl>
 
-            {uploading && (
-              <Box sx={{ mt: 2 }}>
-                <LinearProgress variant="determinate" value={uploadProgress} />
-                <Typography variant="body2" sx={{ mt: 1, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                  Uploading... {uploadProgress}%
+                {/* File Selection */}
+                <input
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                  style={{ display: 'none' }}
+                  id="file-upload-input"
+                  type="file"
+                  onChange={handleFileSelect}
+                />
+                <label htmlFor="file-upload-input">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    startIcon={<CloudUpload />}
+                    fullWidth
+                    sx={{ 
+                      fontFamily: '"Poppins", sans-serif',
+                      mb: 2,
+                      borderStyle: selectedFile ? 'solid' : 'dashed',
+                      borderWidth: selectedFile ? 2 : 1,
+                      borderColor: selectedFile ? '#4caf50' : 'primary.main',
+                      backgroundColor: selectedFile ? 'rgba(76, 175, 80, 0.05)' : 'transparent',
+                      '&:hover': {
+                        borderColor: 'primary.dark',
+                        backgroundColor: selectedFile ? 'rgba(76, 175, 80, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                      }
+                    }}
+                  >
+                    {selectedFile ? `Selected: ${selectedFile.name}` : 'Select File to Upload'}
+                  </Button>
+                </label>
+
+                {selectedFile && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(76, 175, 80, 0.1)', borderRadius: 1 }}>
+                    <Typography variant="body2" sx={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, mb: 0.5 }}>
+                      File Selected:
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontFamily: '"Poppins", sans-serif', color: '#666' }}>
+                      {selectedFile.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontFamily: '"Poppins", sans-serif', color: '#666' }}>
+                      Size: {applicationDocumentsService.formatFileSize(selectedFile.size)}
+                    </Typography>
+                  </Box>
+                )}
+
+                {uploading && (
+                  <Box sx={{ mt: 2 }}>
+                    <LinearProgress variant="determinate" value={uploadProgress} />
+                    <Typography variant="body2" sx={{ mt: 1, fontFamily: '"Poppins", sans-serif' }}>
+                      Uploading... {uploadProgress}%
+                    </Typography>
+                  </Box>
+                )}
+
+                {error && (
+                  <Alert severity="error" sx={{ mt: 2, fontFamily: '"Poppins", sans-serif' }}>
+                    {error}
+                  </Alert>
+                )}
+              </>
+            ) : (
+              <Box>
+                <Alert severity="info" sx={{ fontFamily: '"Poppins", sans-serif', mb: 2 }}>
+                  <Typography variant="body2" sx={{ fontFamily: '"Poppins", sans-serif', mb: 1 }}>
+                    <strong>Hard Copy Submission</strong>
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontFamily: '"Poppins", sans-serif' }}>
+                    You have chosen to bring hard copies of your documents to the school. 
+                    Please ensure you bring all required documents when you visit the school for your interview.
+                  </Typography>
+                </Alert>
+                <Typography variant="body2" sx={{ fontFamily: '"Poppins", sans-serif', color: '#666', mt: 2 }}>
+                  <strong>School Address:</strong> 162 Koeberg Road, Brooklyn<br />
+                  <strong>Phone:</strong> +27 21 511 4337<br />
+                  <strong>Email:</strong> admin@holycrossbrooklyn.co.za
                 </Typography>
               </Box>
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button
-            onClick={() => setUploadDialogOpen(false)}
-            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
+            onClick={handleDialogClose}
+            sx={{ fontFamily: '"Poppins", sans-serif' }}
+          >
+            Cancel
+          </Button>
+          {documentSubmissionMethod === 'upload' ? (
+            <Button
+              onClick={handleUpload}
+              variant="contained"
+              disabled={!selectedFile || !selectedDocumentType || uploading}
+              sx={{ 
+                fontFamily: '"Poppins", sans-serif',
+                backgroundColor: (!selectedFile || !selectedDocumentType || uploading) ? 'rgba(0, 0, 0, 0.26)' : '#1a237e',
+                '&:hover': {
+                  backgroundColor: (!selectedFile || !selectedDocumentType || uploading) ? 'rgba(0, 0, 0, 0.26)' : '#0d1458',
+                }
+              }}
+            >
+              {uploading ? 'Uploading...' : 'Upload Document'}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleDialogClose}
+              variant="contained"
+              sx={{ 
+                fontFamily: '"Poppins", sans-serif',
+                backgroundColor: '#1a237e',
+                '&:hover': {
+                  backgroundColor: '#0d1458',
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, color: '#d32f2f' }}>
+          Delete Document
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: '"Poppins", sans-serif' }}>
+            Are you sure you want to delete this document? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={handleDeleteCancel}
+            sx={{ fontFamily: '"Poppins", sans-serif' }}
           >
             Cancel
           </Button>
           <Button
-            onClick={handleUpload}
+            onClick={handleDeleteConfirm}
             variant="contained"
-            disabled={!selectedFile || !selectedDocumentType || uploading}
-            sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
+            color="error"
+            sx={{ fontFamily: '"Poppins", sans-serif' }}
           >
-            Upload
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

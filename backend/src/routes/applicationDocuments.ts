@@ -26,6 +26,20 @@ const DOCUMENT_TYPES = [
 ];
 
 /**
+ * GET /api/application-documents/types
+ * Get available document types - MUST come before /:applicationId route
+ */
+router.get('/types', (req, res) => {
+  res.json({
+    success: true,
+    data: DOCUMENT_TYPES.map(type => ({
+      value: type,
+      label: type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+    }))
+  });
+});
+
+/**
  * POST /api/application-documents/upload
  * Upload document for an application
  */
@@ -197,20 +211,6 @@ router.delete('/:documentId', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
-
-/**
- * GET /api/application-documents/types
- * Get available document types
- */
-router.get('/types', (req, res) => {
-  res.json({
-    success: true,
-    data: DOCUMENT_TYPES.map(type => ({
-      value: type,
-      label: type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
-    }))
-  });
 });
 
 export default router;
