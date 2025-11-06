@@ -419,7 +419,7 @@ class UploadService {
       const processedFile = await this.processDocument(file);
 
       // Save document record to database using DocumentService
-      const documentService = DocumentService.getInstance();
+      const documentService: InstanceType<typeof DocumentService> = DocumentService.getInstance();
       
       const documentRecord = await documentService.createDocument({
         title: documentData.title,

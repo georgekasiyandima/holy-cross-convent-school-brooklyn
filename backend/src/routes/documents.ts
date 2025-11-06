@@ -7,7 +7,7 @@ import path from 'path';
 import fs from 'fs';
 
 const router = Router();
-const documentService = DocumentService.getInstance();
+const documentService: InstanceType<typeof DocumentService> = DocumentService.getInstance();
 
 // Configure multer for document uploads
 const storage = multer.diskStorage({
