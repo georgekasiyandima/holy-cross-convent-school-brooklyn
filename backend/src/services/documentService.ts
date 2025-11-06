@@ -31,6 +31,10 @@ export class DocumentService {
     return DocumentService.instance;
   }
 
+  private constructor() {
+    // Private constructor for singleton pattern
+  }
+
   // Public methods
   public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
     try {
