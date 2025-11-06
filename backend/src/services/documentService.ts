@@ -31,7 +31,10 @@ export class DocumentService {
     return DocumentService.instance;
   }
 
-  async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
+  // Public methods
+  public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
+
+  public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
     try {
       // TODO: Document model not in schema - using Policy as placeholder
       // This should be fixed when Document model is added to schema
@@ -67,7 +70,7 @@ export class DocumentService {
     }
   }
 
-  async getAllPublishedDocuments(): Promise<Document[]> {
+  public async getAllPublishedDocuments(): Promise<Document[]> {
     try {
       // TODO: Document model not in schema - return empty array for now
       // This should be fixed when Document model is added to schema
@@ -96,7 +99,7 @@ export class DocumentService {
     }
   }
 
-  async getDocumentById(id: string): Promise<Document | null> {
+  public async getDocumentById(id: string): Promise<Document | null> {
     try {
       // TODO: Document model not in schema - return null for now
       // This should be fixed when Document model is added to schema
@@ -126,7 +129,7 @@ export class DocumentService {
     }
   }
 
-  async createDocument(documentData: {
+  public async createDocument(documentData: {
     title: string;
     description: string;
     fileName: string;
@@ -213,7 +216,7 @@ export class DocumentService {
     }
   }
 
-  async updateDocument(id: string, updates: Partial<Document>): Promise<Document> {
+  public async updateDocument(id: string, updates: Partial<Document>): Promise<Document> {
     try {
       // TODO: Document model not in schema - return dummy data for now
       console.warn('Document model not available in schema. Returning dummy document.');
@@ -258,7 +261,7 @@ export class DocumentService {
     }
   }
 
-  async deleteDocument(id: string): Promise<void> {
+  public async deleteDocument(id: string): Promise<void> {
     try {
       // TODO: Document model not in schema - just log for now
       console.warn('Document model not available in schema. Delete operation skipped.');
@@ -283,7 +286,7 @@ export class DocumentService {
     }
   }
 
-  async getDocumentStats(): Promise<{
+  public async getDocumentStats(): Promise<{
     total: number;
     byCategory: Record<string, number>;
     published: number;

@@ -16,8 +16,7 @@ export interface AuthRequest extends Request {
   params: any;
   body: any;
   file?: Express.Multer.File;
-  files?: Express.Multer.File[];
-  header(name: string): string | undefined;
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
 }
 
 export const authMiddleware = async (
