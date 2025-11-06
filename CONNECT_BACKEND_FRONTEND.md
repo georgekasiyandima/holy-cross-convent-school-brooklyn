@@ -30,14 +30,20 @@
 
 #### **Required Environment Variable:**
 
+The frontend uses `REACT_APP_API_BASE_URL` in `apiConfig.ts`, but some services use `REACT_APP_API_URL`. Set **both** to be safe:
+
 ```bash
+REACT_APP_API_BASE_URL=https://your-backend-url.onrender.com
 REACT_APP_API_URL=https://your-backend-url.onrender.com
 ```
 
 **Example:**
 ```bash
+REACT_APP_API_BASE_URL=https://holy-cross-backend.onrender.com
 REACT_APP_API_URL=https://holy-cross-backend.onrender.com
 ```
+
+**Note:** Both should point to the same backend URL (without `/api` suffix)
 
 #### **Important Notes:**
 - ⚠️ **No trailing slash** - Don't include `/` at the end
