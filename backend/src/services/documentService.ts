@@ -49,14 +49,14 @@ export type DocumentServiceInstance = {
   }>;
 };
 
-export class DocumentService implements DocumentServiceInstance {
+export class DocumentService {
   private static instance: DocumentService;
 
   public static getInstance(): DocumentServiceInstance {
     if (!DocumentService.instance) {
       DocumentService.instance = new DocumentService();
     }
-    return DocumentService.instance;
+    return DocumentService.instance as DocumentServiceInstance;
   }
 
   private constructor() {
