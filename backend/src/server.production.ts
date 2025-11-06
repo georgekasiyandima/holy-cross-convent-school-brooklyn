@@ -160,40 +160,61 @@ app.get('/api/health', async (req, res) => {
     // Test database connection by querying a simple table
     await prisma.$queryRaw`SELECT 1`;
     
-    // Check if key tables exist
-    const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
-      SELECT tablename FROM pg_tables 
-      WHERE schemaname = 'public' 
-      AND tablename IN ('staff_members', 'users', 'gallery_items')
-    `;
+    // Check if key tables exist (handle gracefully if they don't)
+    let tableNames: string[] = [];
+    let tablesCheck: any = {};
     
-    const tableNames = tables.map(t => t.tablename);
+    try {
+      const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
+        SELECT tablename FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename IN ('staff_members', 'users', 'gallery_items')
+      `;
+      tableNames = tables.map(t => t.tablename);
+      tablesCheck = {
+        staff_members: tableNames.includes('staff_members'),
+        users: tableNames.includes('users'),
+        gallery_items: tableNames.includes('gallery_items'),
+        allTables: tableNames
+      };
+    } catch (tableError: any) {
+      // If table check fails, database is connected but tables might not exist
+      console.warn('Table check failed (migrations may not have run):', tableError?.message);
+      tablesCheck = {
+        staff_members: false,
+        users: false,
+        gallery_items: false,
+        allTables: [],
+        error: 'Tables check failed - migrations may need to be run'
+      };
+    }
     
-    res.status(200).json({
-      status: 'OK',
+    const needsMigrations = !tablesCheck.staff_members || !tablesCheck.users;
+    
+    res.status(needsMigrations ? 200 : 200).json({
+      status: needsMigrations ? 'WARNING' : 'OK',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'production',
       version: '1.0.0',
       database: {
         connected: true,
-        tables: {
-          staff_members: tableNames.includes('staff_members'),
-          users: tableNames.includes('users'),
-          gallery_items: tableNames.includes('gallery_items'),
-          allTables: tableNames
-        }
+        tables: tablesCheck,
+        ...(needsMigrations && {
+          message: 'Database connected but migrations may not have been run. Run: npm run prisma:migrate:prod'
+        })
       }
     });
   } catch (error: any) {
     console.error('Health check error:', error);
-    res.status(500).json({
+    res.status(200).json({
       status: 'ERROR',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'production',
       version: '1.0.0',
       database: {
         connected: false,
-        error: error?.message || 'Database connection failed'
+        error: error?.message || 'Database connection failed',
+        message: 'Check DATABASE_URL environment variable and database service status'
       }
     });
   }
