@@ -25,6 +25,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Validate DATABASE_URL before initializing Prisma
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error('❌ ERROR: DATABASE_URL environment variable is not set!');
+  console.error('Please set DATABASE_URL in Render Dashboard → Environment Variables');
+  process.exit(1);
+}
+
+if (!DATABASE_URL.startsWith('postgresql://') && !DATABASE_URL.startsWith('postgres://')) {
+  console.error('❌ ERROR: DATABASE_URL must start with postgresql:// or postgres://');
+  console.error('Current DATABASE_URL format:', DATABASE_URL.substring(0, 20) + '...');
+  console.error('Please check your DATABASE_URL in Render Dashboard → Environment Variables');
+  process.exit(1);
+}
+
+// Log database connection info (without exposing password)
+const dbUrlParts = DATABASE_URL.match(/^(postgresql|postgres):\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)$/);
+if (dbUrlParts) {
+  console.log('✅ Database URL configured:', {
+    protocol: dbUrlParts[1],
+    user: dbUrlParts[2],
+    host: dbUrlParts[4],
+    port: dbUrlParts[5],
+    database: dbUrlParts[6]
+  });
+} else {
+  console.warn('⚠️  Could not parse DATABASE_URL format');
+}
+
 // Initialize Prisma Client
 // For production, use PostgreSQL (Railway automatically provides DATABASE_URL)
 const prisma = new PrismaClient({
