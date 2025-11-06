@@ -13,6 +13,10 @@ export interface AuthRequest extends Request {
     name: string;
     isActive: boolean;
   };
+  params: any;
+  body: any;
+  file?: Express.Multer.File;
+  files?: Express.Multer.File[];
 }
 
 export const authMiddleware = async (

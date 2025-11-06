@@ -614,30 +614,17 @@ router.get('/announcements', async (req, res, next) => {
       const newsletterWhere: any = {};
       
       if (published === 'true') {
-        newsletterWhere.status = 'SENT'; // Only show sent newsletters
-      }
-
-      if (priority) {
-        newsletterWhere.priority = priority;
+        newsletterWhere.isPublished = true; // Only show published newsletters
       }
 
       try {
         const newsletters = await prisma.newsletter.findMany({
           where: newsletterWhere,
           orderBy: [
-            { sentAt: 'desc' },
+            { publishedAt: 'desc' },
             { createdAt: 'desc' }
           ],
           take: Math.ceil(limitNum / 2),
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
         });
 
         // Transform Newsletters to unified format
@@ -648,13 +635,13 @@ router.get('/announcements', async (req, res, next) => {
             title: newsletter.title,
             content: content,
             summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
-            imageUrl: null,
+            imageUrl: newsletter.imageUrl || null,
             type: 'newsletter',
-            priority: newsletter.priority || 'NORMAL',
-            publishedAt: (newsletter as any).sentAt || newsletter.createdAt,
+            priority: 'NORMAL',
+            publishedAt: newsletter.publishedAt || newsletter.createdAt,
             createdAt: newsletter.createdAt,
             updatedAt: newsletter.updatedAt,
-            author: newsletter.author,
+            author: null,
           });
         });
       } catch (newsletterError: any) {
@@ -721,25 +708,17 @@ router.get('/announcements/latest', async (req, res, next) => {
       });
     });
 
-    // Fetch latest sent newsletters
+    // Fetch latest published newsletters
     try {
       const newsletters = await prisma.newsletter.findMany({
         where: {
-          status: 'SENT',
+          isPublished: true,
         },
         orderBy: [
-          { sentAt: 'desc' },
+          { publishedAt: 'desc' },
           { createdAt: 'desc' }
         ],
         take: Math.ceil(limitNum / 2),
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
       });
 
       newsletters.forEach(newsletter => {
@@ -749,12 +728,12 @@ router.get('/announcements/latest', async (req, res, next) => {
           title: newsletter.title,
           content: content,
           summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
-          imageUrl: null,
+          imageUrl: newsletter.imageUrl || null,
           type: 'newsletter',
-          priority: newsletter.priority || 'NORMAL',
-          publishedAt: (newsletter as any).sentAt || newsletter.createdAt,
+          priority: 'NORMAL',
+          publishedAt: newsletter.publishedAt || newsletter.createdAt,
           createdAt: newsletter.createdAt,
-          author: newsletter.author,
+          author: null,
         });
       });
     } catch (newsletterError: any) {

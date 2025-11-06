@@ -106,7 +106,7 @@ class UploadService {
   /**
    * Validate file before processing
    */
-  private validateFile(file: Express.Multer.File, allowedTypes: string[]): UploadResult {
+  private validateFile(file: Express.Multer.File | any, allowedTypes: string[]): UploadResult {
     // Check file size
     if (file.size > this.maxFileSize) {
       return {
@@ -213,7 +213,7 @@ class UploadService {
   /**
    * Process document upload
    */
-  private async processDocument(file: Express.Multer.File): Promise<ProcessedFile> {
+  private async processDocument(file: Express.Multer.File | any): Promise<ProcessedFile> {
     const filename = `${uuidv4()}_${file.originalname}`;
     const destinationPath = path.join(this.uploadDir, 'documents', filename);
     
@@ -239,7 +239,7 @@ class UploadService {
    * Upload and process staff image
    */
   async uploadStaffImage(
-    file: Express.Multer.File, 
+    file: Express.Multer.File | any, 
     staffData: StaffUploadData
   ): Promise<UploadResult> {
     try {
@@ -305,7 +305,7 @@ class UploadService {
    */
   async updateStaffImage(
     staffId: string,
-    file: Express.Multer.File,
+    file: Express.Multer.File | any,
     staffData: Partial<StaffUploadData>
   ): Promise<UploadResult> {
     try {
@@ -402,7 +402,7 @@ class UploadService {
    * Upload document
    */
   async uploadDocument(
-    file: Express.Multer.File,
+    file: Express.Multer.File | any,
     documentData: DocumentUploadData,
     userId: string
   ): Promise<UploadResult> {

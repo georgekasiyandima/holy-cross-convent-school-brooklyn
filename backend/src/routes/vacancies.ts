@@ -180,8 +180,11 @@ router.get('/:id', async (req, res, next) => {
     }
 
     // Check if vacancy is still open (if closing date is set)
-    if (vacancy.closingDate && new Date(vacancy.closingDate) < new Date()) {
-      return next(createError('This vacancy has closed', 404));
+    if (vacancy.closingDate) {
+      const closingDate = new Date(vacancy.closingDate);
+      if (closingDate < new Date()) {
+        return next(createError('This vacancy has closed', 404));
+      }
     }
 
     res.json({
