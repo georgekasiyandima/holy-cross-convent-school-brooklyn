@@ -21,6 +21,34 @@ export interface Document {
   updatedAt: Date;
 }
 
+// Export instance type for use in other files
+export type DocumentServiceInstance = {
+  getDocumentsByCategory: (category: string, published?: boolean) => Promise<Document[]>;
+  getAllPublishedDocuments: () => Promise<Document[]>;
+  getDocumentById: (id: string) => Promise<Document | null>;
+  createDocument: (documentData: {
+    title: string;
+    description: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+    mimeType: string;
+    category: string;
+    tags: string[];
+    isPublished: boolean;
+    authorId: string;
+    authorName: string;
+  }) => Promise<Document>;
+  updateDocument: (id: string, updates: Partial<Document>) => Promise<Document>;
+  deleteDocument: (id: string) => Promise<void>;
+  getDocumentStats: () => Promise<{
+    total: number;
+    byCategory: Record<string, number>;
+    published: number;
+    unpublished: number;
+  }>;
+};
+
 export class DocumentService {
   private static instance: DocumentService;
 

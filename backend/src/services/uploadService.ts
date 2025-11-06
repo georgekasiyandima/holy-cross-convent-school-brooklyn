@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import DocumentService from './documentService';
+import DocumentService, { DocumentServiceInstance } from './documentService';
 
 const prisma = new PrismaClient();
 
@@ -419,7 +419,7 @@ class UploadService {
       const processedFile = await this.processDocument(file);
 
       // Save document record to database using DocumentService
-      const documentService: InstanceType<typeof DocumentService> = DocumentService.getInstance();
+      const documentService: DocumentServiceInstance = DocumentService.getInstance();
       
       const documentRecord = await documentService.createDocument({
         title: documentData.title,

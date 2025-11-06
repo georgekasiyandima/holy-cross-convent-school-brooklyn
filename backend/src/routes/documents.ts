@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import DocumentService from '../services/documentService';
+import DocumentService, { DocumentServiceInstance } from '../services/documentService';
 import { authMiddleware } from '../middleware/auth';
 import { requireEditor } from '../middleware/auth';
 import multer from 'multer';
@@ -7,7 +7,7 @@ import path from 'path';
 import fs from 'fs';
 
 const router = Router();
-const documentService: InstanceType<typeof DocumentService> = DocumentService.getInstance();
+const documentService: DocumentServiceInstance = DocumentService.getInstance();
 
 // Configure multer for document uploads
 const storage = multer.diskStorage({
