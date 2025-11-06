@@ -6,7 +6,7 @@ import { createError } from './errorHandler';
 
 const prisma = new PrismaClient();
 
-export interface AuthRequest extends Request {
+export interface AuthRequest extends Omit<Request, 'header'> {
   user?: {
     id: string;
     email: string;
