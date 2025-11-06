@@ -152,19 +152,11 @@ export class VacancyService {
 
     if (!vacancy) return null;
 
+    let requirementsData: any = {};
     let requirements = null;
     let responsibilities = null;
     let qualifications = null;
 
-    try {
-      if (vacancy.requirements) {
-        requirements = JSON.parse(vacancy.requirements);
-      }
-    } catch (e) {
-      console.warn('Failed to parse requirements:', e);
-    }
-
-    let requirementsData: any = {};
     try {
       if (vacancy.requirements) {
         requirementsData = JSON.parse(vacancy.requirements);
