@@ -33,8 +33,6 @@ export class DocumentService {
 
   // Public methods
   public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
-
-  public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
     try {
       // TODO: Document model not in schema - using Policy as placeholder
       // This should be fixed when Document model is added to schema
