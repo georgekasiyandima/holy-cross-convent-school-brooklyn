@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { PrismaClient } from '@prisma/client';
 import sharp from 'sharp';
 import fs from 'fs';
