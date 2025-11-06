@@ -49,10 +49,10 @@ export type DocumentServiceInstance = {
   }>;
 };
 
-export class DocumentService {
+export class DocumentService implements DocumentServiceInstance {
   private static instance: DocumentService;
 
-  public static getInstance(): DocumentService {
+  public static getInstance(): DocumentServiceInstance {
     if (!DocumentService.instance) {
       DocumentService.instance = new DocumentService();
     }
