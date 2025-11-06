@@ -155,14 +155,48 @@ app.get('/', (req, res) => {
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
-    version: '1.0.0',
-    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection by querying a simple table
+    await prisma.$queryRaw`SELECT 1`;
+    
+    // Check if key tables exist
+    const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
+      SELECT tablename FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename IN ('staff_members', 'users', 'gallery_items')
+    `;
+    
+    const tableNames = tables.map(t => t.tablename);
+    
+    res.status(200).json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'production',
+      version: '1.0.0',
+      database: {
+        connected: true,
+        tables: {
+          staff_members: tableNames.includes('staff_members'),
+          users: tableNames.includes('users'),
+          gallery_items: tableNames.includes('gallery_items'),
+          allTables: tableNames
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'production',
+      version: '1.0.0',
+      database: {
+        connected: false,
+        error: error?.message || 'Database connection failed'
+      }
+    });
+  }
 });
 
 // Error handling middleware (must be last)
