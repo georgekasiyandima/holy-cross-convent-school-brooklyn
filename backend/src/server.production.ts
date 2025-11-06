@@ -48,8 +48,41 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS Configuration
+// Allow multiple origins for Vercel preview deployments
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN,
+  'https://holy-cross-convent-school-brooklyn.vercel.app',
+  /^https:\/\/holy-cross-convent-school-brooklyn-.*\.vercel\.app$/, // Allow all Vercel preview URLs
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || '*',
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed origins
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return origin === allowed;
+      }
+      if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      // In production, allow the origin if no specific CORS is set (fallback)
+      if (!process.env.FRONTEND_URL && !process.env.CORS_ORIGIN) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
