@@ -97,7 +97,25 @@ router.get('/', async (req, res, next) => {
         groupedStaff
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    // Enhanced error logging for debugging
+    console.error('❌ Error fetching staff:', {
+      message: error?.message,
+      code: error?.code,
+      meta: error?.meta,
+      name: error?.name,
+      stack: error?.stack
+    });
+    
+    // Return more detailed error in development
+    if (process.env.NODE_ENV === 'development') {
+      return res.status(500).json({
+        success: false,
+        error: error?.message || 'Failed to fetch staff',
+        details: error?.meta || error?.stack
+      });
+    }
+    
     next(error);
   }
 });
