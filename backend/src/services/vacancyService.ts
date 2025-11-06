@@ -164,20 +164,17 @@ export class VacancyService {
       console.warn('Failed to parse requirements:', e);
     }
 
+    let requirementsData: any = {};
     try {
-      if (vacancy.responsibilities) {
-        responsibilities = JSON.parse(vacancy.responsibilities);
+      if (vacancy.requirements) {
+        requirementsData = JSON.parse(vacancy.requirements);
+        requirements = requirementsData.requirements || [];
+        responsibilities = requirementsData.responsibilities || null;
+        qualifications = requirementsData.qualifications || null;
       }
     } catch (e) {
-      console.warn('Failed to parse responsibilities:', e);
-    }
-
-    try {
-      if (vacancy.qualifications) {
-        qualifications = JSON.parse(vacancy.qualifications);
-      }
-    } catch (e) {
-      console.warn('Failed to parse qualifications:', e);
+      console.warn('Failed to parse requirements:', e);
+      requirements = [];
     }
 
     return {
@@ -185,6 +182,16 @@ export class VacancyService {
       requirements,
       responsibilities,
       qualifications,
+      isPublished: vacancy.isActive,
+      employmentType: requirementsData.employmentType || null,
+      location: requirementsData.location || null,
+      salaryRange: requirementsData.salaryRange || null,
+      closingDate: requirementsData.closingDate || null,
+      startDate: requirementsData.startDate || null,
+      isUrgent: requirementsData.isUrgent || false,
+      applicationEmail: requirementsData.applicationEmail || null,
+      applicationInstructions: requirementsData.applicationInstructions || null,
+      order: requirementsData.order || 0,
     };
   }
 
@@ -285,15 +292,9 @@ export class VacancyService {
   async getPublishedVacancies() {
     const vacancies = await prisma.vacancy.findMany({
       where: {
-        isPublished: true,
-        OR: [
-          { closingDate: null },
-          { closingDate: { gte: new Date() } },
-        ],
+        isActive: true, // Map isPublished to isActive
       },
       orderBy: [
-        { isUrgent: 'desc' },
-        { order: 'asc' },
         { createdAt: 'desc' },
       ],
     });
