@@ -303,13 +303,33 @@ router.put(
       // Use enhanced upload service if image is provided
       if (req.file) {
         console.log('🔍 Staff PUT route: Processing image upload');
+        console.log('🔍 Staff PUT route: File details:', {
+          originalname: req.file.originalname,
+          filename: req.file.filename,
+          path: req.file.path,
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        });
         console.log('🔍 Staff PUT route: StaffData being sent to upload service:', staffData);
+
+        // Verify file exists before processing
+        if (!req.file.path || !require('fs').existsSync(req.file.path)) {
+          console.error('❌ Staff PUT route: File path does not exist:', req.file.path);
+          return res.status(400).json({
+            success: false,
+            error: 'Uploaded file not found on server'
+          });
+        }
 
         const result = await uploadService.updateStaffImage(id, req.file, staffData);
 
         if (!result.success) {
+          console.error('❌ Staff PUT route: Upload service failed:', result.error);
           return next(createError(result.error || 'Staff update failed', 400));
         }
+
+        console.log('✅ Staff PUT route: Upload successful');
+        console.log('🔗 Image URL:', result.data.staff?.imageUrl);
 
         return res.json({
           success: true,

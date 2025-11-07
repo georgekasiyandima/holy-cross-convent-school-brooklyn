@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { API_BASE_URL as CONFIG_API_BASE_URL, API_BASE_URL_WITH_PREFIX } from './apiConfig';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-const API_BASE_URL = `${API_URL}/api/gallery`;
+// Use centralized API config
+const API_URL = CONFIG_API_BASE_URL.replace('/api', '') || 'http://localhost:5000';
+const API_BASE_URL = `${API_BASE_URL_WITH_PREFIX}/gallery`;
 
 export interface GalleryItem {
   id: string;
@@ -101,16 +103,18 @@ class GalleryService {
     if (fileName.startsWith('http')) {
       return fileName;
     }
-    // Construct the URL - ensure we use the correct base URL
-    // API_URL might be "http://localhost:5000" or include "/api"
+    // Construct the URL using the backend base URL
+    // Remove /api if present to get base URL
     let baseUrl = API_URL;
     if (baseUrl.includes('/api')) {
       baseUrl = baseUrl.replace('/api', '');
     }
     // Remove trailing slash if present
     baseUrl = baseUrl.replace(/\/$/, '');
-    // Return the full URL
-    return `${baseUrl}/uploads/gallery/${encodeURIComponent(fileName)}`;
+    // Return the full URL - files are stored in uploads/gallery/ directory
+    const imageUrl = `${baseUrl}/uploads/gallery/${encodeURIComponent(fileName)}`;
+    console.log('🔗 Gallery image URL:', { fileName, imageUrl, baseUrl });
+    return imageUrl;
   }
 
   // Get gallery items with filters

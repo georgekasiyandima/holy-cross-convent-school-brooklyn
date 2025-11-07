@@ -56,8 +56,20 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static files - serve uploads directory
+// This allows access to files like /uploads/gallery/image.jpg, /uploads/staff/image.jpg, etc.
+const uploadsPath = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsPath, {
+  setHeaders: (res, filePath) => {
+    // Set proper CORS headers for images
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+  }
+}));
+
+// Log upload directory info on startup
+console.log('📁 Upload directory configured:', uploadsPath);
+console.log('📁 Upload directory exists:', require('fs').existsSync(uploadsPath));
 
 // Auth routes
 app.use('/api/auth', authRoutes);
