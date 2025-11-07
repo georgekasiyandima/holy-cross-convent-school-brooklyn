@@ -75,32 +75,75 @@ router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    console.log('🔍 Login attempt:', { email, hasPassword: !!password });
+
     // Validate input
     if (!email || !password) {
-      throw createError('Please provide email and password', 400);
+      console.log('❌ Login failed: Missing email or password');
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide email and password',
+        message: 'Email and password are required'
+      });
     }
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: email.toLowerCase().trim() }
     });
 
-    if (!user || !user.isActive) {
-      throw createError('Invalid credentials or user inactive', 401);
+    if (!user) {
+      console.log('❌ Login failed: User not found for email:', email);
+      // Check if any users exist at all
+      const userCount = await prisma.user.count();
+      if (userCount === 0) {
+        return res.status(401).json({
+          success: false,
+          error: 'No admin user found',
+          message: 'No admin user exists. Please create an admin user first using /api/auth/setup endpoint.',
+          needsSetup: true
+        });
+      }
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials',
+        message: 'Invalid email or password'
+      });
+    }
+
+    if (!user.isActive) {
+      console.log('❌ Login failed: User is inactive:', email);
+      return res.status(401).json({
+        success: false,
+        error: 'Account inactive',
+        message: 'Your account has been deactivated. Please contact an administrator.'
+      });
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw createError('Invalid credentials', 401);
+      console.log('❌ Login failed: Invalid password for email:', email);
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials',
+        message: 'Invalid email or password'
+      });
     }
 
     // Generate token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret === 'fallback-secret') {
+      console.warn('⚠️  Warning: Using fallback JWT_SECRET. Please set JWT_SECRET in environment variables.');
+    }
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret',
+      jwtSecret || 'fallback-secret',
       { expiresIn: '7d' }
     );
+
+    console.log('✅ Login successful for user:', user.email);
 
     res.json({
       success: true,
@@ -115,7 +158,8 @@ router.post('/login', async (req, res, next) => {
         token
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('❌ Login error:', error);
     next(error);
   }
 });
@@ -234,19 +278,34 @@ router.post('/setup', async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
 
+    console.log('🔍 Setup attempt:', { email, hasPassword: !!password, name });
+
     // Check if any user exists
     const userCount = await prisma.user.count();
     if (userCount > 0) {
-      throw createError('Setup already completed', 400);
+      console.log('❌ Setup failed: Users already exist');
+      return res.status(400).json({
+        success: false,
+        error: 'Setup already completed',
+        message: 'Admin user already exists. Please use the login endpoint instead.'
+      });
     }
 
     // Validate input
     if (!email || !password || !name) {
-      throw createError('Please provide email, password, and name', 400);
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Please provide email, password, and name'
+      });
     }
 
     if (password.length < 6) {
-      throw createError('Password must be at least 6 characters long', 400);
+      return res.status(400).json({
+        success: false,
+        error: 'Password too short',
+        message: 'Password must be at least 6 characters long'
+      });
     }
 
     // Hash password
@@ -256,24 +315,29 @@ router.post('/setup', async (req, res, next) => {
     // Create super admin user
     const user = await prisma.user.create({
       data: {
-        email,
+        email: email.toLowerCase().trim(),
         password: hashedPassword,
         name,
-        role: 'SUPER_ADMIN'
+        role: 'SUPER_ADMIN',
+        isActive: true
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        isActive: true,
         createdAt: true
       }
     });
 
+    console.log('✅ Admin user created:', user.email);
+
     // Generate token
+    const jwtSecret = process.env.JWT_SECRET;
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'fallback-secret',
+      jwtSecret || 'fallback-secret',
       { expiresIn: '7d' }
     );
 
@@ -283,6 +347,30 @@ router.post('/setup', async (req, res, next) => {
       data: {
         user,
         token
+      }
+    });
+  } catch (error: any) {
+    console.error('❌ Setup error:', error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        success: false,
+        error: 'User already exists',
+        message: 'A user with this email already exists'
+      });
+    }
+    next(error);
+  }
+});
+
+// Check if setup is needed (public endpoint)
+router.get('/check-setup', async (req, res, next) => {
+  try {
+    const userCount = await prisma.user.count();
+    res.json({
+      success: true,
+      data: {
+        needsSetup: userCount === 0,
+        userCount
       }
     });
   } catch (error) {

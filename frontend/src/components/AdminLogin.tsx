@@ -67,7 +67,24 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         setError('Login failed. Please check your credentials.');
       }
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      // Show detailed error message
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data?.error 
+        || error.message 
+        || 'Login failed. Please try again.';
+      
+      setError(errorMessage);
+      
+      // If no admin user exists, show setup instructions
+      if (error.response?.data?.needsSetup) {
+        setError(
+          'No admin user found. Please create an admin user first. ' +
+          'Contact your system administrator or use the /api/auth/setup endpoint.'
+        );
+      }
     } finally {
       setLoading(false);
     }
