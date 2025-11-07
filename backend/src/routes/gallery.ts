@@ -18,13 +18,16 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Configure multer for file uploads
+// Use absolute path to ensure files are saved in the correct location
+const uploadsBaseDir = path.join(process.cwd(), 'uploads', 'gallery');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = 'uploads/gallery';
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+    // Use absolute path to ensure consistency
+    if (!fs.existsSync(uploadsBaseDir)) {
+      fs.mkdirSync(uploadsBaseDir, { recursive: true });
+      console.log('✅ Created gallery upload directory:', uploadsBaseDir);
     }
-    cb(null, uploadPath);
+    cb(null, uploadsBaseDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -210,13 +213,29 @@ router.post('/upload',
         });
       }
       
+      // Verify file exists and log absolute path
+      const fileExists = fs.existsSync(req.file.path);
+      const absolutePath = path.resolve(req.file.path);
+      const expectedUrl = `/uploads/gallery/${req.file.filename}`;
+      
       console.log('🔍 Gallery Upload Route: File details:', {
         originalname: req.file.originalname,
         filename: req.file.filename,
         path: req.file.path,
+        absolutePath: absolutePath,
+        fileExists: fileExists,
         size: req.file.size,
-        mimetype: req.file.mimetype
+        mimetype: req.file.mimetype,
+        expectedUrl: expectedUrl
       });
+      
+      if (!fileExists) {
+        console.error('❌ Gallery Upload Route: File does not exist at path:', req.file.path);
+        return res.status(500).json({
+          success: false,
+          error: 'File was not saved correctly'
+        });
+      }
 
       // Validate required fields
       if (!req.body.title || req.body.title.trim() === '') {

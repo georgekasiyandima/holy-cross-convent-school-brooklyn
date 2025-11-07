@@ -58,7 +58,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files - serve uploads directory
 // This allows access to files like /uploads/gallery/image.jpg, /uploads/staff/image.jpg, etc.
-const uploadsPath = path.join(__dirname, '../uploads');
+// Use process.cwd() to match where files are actually saved
+const uploadsPath = path.join(process.cwd(), 'uploads');
 app.use('/uploads', express.static(uploadsPath, {
   setHeaders: (res, filePath) => {
     // Set proper CORS headers for images
@@ -70,6 +71,18 @@ app.use('/uploads', express.static(uploadsPath, {
 // Log upload directory info on startup
 console.log('📁 Upload directory configured:', uploadsPath);
 console.log('📁 Upload directory exists:', require('fs').existsSync(uploadsPath));
+console.log('📁 Process CWD:', process.cwd());
+console.log('📁 __dirname:', __dirname);
+
+// Verify gallery directory exists
+const galleryPath = path.join(uploadsPath, 'gallery');
+if (require('fs').existsSync(galleryPath)) {
+  console.log('✅ Gallery directory exists:', galleryPath);
+} else {
+  console.log('⚠️  Gallery directory does not exist yet:', galleryPath);
+  require('fs').mkdirSync(galleryPath, { recursive: true });
+  console.log('✅ Created gallery directory:', galleryPath);
+}
 
 // Auth routes
 app.use('/api/auth', authRoutes);
