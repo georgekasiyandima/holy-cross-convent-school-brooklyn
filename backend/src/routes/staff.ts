@@ -5,6 +5,7 @@ import { AuthRequest, requireEditor, authMiddleware } from '../middleware/auth';
 import { validateStaffMember } from '../middleware/validation';
 import { uploadImage } from '../middleware/upload';
 import uploadService from '../services/uploadService';
+import multer from 'multer';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -202,23 +203,55 @@ router.post(
 /**
  * PUT /api/staff/:id
  * Update existing staff member with optional photo upload
- * Middleware: requireEditor, uploadImage, validateStaffMember
+ * Middleware: requireEditor, uploadImage
+ * Note: Validation is done inline to allow flexible updates (image-only or full update)
  */
 router.put(
   "/:id",
   authMiddleware,
   requireEditor,
   uploadImage.single("image"),
-  validateStaffMember,
+  // Handle multer errors
+  (err: any, req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          error: 'File too large. Maximum size is 5MB'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        error: `Upload error: ${err.message}`
+      });
+    }
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        error: err.message || 'File upload failed'
+      });
+    }
+    next();
+  },
   async (req: AuthRequest, res, next) => {
     try {
       console.log('🔍 Staff PUT route: Starting request');
       console.log('🔍 Staff PUT route: Params:', req.params);
       console.log('🔍 Staff PUT route: Body:', req.body);
-      console.log('🔍 Staff PUT route: File:', req.file);
+      console.log('🔍 Staff PUT route: File:', req.file ? 'Yes' : 'No');
       console.log('🔍 Staff PUT route: User:', req.user);
       
       const { id } = req.params;
+      
+      // Get existing staff member to use as fallback for missing fields
+      const existingStaff = await prisma.staffMember.findUnique({
+        where: { id }
+      });
+
+      if (!existingStaff) {
+        return next(createError('Staff member not found', 404));
+      }
+
       const {
         name,
         role,
@@ -240,19 +273,36 @@ router.put(
         });
       }
 
+      // Use existing values as fallback if not provided
+      const staffData = {
+        name: name || existingStaff.name,
+        role: role || existingStaff.role || '',
+        email: email !== undefined ? email : existingStaff.email,
+        phone: phone !== undefined ? phone : existingStaff.phone,
+        grade: grade !== undefined ? grade : existingStaff.grade,
+        subjects: parsedSubjects ? JSON.parse(parsedSubjects) : (existingStaff.subjects ? JSON.parse(existingStaff.subjects) : null),
+        category: category || existingStaff.category,
+        order: order !== undefined ? parseInt(order, 10) : existingStaff.order
+      };
+
+      // Basic validation for required fields
+      if (!staffData.name || staffData.name.trim().length < 2) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Name must be at least 2 characters" 
+        });
+      }
+
+      if (!staffData.role || staffData.role.trim().length < 2) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Role must be at least 2 characters" 
+        });
+      }
+
       // Use enhanced upload service if image is provided
       if (req.file) {
-        console.log('🔍 Staff PUT route: Category from body:', category);
-        const staffData = {
-          name,
-          role,
-          email,
-          phone,
-          grade,
-          subjects: parsedSubjects ? JSON.parse(parsedSubjects) : null,
-          category,
-          order: order ? parseInt(order, 10) : undefined
-        };
+        console.log('🔍 Staff PUT route: Processing image upload');
         console.log('🔍 Staff PUT route: StaffData being sent to upload service:', staffData);
 
         const result = await uploadService.updateStaffImage(id, req.file, staffData);
@@ -264,22 +314,36 @@ router.put(
         return res.json({
           success: true,
           message: result.message,
-          data: result.data
+          data: {
+            ...result.data,
+            // Ensure imageUrl is easily accessible
+            imageUrl: result.data.staff?.imageUrl,
+            staff: result.data.staff
+          }
         });
       }
 
-      // Update without image
-      const updateData: any = {
-        name,
-        role,
-        email,
-        phone,
-        grade,
-        order: order ? parseInt(order, 10) : 0,
-        subjects: parsedSubjects,
-        isActive,
-        category,
-      };
+      // Update without image - only update fields that are provided
+      const updateData: any = {};
+      
+      if (name !== undefined) updateData.name = name;
+      if (role !== undefined) updateData.role = role;
+      if (email !== undefined) updateData.email = email;
+      if (phone !== undefined) updateData.phone = phone;
+      if (grade !== undefined) updateData.grade = grade;
+      if (order !== undefined) updateData.order = parseInt(order, 10);
+      if (parsedSubjects !== null) updateData.subjects = parsedSubjects;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (category !== undefined) updateData.category = category;
+
+      // Only update if there's data to update
+      if (Object.keys(updateData).length === 0) {
+        return res.json({ 
+          success: true, 
+          message: 'No changes provided',
+          data: { staff: existingStaff } 
+        });
+      }
 
       const staff = await prisma.staffMember.update({
         where: { id },

@@ -16,6 +16,7 @@ import calendarRoutes from './routes/calendar';
 import galleryRoutes from './routes/gallery';
 import vacanciesRoutes from './routes/vacancies';
 import { errorHandler } from './middleware/errorHandler';
+import keepAliveService from './services/keepAliveService';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -197,6 +198,12 @@ const server = app.listen(PORT, () => {
 🔗 Health check: http://localhost:${PORT}/api/health
 📚 API Documentation: http://localhost:${PORT}/
   `);
+
+  // Start keep-alive service in production to prevent Render sleep
+  if (process.env.NODE_ENV === 'production') {
+    console.log('🔄 Initializing keep-alive service...');
+    // Service will auto-start after 30 seconds
+  }
 });
 
 export default app;
