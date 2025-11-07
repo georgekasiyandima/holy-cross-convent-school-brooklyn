@@ -177,6 +177,15 @@ const Gallery: React.FC = () => {
           isPublished: true,
           limit: 100
         });
+        
+        console.log('📊 Gallery: Loaded items:', response.items.length);
+        console.log('📊 Gallery: Items:', response.items.map(i => ({ 
+          id: i.id, 
+          title: i.title, 
+          fileName: i.fileName, 
+          isPublished: i.isPublished 
+        })));
+        
         setAllItems(response.items);
 
         // Calculate stats
