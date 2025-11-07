@@ -98,10 +98,34 @@ class UploadService {
 
     directories.forEach(dir => {
       const fullPath = path.join(process.cwd(), dir);
-      if (!fs.existsSync(fullPath)) {
-        fs.mkdirSync(fullPath, { recursive: true });
+      try {
+        if (!fs.existsSync(fullPath)) {
+          fs.mkdirSync(fullPath, { recursive: true });
+          console.log(`✅ Created upload directory: ${fullPath}`);
+        } else {
+          console.log(`✅ Upload directory exists: ${fullPath}`);
+        }
+        // Verify write permissions
+        fs.accessSync(fullPath, fs.constants.W_OK);
+      } catch (error: any) {
+        console.error(`❌ Error creating/accessing directory ${fullPath}:`, error.message);
+        // Try to create parent directory
+        try {
+          const parentDir = path.dirname(fullPath);
+          if (!fs.existsSync(parentDir)) {
+            fs.mkdirSync(parentDir, { recursive: true });
+          }
+          fs.mkdirSync(fullPath, { recursive: true });
+          console.log(`✅ Created directory after retry: ${fullPath}`);
+        } catch (retryError: any) {
+          console.error(`❌ Failed to create directory ${fullPath} after retry:`, retryError.message);
+        }
       }
     });
+    
+    console.log(`📁 Upload base directory: ${this.uploadDir}`);
+    console.log(`📁 Upload directory exists: ${fs.existsSync(this.uploadDir)}`);
+    console.log(`📁 Upload directory writable: ${fs.existsSync(this.uploadDir) ? 'checking...' : 'N/A'}`);
   }
 
   /**
@@ -153,13 +177,27 @@ class UploadService {
 
     console.log('🔍 optimizeImage: Processing file:', filePath);
     console.log('🔍 optimizeImage: Upload directory:', this.uploadDir);
+    console.log('🔍 optimizeImage: File exists:', fs.existsSync(filePath));
+    
+    // Ensure file exists
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Source file not found: ${filePath}`);
+    }
+    
+    // Ensure staff directory exists
+    const staffDir = path.join(this.uploadDir, 'staff');
+    if (!fs.existsSync(staffDir)) {
+      fs.mkdirSync(staffDir, { recursive: true });
+      console.log('✅ Created staff directory:', staffDir);
+    }
     
     const fileInfo = await sharp(filePath).metadata();
     const originalName = path.basename(filePath);
     const filename = `${uuidv4()}.${format}`;
-    const optimizedPath = path.join(this.uploadDir, 'staff', filename);
+    const optimizedPath = path.join(staffDir, filename);
     
     console.log('🔍 optimizeImage: Target path:', optimizedPath);
+    console.log('🔍 optimizeImage: Target directory exists:', fs.existsSync(path.dirname(optimizedPath)));
     
     // Optimize main image
     await sharp(filePath)
@@ -311,8 +349,19 @@ class UploadService {
   ): Promise<UploadResult> {
     try {
       console.log('🔍 updateStaffImage: Starting with staffId:', staffId);
-      console.log('🔍 updateStaffImage: File info:', { path: file.path, size: file.size, mimetype: file.mimetype });
+      console.log('🔍 updateStaffImage: File info:', { 
+        path: file?.path, 
+        size: file?.size, 
+        mimetype: file?.mimetype,
+        originalname: file?.originalname,
+        filename: file?.filename
+      });
       console.log('🔍 updateStaffImage: Staff data:', staffData);
+      console.log('🔍 updateStaffImage: Upload directory:', this.uploadDir);
+      console.log('🔍 updateStaffImage: Upload directory exists:', fs.existsSync(this.uploadDir));
+      
+      // Ensure directories exist before processing
+      this.ensureDirectories();
       
       // Validate file
       const validation = this.validateFile(file, this.allowedImageTypes);
