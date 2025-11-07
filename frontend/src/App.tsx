@@ -26,6 +26,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminApplicationManagement from './pages/AdminApplicationManagement';
 import SchoolStatsManagement from './pages/SchoolStatsManagement';
+import ProtectedRoute from './components/ProtectedRoute';
 import SchoolDocuments from './pages/SchoolDocuments';
 import LogoSymbolismPage from './pages/LogoSymbolism';
 import MissionVision from './pages/MissionVision';
@@ -245,16 +246,86 @@ const NavigationWrapper: React.FC = () => {
     return (
       <Routes>
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/applications" element={<AdminApplicationManagement />} />
-        <Route path="/admin/staff-upload" element={<AdminStaffUploadPage />} />
-        <Route path="/admin/document-upload" element={<AdminDocumentUpload />} />
-        <Route path="/admin/school-stats" element={<SchoolStatsManagement />} />
-        <Route path="/admin/calendar" element={<CalendarManagement />} />
-        <Route path="/admin/gallery" element={<GalleryManagement />} />
-        <Route path="/admin/newsletters" element={<NewsletterManagement />} />
-        <Route path="/admin/vacancies" element={<VacancyManagement />} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/applications" 
+          element={
+            <ProtectedRoute>
+              <AdminApplicationManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/staff-upload" 
+          element={
+            <ProtectedRoute>
+              <AdminStaffUploadPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/document-upload" 
+          element={
+            <ProtectedRoute>
+              <AdminDocumentUpload />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/school-stats" 
+          element={
+            <ProtectedRoute>
+              <SchoolStatsManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/calendar" 
+          element={
+            <ProtectedRoute>
+              <CalendarManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/gallery" 
+          element={
+            <ProtectedRoute>
+              <GalleryManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/newsletters" 
+          element={
+            <ProtectedRoute>
+              <NewsletterManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/vacancies" 
+          element={
+            <ProtectedRoute>
+              <VacancyManagement />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     );
   }
