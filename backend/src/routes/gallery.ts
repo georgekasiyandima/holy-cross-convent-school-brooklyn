@@ -197,12 +197,26 @@ router.post('/upload',
   upload.single('file'),
   async (req, res, next) => {
     try {
+      console.log('🔍 Gallery Upload Route: Starting request');
+      console.log('🔍 Gallery Upload Route: File received:', req.file ? 'Yes' : 'No');
+      console.log('🔍 Gallery Upload Route: Body:', req.body);
+      console.log('🔍 Gallery Upload Route: User:', (req as any).user?.email);
+      
       if (!req.file) {
+        console.error('❌ Gallery Upload Route: No file received');
         return res.status(400).json({ 
           success: false,
           error: 'No file uploaded' 
         });
       }
+      
+      console.log('🔍 Gallery Upload Route: File details:', {
+        originalname: req.file.originalname,
+        filename: req.file.filename,
+        path: req.file.path,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      });
 
       // Validate required fields
       if (!req.body.title || req.body.title.trim() === '') {
@@ -242,6 +256,8 @@ router.post('/upload',
       // Parse isPublished - handle string 'true'/'false' or boolean
       const published = isPublished === undefined || isPublished === '' || isPublished === 'true' || isPublished === true;
       
+      console.log('🔍 Gallery Upload Route: Creating gallery item in database...');
+      
       const item = await GalleryService.createGalleryItem({
         title: title.trim(),
         description: description?.trim() || undefined,
@@ -257,6 +273,8 @@ router.post('/upload',
         uploadedBy: (req as any).user?.id,
         ...(albumId && albumId !== '' ? { albumId } : {}),
       });
+      
+      console.log('✅ Gallery Upload Route: Gallery item created:', item.id);
 
       // Parse tags from JSON if needed
       let parsedTags = [];
