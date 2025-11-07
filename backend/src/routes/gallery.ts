@@ -290,12 +290,18 @@ router.post('/upload',
         tags: parsedTags,
         fileName: item.fileName || req.file.filename
       };
+      
+      const imageUrl = `${req.protocol}://${req.get('host')}/uploads/gallery/${itemResponse.fileName}`;
+      console.log('✅ Gallery Upload Route: Upload successful');
+      console.log('🔗 Image URL:', imageUrl);
+      console.log('📁 File path:', req.file.path);
+      console.log('📝 File name:', itemResponse.fileName);
+      console.log('📊 File size:', req.file.size, 'bytes');
 
       // Post to social media if requested and configured
       let socialMediaResults = null;
       if (req.body.postToSocial === 'true' && itemResponse.isPublished) {
         try {
-          const imageUrl = `${req.protocol}://${req.get('host')}/uploads/gallery/${itemResponse.fileName}`;
           const caption = `${itemResponse.title}${itemResponse.description ? ` - ${itemResponse.description}` : ''}\n\n#HolyCrossConventSchool #Brooklyn #CapeTown`;
           
           socialMediaResults = await SocialMediaService.postToAll({
