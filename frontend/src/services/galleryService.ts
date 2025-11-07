@@ -187,7 +187,7 @@ class GalleryService {
         {
           headers: {
             ...this.getAuthHeaders(),
-            'Content-Type': 'multipart/form-data',
+            // Don't set Content-Type - let axios/browser set it with boundary automatically
           },
         }
       );

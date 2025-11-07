@@ -112,11 +112,11 @@ const AdminStaffUpload: React.FC = () => {
       console.log('🔍 Upload - Staff Member:', staffMember);
       
       // Upload to staff endpoint
+      // NOTE: Don't set Content-Type manually - let axios/browser set it with boundary
       const response = await axios.put(`${API_BASE_URL_WITH_PREFIX}/staff/${staffMember.id}`, formData, {
         headers: {
-          ...axios.defaults.headers.common,
-          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
+          // Let browser set Content-Type with boundary automatically
         },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
