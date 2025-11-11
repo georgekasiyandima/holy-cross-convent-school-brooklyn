@@ -355,7 +355,6 @@ class EnhancedCalendarService {
   // Generate calendar month
   generateCalendarMonth(year: number, month: number, events: CalendarEvent[]): CalendarMonth {
     const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     

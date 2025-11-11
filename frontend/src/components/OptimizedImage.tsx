@@ -108,12 +108,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }, [src, fallbackSrc, usingFallback, config, onLoad, onError]);
 
   useEffect(() => {
-    // Reset fallback state when src changes
     if (usingFallback && src !== imageUrl) {
       setUsingFallback(false);
     }
+  }, [usingFallback, src, imageUrl]);
+
+  useEffect(() => {
     loadImage();
-  }, [loadImage, retryCount, src]);
+  }, [loadImage, retryCount]);
 
   const handleRetry = () => {
     if (retryCount < maxRetries) {

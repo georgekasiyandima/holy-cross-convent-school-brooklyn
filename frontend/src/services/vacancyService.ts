@@ -147,5 +147,7 @@ class VacancyService {
   }
 }
 
-export default new VacancyService();
+const vacancyService = new VacancyService();
+
+export default vacancyService;
 

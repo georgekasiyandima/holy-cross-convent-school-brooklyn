@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import {
   History,
   People,
@@ -173,9 +173,7 @@ const convertToDisplayStat = (stat: SchoolStatsDisplay): DisplayStat => {
 };
 
 const QuickStatsBanner: React.FC<QuickStatsBannerProps> = ({ animate = true }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { stats, loading } = useSchoolStats();
+  const { stats } = useSchoolStats();
   
   const { ref, inView } = useInView({
     threshold: 0.3,

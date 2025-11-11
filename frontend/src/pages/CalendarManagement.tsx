@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -30,7 +30,10 @@ import {
   Snackbar,
   Switch,
   FormControlLabel,
-  Divider
+  Divider,
+  Grid,
+  Stack,
+  CircularProgress
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -43,14 +46,16 @@ import {
   Sports,
   TheaterComedy,
   Group,
-  DateRange,
   Save,
-  Cancel
+  Timeline as TimelineIcon,
+  Upcoming,
+  Today
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import SEO from '../components/SEO';
+import AdminLayout from '../components/AdminLayout';
 
 interface CalendarEvent {
   id: string;
@@ -82,7 +87,7 @@ interface Term {
 }
 
 const CalendarManagement: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [terms, setTerms] = useState<Term[]>([]);
   const [loading, setLoading] = useState(true);
@@ -443,225 +448,427 @@ const CalendarManagement: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography>Loading calendar management...</Typography>
-      </Container>
-    );
-  }
+  const upcomingCount = useMemo(() => {
+    const today = new Date();
+    return events.filter((event) => new Date(event.startDate) >= today).length;
+  }, [events]);
+
+  const activeTerm = useMemo(() => terms.find((term) => term.isActive), [terms]);
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h5" gutterBottom color="error">
-            Authentication Required
+      <AdminLayout>
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h5" gutterBottom color="error">
+              Authentication Required
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Please log in with admin credentials to access calendar management.
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => window.location.href = '/admin/login'}
+              sx={{ mt: 2 }}
+            >
+              Go to Login
+            </Button>
+          </Box>
+        </Container>
+      </AdminLayout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+          <CircularProgress sx={{ color: '#1a237e', mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            Loading calendar management...
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Please log in with admin credentials to access calendar management.
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary"
-            onClick={() => window.location.href = '/admin/login'}
-            sx={{ mt: 2 }}
-          >
-            Go to Login
-          </Button>
-        </Box>
-      </Container>
+        </Container>
+      </AdminLayout>
     );
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <SEO 
-        title="Calendar Management - Holy Cross Convent School"
-        description="Manage school calendar events and terms"
-      />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
-            Calendar Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage school terms and calendar events
-          </Typography>
+    <AdminLayout>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <SEO
+          title="Calendar Management - Holy Cross Convent School"
+          description="Manage school calendar events and terms"
+        />
+
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg,#1a237e 0%,#3949ab 60%,#5c6bc0 100%)',
+            color: '#fff',
+            py: { xs: 6, md: 8 },
+            borderBottomLeftRadius: { xs: 0, md: 32 },
+            borderBottomRightRadius: { xs: 0, md: 32 },
+          }}
+        >
+          <Container maxWidth="lg">
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+              Calendar Management
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 680 }}>
+              Coordinate events, terms, and school-wide schedules in one connected hub.
+            </Typography>
+          </Container>
         </Box>
 
-        <Card>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-              <Tab label="Events" icon={<Event />} />
-              <Tab label="Terms" icon={<CalendarToday />} />
-            </Tabs>
-          </Box>
-
-          <CardContent>
-            {activeTab === 0 && (
-              <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h6">Calendar Events</Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    onClick={() => openEventDialog()}
-                    sx={{ backgroundColor: '#1a237e' }}
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, mt: { md: -6 } }}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 12px 24px rgba(15,23,42,0.08)',
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg,#42a5f5,#1a237e)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                    }}
                   >
-                    Add Event
-                  </Button>
-                </Box>
+                    <TimelineIcon />
+                  </Box>
+                  <Box>
+                    <Typography variant="overline" sx={{ color: '#64748b' }}>
+                      Total Events
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                      {events.length}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#475569' }}>
+                      Managed across all grades
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 12px 24px rgba(15,23,42,0.08)',
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg,#66bb6a,#1b5e20)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                    }}
+                  >
+                    <Upcoming />
+                  </Box>
+                  <Box>
+                    <Typography variant="overline" sx={{ color: '#64748b' }}>
+                      Upcoming Events
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                      {upcomingCount}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#475569' }}>
+                      Scheduled from today onwards
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 12px 24px rgba(15,23,42,0.08)',
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg,#ffb74d,#f57c00)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                    }}
+                  >
+                    <Today />
+                  </Box>
+                  <Box>
+                    <Typography variant="overline" sx={{ color: '#64748b' }}>
+                      Active Term
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                      {activeTerm ? `${activeTerm.name} ${activeTerm.year}` : 'Not set'}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#475569' }}>
+                      {activeTerm
+                        ? `${new Date(activeTerm.startDate).toLocaleDateString()} - ${new Date(activeTerm.endDate).toLocaleDateString()}`
+                        : 'Activate a term to highlight it here'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+          </Grid>
 
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Event</TableCell>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Category</TableCell>
-                        <TableCell>Grade</TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {events.map((event) => (
-                        <TableRow key={event.id}>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {getEventIcon(event.type)}
-                              <Box>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {event.title}
-                                </Typography>
-                                {event.description && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {event.description}
+          <Paper
+            elevation={0}
+            sx={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 3,
+              overflow: 'hidden',
+              boxShadow: '0 16px 32px rgba(15,23,42,0.08)',
+              backgroundColor: '#fff',
+            }}
+          >
+            <Box sx={{ borderBottom: '1px solid #e2e8f0', bgcolor: '#f8fafc', px: { xs: 2, md: 3 } }}>
+              <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+                <Tab icon={<Event />} iconPosition="start" label="Events" sx={{ fontWeight: 600 }} />
+                <Tab icon={<CalendarToday />} iconPosition="start" label="Terms" sx={{ fontWeight: 600 }} />
+              </Tabs>
+            </Box>
+
+            <CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 3, md: 4 } }}>
+              {activeTab === 0 && (
+                <Box>
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={2}
+                    alignItems={{ xs: 'stretch', md: 'center' }}
+                    sx={{ mb: 3 }}
+                  >
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                        Calendar Events
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        Manage assemblies, meetings, holidays, and key milestones.
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      startIcon={<Add />}
+                      onClick={() => openEventDialog()}
+                      sx={{ bgcolor: '#1a237e', ml: { md: 'auto' } }}
+                    >
+                      Add Event
+                    </Button>
+                  </Stack>
+
+                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: '#1a237e' }}>
+                          {['Event', 'Date', 'Type', 'Category', 'Grade', 'Actions'].map((heading) => (
+                            <TableCell key={heading} sx={{ color: '#ffffff', fontWeight: 600 }}>
+                              {heading}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {events.map((event) => (
+                          <TableRow key={event.id}>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                {getEventIcon(event.type)}
+                                <Box>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    {event.title}
                                   </Typography>
-                                )}
+                                  {event.description && (
+                                    <Typography variant="caption" color="text.secondary">
+                                      {event.description}
+                                    </Typography>
+                                  )}
+                                </Box>
                               </Box>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
-                              {new Date(event.startDate).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {new Date(event.startDate).toLocaleDateString()}
+                              </Typography>
                               {event.startDate !== event.endDate && (
                                 <Typography variant="caption" display="block">
                                   to {new Date(event.endDate).toLocaleDateString()}
                                 </Typography>
                               )}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={event.type.replace('_', ' ')} 
-                              size="small"
-                              color={event.isHoliday ? 'error' : 'default'}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {event.category && (
-                              <Chip 
-                                label={event.category} 
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={event.type.replace('_', ' ')}
                                 size="small"
-                                color={getEventColor(event.category) as any}
+                                color={event.isHoliday ? 'error' : 'default'}
                               />
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={event.grade} size="small" />
-                          </TableCell>
-                          <TableCell>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => openEventDialog(event)}
-                              color="primary"
-                            >
-                              <Edit />
-                            </IconButton>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleDeleteEvent(event.id)}
-                              color="error"
-                            >
-                              <Delete />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            )}
-
-            {activeTab === 1 && (
-              <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h6">School Terms</Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    onClick={() => openTermDialog()}
-                    sx={{ backgroundColor: '#1a237e' }}
-                  >
-                    Add Term
-                  </Button>
+                            </TableCell>
+                            <TableCell>
+                              {event.category && (
+                                <Chip
+                                  label={event.category}
+                                  size="small"
+                                  color={getEventColor(event.category) as any}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={event.grade === 'all' ? 'All' : event.grade} size="small" />
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" spacing={1}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => openEventDialog(event)}
+                                  color="primary"
+                                >
+                                  <Edit />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  color="error"
+                                >
+                                  <Delete />
+                                </IconButton>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Box>
+              )}
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                  {terms.map((term) => (
-                    <Box key={term.id} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', md: 'calc(50% - 8px)' } }}>
-                      <Card sx={{ 
-                        border: term.isActive ? '2px solid #1a237e' : '1px solid #e0e0e0',
-                        backgroundColor: term.isActive ? '#f3f4f6' : 'white'
-                      }}>
-                        <CardContent>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6" sx={{ color: '#1a237e' }}>
-                              {term.name} {term.year}
-                            </Typography>
-                            {term.isActive && (
-                              <Chip label="Active" color="primary" size="small" />
+              {activeTab === 1 && (
+                <Box>
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={2}
+                    alignItems={{ xs: 'stretch', md: 'center' }}
+                    sx={{ mb: 3 }}
+                  >
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                        School Terms
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        Define academic windows and highlight the active term.
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      startIcon={<Add />}
+                      onClick={() => openTermDialog()}
+                      sx={{ bgcolor: '#1a237e', ml: { md: 'auto' } }}
+                    >
+                      Add Term
+                    </Button>
+                  </Stack>
+
+                  <Grid container spacing={2}>
+                    {terms.map((term) => (
+                      <Grid item xs={12} md={6} key={term.id}>
+                        <Card
+                          sx={{
+                            borderRadius: 3,
+                            border: term.isActive ? '2px solid #1a237e' : '1px solid #e2e8f0',
+                            boxShadow: term.isActive ? '0 12px 24px rgba(26,35,126,0.16)' : '0 6px 16px rgba(15,23,42,0.1)',
+                            backgroundColor: term.isActive ? '#f4f7ff' : '#ffffff',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                              <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a237e' }}>
+                                  {term.name} {term.year}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#475569' }}>
+                                  {new Date(term.startDate).toLocaleDateString()} – {new Date(term.endDate).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                              {term.isActive && <Chip label="Active" color="primary" size="small" />}
+                            </Stack>
+
+                            {term.description && (
+                              <Typography variant="body2" sx={{ color: '#475569', mb: 2 }}>
+                                {term.description}
+                              </Typography>
                             )}
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            {new Date(term.startDate).toLocaleDateString()} - {new Date(term.endDate).toLocaleDateString()}
-                          </Typography>
-                          {term.description && (
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                              {term.description}
-                            </Typography>
-                          )}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button
-                              size="small"
-                              startIcon={<Edit />}
-                              onClick={() => openTermDialog(term)}
-                            >
-                              Edit
-                            </Button>
-                            {!term.isActive && (
+
+                            <Stack direction="row" spacing={1}>
                               <Button
                                 size="small"
-                                variant="outlined"
-                                onClick={() => handleActivateTerm(term.id)}
-                                sx={{ color: '#1a237e', borderColor: '#1a237e' }}
+                                startIcon={<Edit />}
+                                onClick={() => openTermDialog(term)}
                               >
-                                Activate
+                                Edit
                               </Button>
-                            )}
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Box>
-                  ))}
+                              {!term.isActive && (
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => handleActivateTerm(term.id)}
+                                  sx={{ color: '#1a237e', borderColor: '#1a237e' }}
+                                >
+                                  Activate
+                                </Button>
+                              )}
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+
+                    {terms.length === 0 && (
+                      <Grid item xs={12}>
+                        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3, border: '1px dashed #cbd5f5' }}>
+                          <Typography variant="body1" sx={{ color: '#64748b', mb: 2 }}>
+                            No terms defined yet.
+                          </Typography>
+                          <Button variant="contained" startIcon={<Add />} onClick={() => openTermDialog()}>
+                            Add Your First Term
+                          </Button>
+                        </Paper>
+                      </Grid>
+                    )}
+                  </Grid>
                 </Box>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Paper>
+        </Container>
 
         {/* Event Dialog */}
         <Dialog open={eventDialogOpen} onClose={() => setEventDialogOpen(false)} maxWidth="md" fullWidth>
@@ -671,201 +878,160 @@ const CalendarManagement: React.FC = () => {
           <form onSubmit={handleEventSubmit}>
             <DialogContent>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    label="Event Title"
-                    value={eventForm.title}
-                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                    multiline
-                    rows={3}
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Event Title"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  required
+                  variant="outlined"
+                  sx={{ mb: 1 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  multiline
+                  rows={3}
+                  variant="outlined"
+                />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <DatePicker
                     label="Start Date"
                     value={eventForm.startDate}
                     onChange={(date) => setEventForm({ ...eventForm, startDate: date || new Date() })}
-                    slotProps={{ 
-                      textField: { 
+                    slotProps={{
+                      textField: {
                         fullWidth: true,
-                        variant: "outlined",
-                        sx: { mb: 2 }
-                      } 
+                        variant: 'outlined',
+                      },
                     }}
                   />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <DatePicker
-                      label="End Date"
-                      value={eventForm.endDate}
-                      onChange={(date) => setEventForm({ ...eventForm, endDate: date || new Date() })}
-                      slotProps={{ 
-                        textField: { 
-                          fullWidth: true,
-                          variant: "outlined",
-                          sx: { mb: 2 }
-                        } 
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="event-type-label">Event Type</InputLabel>
-                      <Select
-                        labelId="event-type-label"
-                        value={eventForm.type}
-                        onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
-                        label="Event Type"
-                        sx={{ mb: 2 }}
-                      >
-                        {eventTypes.map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type.replace('_', ' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="category-label">Category</InputLabel>
-                      <Select
-                        labelId="category-label"
-                        value={eventForm.category}
-                        onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
-                        label="Category"
-                        sx={{ mb: 2 }}
-                      >
-                        {categories.map((category) => (
-                          <MenuItem key={category} value={category}>
-                            {category}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="grade-label">Grade</InputLabel>
-                      <Select
-                        labelId="grade-label"
-                        value={eventForm.grade}
-                        onChange={(e) => setEventForm({ ...eventForm, grade: e.target.value })}
-                        label="Grade"
-                        sx={{ mb: 2 }}
-                      >
-                        {grades.map((grade) => (
-                          <MenuItem key={grade} value={grade}>
-                            {grade === 'all' ? 'All Grades' : `Grade ${grade}`}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel id="term-label">Term</InputLabel>
-                      <Select
-                        labelId="term-label"
-                        value={eventForm.termId}
-                        onChange={(e) => setEventForm({ ...eventForm, termId: e.target.value })}
-                        label="Term"
-                        sx={{ mb: 2 }}
-                      >
-                        <MenuItem value="">No specific term</MenuItem>
-                        {terms.map((term) => (
-                          <MenuItem key={term.id} value={term.id}>
-                            {term.name} {term.year}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <TextField
-                      fullWidth
-                      label="Location"
-                      value={eventForm.location}
-                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                      variant="outlined"
-                      sx={{ mb: 2 }}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <TextField
-                      fullWidth
-                      label="Time"
-                      value={eventForm.time}
-                      onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
-                      placeholder="e.g., 9:00 AM - 12:00 PM"
-                      variant="outlined"
-                      sx={{ mb: 2 }}
-                    />
-                  </Box>
-                </Box>
-                <Box sx={{ width: '100%' }}>
+                  <DatePicker
+                    label="End Date"
+                    value={eventForm.endDate}
+                    onChange={(date) => setEventForm({ ...eventForm, endDate: date || new Date() })}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        variant: 'outlined',
+                      },
+                    }}
+                  />
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <FormControl fullWidth>
+                    <InputLabel>Event Type</InputLabel>
+                    <Select
+                      value={eventForm.type}
+                      onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
+                      label="Event Type"
+                    >
+                      {eventTypes.map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type.replace('_', ' ')}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={eventForm.category}
+                      onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
+                      label="Category"
+                    >
+                      {categories.map((category) => (
+                        <MenuItem key={category} value={category}>
+                          {category}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <FormControl fullWidth>
+                    <InputLabel>Grade</InputLabel>
+                    <Select
+                      value={eventForm.grade}
+                      onChange={(e) => setEventForm({ ...eventForm, grade: e.target.value })}
+                      label="Grade"
+                    >
+                      {grades.map((grade) => (
+                        <MenuItem key={grade} value={grade}>
+                          {grade === 'all' ? 'All Grades' : `Grade ${grade}`}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Term</InputLabel>
+                    <Select
+                      value={eventForm.termId}
+                      onChange={(e) => setEventForm({ ...eventForm, termId: e.target.value })}
+                      label="Term"
+                    >
+                      <MenuItem value="">No specific term</MenuItem>
+                      {terms.map((term) => (
+                        <MenuItem key={term.id} value={term.id}>
+                          {term.name} {term.year}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     fullWidth
-                    label="Facebook Link"
-                    value={eventForm.facebookLink}
-                    onChange={(e) => setEventForm({ ...eventForm, facebookLink: e.target.value })}
-                    variant="outlined"
-                    sx={{ mb: 2 }}
+                    label="Location"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
                   />
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <Divider sx={{ my: 2 }} />
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={eventForm.isHoliday}
-                          onChange={(e) => setEventForm({ ...eventForm, isHoliday: e.target.checked })}
-                        />
-                      }
-                      label="School Holiday"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={eventForm.isExam}
-                          onChange={(e) => setEventForm({ ...eventForm, isExam: e.target.checked })}
-                        />
-                      }
-                      label="Examination"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={eventForm.isPublicHoliday}
-                          onChange={(e) => setEventForm({ ...eventForm, isPublicHoliday: e.target.checked })}
-                        />
-                      }
-                      label="Public Holiday"
-                    />
-                  </Box>
-                </Box>
+                  <TextField
+                    fullWidth
+                    label="Time"
+                    value={eventForm.time}
+                    onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
+                    placeholder="e.g., 9:00 AM - 12:00 PM"
+                  />
+                </Stack>
+                <TextField
+                  fullWidth
+                  label="Facebook Link"
+                  value={eventForm.facebookLink}
+                  onChange={(e) => setEventForm({ ...eventForm, facebookLink: e.target.value })}
+                />
+                <Divider sx={{ my: 1 }} />
+                <Stack spacing={1}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={eventForm.isHoliday}
+                        onChange={(e) => setEventForm({ ...eventForm, isHoliday: e.target.checked })}
+                      />
+                    }
+                    label="School Holiday"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={eventForm.isExam}
+                        onChange={(e) => setEventForm({ ...eventForm, isExam: e.target.checked })}
+                      />
+                    }
+                    label="Examination"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={eventForm.isPublicHoliday}
+                        onChange={(e) => setEventForm({ ...eventForm, isPublicHoliday: e.target.checked })}
+                      />
+                    }
+                    label="Public Holiday"
+                  />
+                </Stack>
               </Box>
             </DialogContent>
             <DialogActions>
@@ -887,65 +1053,53 @@ const CalendarManagement: React.FC = () => {
           <form onSubmit={handleTermSubmit}>
             <DialogContent>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     fullWidth
                     label="Year"
                     type="number"
                     value={termForm.year}
-                    onChange={(e) => setTermForm({ ...termForm, year: parseInt(e.target.value) })}
+                    onChange={(e) => setTermForm({ ...termForm, year: parseInt(e.target.value, 10) })}
                     required
                   />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <TextField
-                      fullWidth
-                      label="Term Number"
-                      type="number"
-                      value={termForm.termNumber}
-                      onChange={(e) => setTermForm({ ...termForm, termNumber: parseInt(e.target.value) })}
-                      required
-                    />
-                  </Box>
-                </Box>
-                <Box sx={{ width: '100%' }}>
                   <TextField
                     fullWidth
-                    label="Term Name"
-                    value={termForm.name}
-                    onChange={(e) => setTermForm({ ...termForm, name: e.target.value })}
+                    label="Term Number"
+                    type="number"
+                    value={termForm.termNumber}
+                    onChange={(e) => setTermForm({ ...termForm, termNumber: parseInt(e.target.value, 10) })}
                     required
                   />
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <DatePicker
-                      label="Start Date"
-                      value={termForm.startDate}
-                      onChange={(date) => setTermForm({ ...termForm, startDate: date || new Date() })}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <DatePicker
-                      label="End Date"
-                      value={termForm.endDate}
-                      onChange={(date) => setTermForm({ ...termForm, endDate: date || new Date() })}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </Box>
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    value={termForm.description}
-                    onChange={(e) => setTermForm({ ...termForm, description: e.target.value })}
-                    multiline
-                    rows={3}
+                </Stack>
+                <TextField
+                  fullWidth
+                  label="Term Name"
+                  value={termForm.name}
+                  onChange={(e) => setTermForm({ ...termForm, name: e.target.value })}
+                  required
+                />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <DatePicker
+                    label="Start Date"
+                    value={termForm.startDate}
+                    onChange={(date) => setTermForm({ ...termForm, startDate: date || new Date() })}
+                    slotProps={{ textField: { fullWidth: true } }}
                   />
-                </Box>
+                  <DatePicker
+                    label="End Date"
+                    value={termForm.endDate}
+                    onChange={(date) => setTermForm({ ...termForm, endDate: date || new Date() })}
+                    slotProps={{ textField: { fullWidth: true } }}
+                  />
+                </Stack>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={termForm.description}
+                  onChange={(e) => setTermForm({ ...termForm, description: e.target.value })}
+                  multiline
+                  rows={3}
+                />
               </Box>
             </DialogContent>
             <DialogActions>
@@ -979,8 +1133,8 @@ const CalendarManagement: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Container>
-    </LocalizationProvider>
+      </LocalizationProvider>
+    </AdminLayout>
   );
 };
 

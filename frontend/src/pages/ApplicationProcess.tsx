@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -9,7 +9,6 @@ import {
   StepLabel,
   Button,
   Card,
-  CardContent,
   TextField,
   FormControl,
   InputLabel,
@@ -19,7 +18,6 @@ import {
   Checkbox,
   Alert,
   Divider,
-  Chip,
   List,
   ListItem,
   ListItemIcon,
@@ -28,7 +26,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   styled,
-  useTheme,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -44,8 +41,6 @@ import {
   Description,
   CheckCircle,
   ExpandMore,
-  Download,
-  Upload,
   Info,
   Warning,
   Star,
@@ -57,6 +52,7 @@ import {
 import SEO from '../components/SEO';
 import admissionsService, { ApplicationData } from '../services/admissionsService';
 import ApplicationDocumentUpload from '../components/ApplicationDocumentUpload';
+import DocumentService, { Document as ResourceDocument } from '../services/documentService';
 
 // Styled components for better visual appeal
 const HeroSection = styled(Box)(({ theme }) => ({
@@ -110,8 +106,9 @@ const GradeRCard = styled(Card)(({ theme }) => ({
   }
 }));
 
+const documentService = DocumentService.getInstance();
+
 const ApplicationProcess: React.FC = () => {
-  const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
   const [applicationId, setApplicationId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -119,10 +116,12 @@ const ApplicationProcess: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [feesDocument, setFeesDocument] = useState<ResourceDocument | null>(null);
+  const [agreementDocument, setAgreementDocument] = useState<ResourceDocument | null>(null);
   const [formData, setFormData] = useState({
     // Learner Information
     surname: '',
-    christianName: '',
+    learnerName: '',
     dateOfBirth: '',
     placeOfBirth: '',
     gradeApplying: '',
@@ -206,6 +205,46 @@ const ApplicationProcess: React.FC = () => {
     agreeToPrivacy: false,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSupportingDocuments = async () => {
+      try {
+        const admissionsDocs = await documentService.getDocumentsByCategory('admissions', true).catch(() => []);
+        const formsDocs = await documentService.getDocumentsByCategory('form', true).catch(() => []);
+        const feesDocs = await documentService.getDocumentsByCategory('fees', true).catch(() => []);
+
+        const allDocs = [...admissionsDocs, ...formsDocs, ...feesDocs];
+
+        const feesDoc = allDocs.find((doc) =>
+          doc.title.toLowerCase().includes('2026') &&
+          (doc.title.toLowerCase().includes('fee') || doc.title.toLowerCase().includes('charges'))
+        );
+
+        const agreementDoc = allDocs.find((doc) =>
+          doc.title.toLowerCase().includes('memorandum') ||
+          doc.title.toLowerCase().includes('agreement')
+        );
+
+        if (!isMounted) return;
+
+        if (feesDoc) setFeesDocument(feesDoc);
+        if (agreementDoc) setAgreementDocument(agreementDoc);
+      } catch (error) {
+        console.error('Failed to load admissions resources:', error);
+      }
+    };
+
+    fetchSupportingDocuments();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const feesDocumentUrl = feesDocument ? documentService.getDocumentDownloadUrl(feesDocument.fileUrl) : null;
+  const agreementDocumentUrl = agreementDocument ? documentService.getDocumentDownloadUrl(agreementDocument.fileUrl) : null;
+
   const steps = [
     'Learner Information',
     'Parent/Guardian Details',
@@ -228,8 +267,8 @@ const ApplicationProcess: React.FC = () => {
         errors.surname = 'Surname is required';
         missing.push('Surname');
       }
-      if (isEmpty(formData.christianName)) {
-        errors.christianName = 'Name is required';
+      if (isEmpty(formData.learnerName)) {
+        errors.learnerName = 'Name is required';
         missing.push('Name');
       }
       if (isEmpty(formData.dateOfBirth)) {
@@ -377,7 +416,7 @@ const ApplicationProcess: React.FC = () => {
       setFormData({
         // Learner Information
         surname: '',
-        christianName: '',
+        learnerName: '',
         dateOfBirth: '',
         placeOfBirth: '',
         gradeApplying: '',
@@ -478,7 +517,7 @@ const ApplicationProcess: React.FC = () => {
       const applicationData: ApplicationData = {
         // Learner Information
         surname: formData.surname,
-        christianName: formData.christianName,
+        learnerName: formData.learnerName,
         dateOfBirth: formData.dateOfBirth,
         placeOfBirth: formData.placeOfBirth,
         gradeApplying: formData.gradeApplying,
@@ -612,11 +651,11 @@ const ApplicationProcess: React.FC = () => {
                 <TextField
                   fullWidth
                   label="Name of Learner"
-                  value={formData.christianName}
-                  onChange={handleInputChange('christianName')}
+                  value={formData.learnerName}
+                  onChange={handleInputChange('learnerName')}
                   required
-                  error={!!fieldErrors.christianName}
-                  helperText={fieldErrors.christianName}
+                  error={!!fieldErrors.learnerName}
+                  helperText={fieldErrors.learnerName}
                 />
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
@@ -1301,7 +1340,7 @@ const ApplicationProcess: React.FC = () => {
                     <strong>Bank:</strong> FNB<br />
                     <strong>Branch:</strong> 203309<br />
                     <strong>Account Number:</strong> 54450670046<br />
-                    <strong>Reference:</strong> Name of Learner ({formData.christianName || '[Name]'})
+                    <strong>Reference:</strong> Name of Learner ({formData.learnerName || '[Name]'})
                   </Typography>
                 </Box>
               </Alert>
@@ -1448,7 +1487,7 @@ const ApplicationProcess: React.FC = () => {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                   <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                    <strong>Learner's Name:</strong> {formData.surname} {formData.christianName}
+                    <strong>Learner's Name:</strong> {formData.surname} {formData.learnerName}
                   </Typography>
                   <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                     <strong>Date of Birth:</strong> {formData.dateOfBirth}
@@ -1597,14 +1636,77 @@ const ApplicationProcess: React.FC = () => {
                 <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
                   Review our comprehensive fee structure including tuition, activity fees, and payment options.
                 </Typography>
-                <Button 
-                  variant="outlined" 
-                  size="small" 
-                  href="/forms" 
-                  sx={{ color: '#1a237e', borderColor: '#1a237e', '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' } }}
-                >
-                  View Fees Structure
-                </Button>
+                {feesDocumentUrl ? (
+                  <Button
+                    component="a"
+                    variant="outlined"
+                    size="small"
+                    href={feesDocumentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color: '#1a237e',
+                      borderColor: '#1a237e',
+                      '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' },
+                    }}
+                  >
+                    Download Fees Structure
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled
+                    sx={{
+                      color: '#1a237e',
+                      borderColor: '#1a237e',
+                      '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' },
+                    }}
+                  >
+                    Fees Structure Coming Soon
+                  </Button>
+                )}
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Description sx={{ color: '#1a237e', mt: 0.5 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
+                  Memorandum of Agreement
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                  Please review and sign the school-parent agreement to complete the admissions process.
+                </Typography>
+                {agreementDocumentUrl ? (
+                  <Button
+                    component="a"
+                    variant="outlined"
+                    size="small"
+                    href={agreementDocumentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color: '#1a237e',
+                      borderColor: '#1a237e',
+                      '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' },
+                    }}
+                  >
+                    Download Agreement
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled
+                    sx={{
+                      color: '#1a237e',
+                      borderColor: '#1a237e',
+                      '&:hover': { borderColor: '#3949ab', bgcolor: 'rgba(26, 35, 126, 0.04)' },
+                    }}
+                  >
+                    Agreement Coming Soon
+                  </Button>
+                )}
               </Box>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>

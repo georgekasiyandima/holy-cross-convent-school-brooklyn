@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -23,13 +23,10 @@ import {
   Paper,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
   Menu,
   ListItemIcon,
   ListItemText,
   FormControlLabel,
-  Switch,
   Checkbox
 } from '@mui/material';
 import {
@@ -37,16 +34,12 @@ import {
   Edit,
   Delete,
   Upload,
-  Image,
   VideoFile,
-  FilterList,
   Search,
   MoreVert,
   Visibility,
   Download,
   Share,
-  Tag,
-  Category,
   Facebook,
   Instagram,
   Twitter,
@@ -90,12 +83,10 @@ const GalleryManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -110,7 +101,7 @@ const GalleryManagement: React.FC = () => {
     albumId: '',
     postToSocial: false,
   });
-  const [albums, setAlbums] = useState<{ id: string; title: string; albumType: string; classGrade?: string }[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
   const [albumType, setAlbumType] = useState<'GENERAL' | 'CLASS'>('GENERAL');
   const [classGrade, setClassGrade] = useState<string>('');
 
@@ -122,12 +113,7 @@ const GalleryManagement: React.FC = () => {
     { value: 'GENERAL', label: 'General', color: '#607d8b' },
   ];
 
-  useEffect(() => {
-    fetchItems();
-    fetchAlbums();
-  }, [filterCategory, searchTerm]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -151,44 +137,61 @@ const GalleryManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterCategory, searchTerm]);
 
-  const fetchAlbums = async (category?: string) => {
+  const fetchAlbums = useCallback(async () => {
     try {
-      // Get all albums for the selected album type
-      let albums = await GalleryService.getAlbums({
-        albumType: albumType,
-        classGrade: classGrade || undefined,
-        isPublished: undefined // Get all albums for admin
+      const allAlbums = await GalleryService.getAlbums({
+        isPublished: undefined,
       });
-      
-      // If category is provided, filter albums that have items with matching category
-      if (category && category !== 'all') {
-        // Get all items for this category
-        const items = await GalleryService.getGalleryItems({
-          category: category,
-          limit: 1000
-        });
-        
-        // Get unique album IDs from items that have this category
-        const albumIds = new Set(items.items.filter(item => item.albumId).map(item => item.albumId!));
-        
-        // Filter albums to only show those that have items with matching category
-        // OR show all albums if no category filter (to allow adding items to any album)
-        albums = albums.filter(album => albumIds.has(album.id));
-      }
-      // If no category or category is 'all', show all albums
-      
-      setAlbums(albums.map(album => ({
-        id: album.id,
-        title: album.title,
-        albumType: album.albumType,
-        classGrade: album.classGrade
-      })));
+      setAlbums(allAlbums);
     } catch (err) {
       console.error('Error fetching albums:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+    fetchAlbums();
+  }, [fetchItems, fetchAlbums]);
+  const filteredAlbums = useMemo(() => {
+    let list = albums;
+    if (albumType) {
+      list = list.filter((album) => album.albumType === albumType);
+    }
+    if (albumType === 'CLASS' && classGrade) {
+      list = list.filter((album) =>
+        album.classGrade?.toLowerCase().includes(classGrade.toLowerCase())
+      );
+    }
+    return list;
+  }, [albums, albumType, classGrade]);
+
+  const buildAlbumLabel = useCallback(
+    (album: Album) => {
+      const titleParts = [album.title];
+      const visited = new Set<string>([album.id]);
+      let current: Album | undefined = album;
+
+      while (current?.parentAlbumId) {
+        if (visited.has(current.parentAlbumId)) {
+          break;
+        }
+        visited.add(current.parentAlbumId);
+        current = albums.find((a) => a.id === current?.parentAlbumId);
+        if (current) {
+          titleParts.unshift(current.title);
+        }
+      }
+
+      const meta: string[] = [];
+      if (album.phase) meta.push(album.phase);
+      if (album.classGrade) meta.push(album.classGrade);
+
+      return `${titleParts.join(' › ')}${meta.length ? ` (${meta.join(' • ')})` : ''}`;
+    },
+    [albums]
+  );
 
   const handleFileSelect = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -207,7 +210,6 @@ const GalleryManagement: React.FC = () => {
     if (!selectedFile) return;
 
     try {
-      setUploadProgress(0);
       setError(null);
       
       const tagsArray = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [];
@@ -227,8 +229,6 @@ const GalleryManagement: React.FC = () => {
       setSelectedFile(null);
       setFormData({ title: '', description: '', category: 'GENERAL', tags: '', albumId: '', postToSocial: false });
       fetchItems();
-      setUploadProgress(100);
-      setTimeout(() => setUploadProgress(0), 1000);
     } catch (err: any) {
       setError(err.message || 'Failed to upload file');
       console.error('Upload error:', err);
@@ -487,11 +487,9 @@ const GalleryManagement: React.FC = () => {
                   <InputLabel>Category</InputLabel>
                   <Select
                     value={formData.category}
-                    onChange={(e) => {
+                      onChange={(e) => {
                       const newCategory = e.target.value as any;
                       setFormData(prev => ({ ...prev, category: newCategory }));
-                      // Refresh albums list when category changes to show relevant albums
-                      fetchAlbums(newCategory);
                     }}
                     label="Category"
                   >
@@ -508,7 +506,7 @@ const GalleryManagement: React.FC = () => {
                     <Select
                       value={albumType}
                       label="Album Type"
-                      onChange={(e) => { setAlbumType(e.target.value as any); fetchAlbums(); }}
+                      onChange={(e) => setAlbumType(e.target.value as any)}
                     >
                       <MenuItem value="GENERAL">General</MenuItem>
                       <MenuItem value="CLASS">Class</MenuItem>
@@ -530,9 +528,9 @@ const GalleryManagement: React.FC = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, albumId: e.target.value }))}
                     >
                       <MenuItem value="">No album</MenuItem>
-                      {albums.map(a => (
+                      {filteredAlbums.map(a => (
                         <MenuItem key={a.id} value={a.id}>
-                          {a.title}{a.classGrade ? ` - ${a.classGrade}` : ''}
+                          {buildAlbumLabel(a)}
                         </MenuItem>
                       ))}
                     </Select>
@@ -646,7 +644,7 @@ const GalleryManagement: React.FC = () => {
           onClose={() => setCreateAlbumDialogOpen(false)}
           onSuccess={async (album) => {
             setSuccess(`Album "${album.title}" created successfully!`);
-            await fetchAlbums(formData.category);
+            await fetchAlbums();
             // Auto-select the newly created album
             setFormData(prev => ({ ...prev, albumId: album.id }));
           }}

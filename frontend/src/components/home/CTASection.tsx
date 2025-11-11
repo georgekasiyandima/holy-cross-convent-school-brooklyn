@@ -6,8 +6,6 @@ import {
   Typography,
   Button,
   Stack,
-  useTheme,
-  useMediaQuery,
   Fade
 } from '@mui/material';
 import {
@@ -85,8 +83,6 @@ const SecondaryCTAButton = styled(Button)(({ theme }) => ({
 
 const CTASection: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const { ref, inView } = useInView({
     threshold: 0.2,

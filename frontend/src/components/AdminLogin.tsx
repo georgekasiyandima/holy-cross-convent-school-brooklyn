@@ -9,13 +9,12 @@ import {
   Alert,
   CircularProgress,
   Container,
-  Avatar,
   InputAdornment,
   IconButton,
   Paper,
   Divider
 } from '@mui/material';
-import { Visibility, VisibilityOff, Email, Lock, School } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import axios from 'axios';
 import { API_BASE_URL_WITH_PREFIX } from '../services/apiConfig';
 

@@ -22,7 +22,6 @@ import {
   HelpOutline,
   Email,
   Phone,
-  Description,
   School,
   Policy,
   Security,

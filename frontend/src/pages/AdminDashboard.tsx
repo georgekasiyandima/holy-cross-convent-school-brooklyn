@@ -6,7 +6,6 @@ import {
   CardContent, 
   Button, 
   Grid,
-  Paper,
   Avatar
 } from '@mui/material';
 import {
@@ -18,7 +17,10 @@ import {
   Email,
   Upload,
   School,
-  Work
+  Work,
+  Description,
+  Group,
+  Campaign
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -67,11 +69,25 @@ const AdminDashboard: React.FC = () => {
       path: '/admin/gallery'
     },
     {
+      title: 'Announcements',
+      description: 'Publish flyers and school announcements',
+      icon: <Campaign sx={{ fontSize: 40 }} />,
+      color: '#7b1fa2',
+      path: '/admin/announcements'
+    },
+    {
       title: 'Newsletter System',
       description: 'Automated parent communication',
       icon: <Email sx={{ fontSize: 40 }} />,
       color: '#2196f3',
       path: '/admin/newsletters'
+    },
+    {
+      title: 'Governing Body',
+      description: 'Update governing body directory',
+      icon: <Group sx={{ fontSize: 40 }} />,
+      color: '#1a237e',
+      path: '/admin/governing-body'
     },
     {
       title: 'Vacancy Management',
@@ -103,6 +119,13 @@ const AdminDashboard: React.FC = () => {
       icon: <School sx={{ fontSize: 36 }} />,
       color: '#ff9800',
       path: '/admin/document-upload'
+    },
+    {
+      title: 'Document Management',
+      description: 'Publish, organize, and download documents',
+      icon: <Description sx={{ fontSize: 36 }} />,
+      color: '#1a237e',
+      path: '/admin/document-management'
     }
   ];
 

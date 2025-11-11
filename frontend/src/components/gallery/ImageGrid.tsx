@@ -7,9 +7,7 @@ import {
   CardContent,
   Typography,
   Chip,
-  CircularProgress,
-  useTheme,
-  useMediaQuery
+  CircularProgress
 } from '@mui/material';
 import {
   PhotoLibrary,
@@ -91,8 +89,6 @@ interface ImageGridProps {
 }
 
 const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageClick }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 

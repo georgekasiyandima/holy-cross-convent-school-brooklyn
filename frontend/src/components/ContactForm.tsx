@@ -14,11 +14,8 @@ import {
   Snackbar,
   CircularProgress,
   SelectChangeEvent,
-  Chip,
   Fade,
-  Slide,
-  useTheme,
-  useMediaQuery
+  Slide
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Send, Phone, Email, LocationOn, School, CheckCircle, Error } from '@mui/icons-material';
@@ -204,8 +201,6 @@ const ContactInfoSection = memo(() => (
 ));
 
 const ContactFormComponent: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: '',
@@ -230,8 +225,8 @@ const ContactFormComponent: React.FC = () => {
 
   const validatePhone = (phone: string): boolean => {
     if (!phone) return true; // Phone is optional
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    const phoneRegex = /^\+?[1-9]\d{0,15}$/;
+    return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
   };
 
   const validateField = useCallback((field: keyof ContactFormData, value: string): string | undefined => {

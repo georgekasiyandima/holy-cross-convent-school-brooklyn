@@ -8,11 +8,10 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FaxIcon from '@mui/icons-material/Fax';
 import LanguageIcon from '@mui/icons-material/Language';
 import FlagIcon from '@mui/icons-material/Flag';
-import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
-import DocumentsService from '../services/documentsService';
+import { DocumentServiceInstance as documentService, Document } from '../services/documentService';
 
 const Banner = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -37,9 +36,9 @@ const Banner = styled(Box)(({ theme }) => ({
 }));
 
 // Helper function to get document image URL from API response or fallback
-const getDocumentImageUrl = (document: any, fallback: string): string => {
+const getDocumentImageUrl = (document: Document | null | undefined, fallback: string): string => {
   if (document && document.fileUrl) {
-    const url = DocumentsService.getDocumentDownloadUrl(document.fileUrl);
+    const url = documentService.getDocumentDownloadUrl(document.fileUrl);
     console.log('Document image URL generated:', url, 'for document:', document.title || 'unknown');
     return url;
   }
@@ -65,281 +64,66 @@ const galleryImages = [
 ];
 
 const Info: React.FC = () => {
-  const [missionDoc, setMissionDoc] = useState<any>(null);
-  const [visionDoc, setVisionDoc] = useState<any>(null);
-  const [holyCrossFamilyDoc, setHolyCrossFamilyDoc] = useState<any>(null);
+  const [missionDoc, setMissionDoc] = useState<Document | null>(null);
+  const [visionDoc, setVisionDoc] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fallback image URLs (from public folder)
   // Note: If HCCVS.jpeg doesn't exist, use HCCMS.jpeg as temporary fallback
   const missionFallback = '/HCCMS.jpeg';
   const visionFallback = '/HCCMS.jpeg'; // Using HCCMS temporarily until HCCVS.jpeg is uploaded
-  const holyCrossFamilyFallback = '/HCCFS.jpeg';
 
   useEffect(() => {
     const fetchStatements = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        
-        // Try multiple possible categories for each statement
-        // This allows flexibility in how documents are categorized
-        const categoryVariations = {
-          mission: ['mission', 'mission-statement', 'statement'],
-          vision: ['vision', 'vision-statement', 'statement'],
-          holyCrossFamily: ['holy-cross-family', 'holy cross family', 'family', 'statement']
+        const findImageDocument = async (categories: string[], keyword: string): Promise<Document | null> => {
+          for (const category of categories) {
+            try {
+              const docs = await documentService.getDocumentsByCategory(category, true);
+              if (docs.length) {
+                console.log(`✅ ${docs.length} docs found in category ${category}`);
+              }
+              const imageDoc = docs.find((doc) => doc.mimeType.startsWith('image/'));
+              if (imageDoc) {
+                return imageDoc;
+              }
+            } catch (error) {
+              console.warn(`⚠️ Unable to fetch documents for category ${category}`, error);
+            }
+          }
+
+          try {
+            const allDocs = await documentService.getAllPublishedDocuments();
+            const imageDoc = allDocs.find((doc) => {
+              if (!doc.mimeType.startsWith('image/')) {
+            return false;
+          }
+              const haystack = `${doc.title} ${doc.category} ${doc.tags.join(' ')} ${doc.fileName}`.toLowerCase();
+              return haystack.includes(keyword.toLowerCase());
+            });
+            if (imageDoc) {
+              return imageDoc;
+            }
+          } catch (error) {
+            console.error('❌ Failed to fetch all published documents for fallback search', error);
+          }
+
+          return null;
         };
 
-        // Fetch all possible categories and find matching documents
-        const allCategoryPromises: Promise<any>[] = [];
-        const categoryList: string[] = [];
-        
-        // Collect unique categories to fetch
-        const uniqueCategories = new Set<string>();
-        Object.values(categoryVariations).forEach(cats => cats.forEach(cat => uniqueCategories.add(cat)));
-        uniqueCategories.forEach(cat => {
-          categoryList.push(cat);
-          allCategoryPromises.push(
-            DocumentsService.getDocumentsByCategory(cat)
-              .then(response => {
-                console.log(`✅ Fetched documents for category "${cat}":`, response);
-                return response;
-              })
-              .catch(error => {
-                console.warn(`⚠️ Failed to fetch documents for category "${cat}":`, error);
-                return { success: false, data: [] };
-              })
-          );
-        });
+        const [vision, mission] = await Promise.all([
+          findImageDocument(['vision', 'vision-statement', 'vision_statement'], 'vision'),
+          findImageDocument(['mission', 'mission-statement', 'mission_statement'], 'mission'),
+        ]);
 
-        const responses = await Promise.allSettled(allCategoryPromises);
-        
-        // Flatten all documents with better error handling
-        let allDocs: any[] = [];
-        responses.forEach((response, index) => {
-          const category = categoryList[index];
-          if (response.status === 'fulfilled') {
-            const responseData = response.value;
-            if (responseData && responseData.data && Array.isArray(responseData.data)) {
-              console.log(`📄 Found ${responseData.data.length} documents in category "${category}"`);
-              allDocs.push(...responseData.data);
-            } else if (responseData && Array.isArray(responseData)) {
-              // Handle case where API returns array directly
-              console.log(`📄 Found ${responseData.length} documents in category "${category}" (array format)`);
-              allDocs.push(...responseData);
-            } else {
-              console.warn(`⚠️ Unexpected response format for category "${category}":`, responseData);
-            }
-          } else {
-            console.error(`❌ Error fetching category "${category}":`, response.reason);
-          }
-        });
-
-        // Always try fetching all published documents as fallback to catch documents with different category names
-        console.log('Fetching all published documents as comprehensive fallback...');
-        try {
-          const allResponse = await DocumentsService.getAllPublishedDocuments();
-          if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
-            // Merge with existing documents, avoiding duplicates
-            const existingIds = new Set(allDocs.map(d => d.id));
-            const newDocs = allResponse.data.filter(d => !existingIds.has(d.id));
-            allDocs = [...allDocs, ...newDocs];
-            console.log(`📚 Fetched ${allResponse.data.length} total published documents (${newDocs.length} new, ${allDocs.length - newDocs.length} already found)`);
-            console.log('📋 All available document categories:', [...new Set(allResponse.data.map((d: any) => d.category))]);
-          }
-        } catch (error: any) {
-          console.error('❌ Error fetching all documents:', error);
-          console.error('Error details:', {
-            message: error?.message,
-            response: error?.response?.data,
-            status: error?.response?.status,
-            url: error?.config?.url
-          });
-          // Continue with category-based documents even if /all fails
-        }
-
-        console.log(`📚 Total documents fetched: ${allDocs.length}`);
-        if (allDocs.length > 0) {
-          console.log('All fetched documents:', allDocs.map(d => ({ 
-            id: d.id, 
-            title: d.title, 
-            category: d.category, 
-            fileUrl: d.fileUrl,
-            isPublished: d.isPublished
-          })));
-        } else {
-          console.warn('⚠️ No documents found at all. Make sure documents are uploaded and published.');
-        }
-
-        // Find vision document FIRST (higher priority) - STRICT matching
-        // Priority: 1) category matches 'vision' or 'vision-statement', 2) title contains 'vision' (and NOT 'mission')
-        let visionDoc: any = null;
-        
-        // Step 1: Try exact category match first (most reliable)
-        visionDoc = allDocs.find((doc: any) => {
-          const categoryLower = (doc.category || '').toLowerCase().trim();
-          return categoryLower === 'vision' || categoryLower === 'vision-statement';
-        });
-
-        // Step 2: If not found by category, try by title (must contain 'vision', must NOT contain 'mission')
-        if (!visionDoc) {
-          visionDoc = allDocs.find((doc: any) => {
-            const titleLower = (doc.title || '').toLowerCase();
-            const categoryLower = (doc.category || '').toLowerCase();
-            const fileNameLower = (doc.fileName || '').toLowerCase();
-            const fileUrlLower = (doc.fileUrl || '').toLowerCase();
-            
-            // Must have 'vision' AND must NOT have 'mission' anywhere
-            const hasVision = titleLower.includes('vision') || 
-                             categoryLower.includes('vision') || 
-                             fileNameLower.includes('vision') || 
-                             fileUrlLower.includes('vision');
-            const hasMission = titleLower.includes('mission') || 
-                              categoryLower.includes('mission') || 
-                              fileNameLower.includes('mission') || 
-                              fileUrlLower.includes('mission');
-            
-            return hasVision && !hasMission;
-          });
-        }
-
-        // Step 3: Last resort - any document with 'vision' (and not 'mission') in any field
-        if (!visionDoc) {
-          visionDoc = allDocs.find((doc: any) => {
-            const combinedText = `${doc.title || ''} ${doc.category || ''} ${doc.fileName || ''} ${doc.fileUrl || ''}`.toLowerCase();
-            return combinedText.includes('vision') && !combinedText.includes('mission');
-          });
-        }
-
-        // Find mission document - STRICT matching (must contain 'mission' and NOT contain 'vision')
-        // CRITICAL: Exclude any document that was already matched as vision
-        const visionDocId = visionDoc ? visionDoc.id : null;
-        let missionDoc: any = null;
-        
-        missionDoc = allDocs.find((doc: any) => {
-          // CRITICAL: Never match a document that was already identified as vision
-          if (visionDocId && doc.id === visionDocId) {
-            console.log('🚫 Excluding document from mission matching (already matched as vision):', doc.id, doc.title);
-            return false;
-          }
-          
-          const titleLower = (doc.title || '').toLowerCase();
-          const categoryLower = (doc.category || '').toLowerCase();
-          const fileNameLower = (doc.fileName || '').toLowerCase();
-          const fileUrlLower = (doc.fileUrl || '').toLowerCase();
-          
-          // Must have 'mission' AND must NOT have 'vision' anywhere
-          const hasMission = titleLower.includes('mission') || 
-                            categoryLower.includes('mission') || 
-                            fileNameLower.includes('mission') || 
-                            fileUrlLower.includes('mission');
-          const hasVision = titleLower.includes('vision') || 
-                          categoryLower.includes('vision') || 
-                          fileNameLower.includes('vision') || 
-                          fileUrlLower.includes('vision');
-          
-          // CRITICAL: If document has any 'vision' indicator, exclude it from mission
-          if (hasVision) {
-            console.log('🚫 Excluding document from mission matching (contains vision):', doc.id, doc.title);
-            return false;
-          }
-          
-          return hasMission;
-        });
-
-        // Set vision document state
-        if (visionDoc) {
-          setVisionDoc(visionDoc);
-          console.log('✅ VISION DOCUMENT FOUND:', {
-            id: visionDoc.id,
-            title: visionDoc.title,
-            category: visionDoc.category,
-            fileUrl: visionDoc.fileUrl
-          });
-        } else {
-          setVisionDoc(null);
-          console.warn('⚠️ Vision document not found. Available documents:', allDocs.map(d => ({ 
-            id: d.id,
-            title: d.title, 
-            category: d.category,
-            fileUrl: d.fileUrl
-          })));
-        }
-
-        // Set mission document state - EXPLICITLY set to null if not found (as per user request)
-        if (missionDoc) {
-          // CRITICAL: Double-check that missionDoc is NOT the same as visionDoc
-          if (visionDocId && missionDoc.id === visionDocId) {
-            console.error('❌ ERROR: Mission document is the same as vision document! Setting mission to null.');
-            setMissionDoc(null);
-          } else {
-            setMissionDoc(missionDoc);
-            console.log('✅ MISSION DOCUMENT FOUND:', {
-              id: missionDoc.id,
-              title: missionDoc.title,
-              category: missionDoc.category,
-              fileUrl: missionDoc.fileUrl
-            });
-          }
-        } else {
-          // Explicitly set to null if not found - leave empty for now (as per user request)
+        setVisionDoc(vision);
+        if (mission && vision && mission.id === vision.id) {
+          console.warn('⚠️ Mission document duplicates vision document, ignoring mission image.');
           setMissionDoc(null);
-          console.log('ℹ️ Mission document not found - leaving empty (as requested)');
-        }
-
-        // Find Holy Cross Family document
-        // IMPORTANT: Exclude any document that was already matched as mission or vision
-        const missionDocId = missionDoc ? missionDoc.id : null;
-        const holyCrossFamilyDoc = allDocs.find((doc: any) => {
-          // Exclude mission and vision documents
-          if (visionDocId && doc.id === visionDocId) return false;
-          if (missionDocId && doc.id === missionDocId) return false;
-          
-          const titleLower = doc.title.toLowerCase();
-          const categoryLower = (doc.category || '').toLowerCase();
-          const fileNameLower = (doc.fileName || '').toLowerCase();
-          const fileUrlLower = (doc.fileUrl || '').toLowerCase();
-          
-          return (
-            (titleLower.includes('holy cross') || 
-             titleLower.includes('family') ||
-             categoryLower.includes('holy-cross-family') ||
-             categoryLower.includes('holy cross family') ||
-             fileNameLower.includes('holy') ||
-             fileUrlLower.includes('holy')) &&
-            !titleLower.includes('mission') &&
-            !titleLower.includes('vision') &&
-            !categoryLower.includes('mission') &&
-            !categoryLower.includes('vision') &&
-            !fileNameLower.includes('mission') &&
-            !fileNameLower.includes('vision') &&
-            !fileUrlLower.includes('mission') &&
-            !fileUrlLower.includes('vision')
-          );
-        });
-        if (holyCrossFamilyDoc) {
-          setHolyCrossFamilyDoc(holyCrossFamilyDoc);
-          console.log('✅ Found Holy Cross Family document:', {
-            id: holyCrossFamilyDoc.id,
-            title: holyCrossFamilyDoc.title,
-            category: holyCrossFamilyDoc.category,
-            fileUrl: holyCrossFamilyDoc.fileUrl
-          });
         } else {
-          setHolyCrossFamilyDoc(null);
+          setMissionDoc(mission);
         }
-
-        // Log summary
-        console.log('📋 Document Matching Summary:', {
-          vision: visionDoc ? { id: visionDoc.id, title: visionDoc.title, category: visionDoc.category } : 'NOT FOUND',
-          mission: missionDoc ? { id: missionDoc.id, title: missionDoc.title, category: missionDoc.category } : 'NOT FOUND',
-          holyCrossFamily: holyCrossFamilyDoc ? { id: holyCrossFamilyDoc.id, title: holyCrossFamilyDoc.title, category: holyCrossFamilyDoc.category } : 'NOT FOUND'
-        });
-
-        if (!missionDoc && !visionDoc && !holyCrossFamilyDoc) {
-          console.warn('⚠️ No statement documents found. Make sure documents are uploaded with categories: mission, vision, or holy-cross-family');
-        }
-      } catch (error) {
-        console.error('Error fetching statement documents:', error);
       } finally {
         setLoading(false);
       }
@@ -362,8 +146,6 @@ const Info: React.FC = () => {
   const visionImageUrl: string = visionDoc 
     ? getDocumentImageUrl(visionDoc, visionFallback) 
     : visionFallback;
-  
-  const holyCrossFamilyImageUrl: string = getDocumentImageUrl(holyCrossFamilyDoc, holyCrossFamilyFallback);
   
   // Debug logging with explicit verification
   console.log('🔍 DOCUMENT ASSIGNMENT VERIFICATION:', {
@@ -598,78 +380,6 @@ const Info: React.FC = () => {
           )}
         </Box>
     </Paper>
-
-      {/* The Holy Cross Family Brooklyn Statement - as Image */}
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 4, 
-          mb: 4, 
-          background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-          borderRadius: 3,
-          border: '2px solid #d32f2f',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #d32f2f 100%)',
-            borderRadius: '12px 12px 0 0',
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <FamilyRestroomIcon 
-            sx={{ 
-              fontSize: '2.5rem', 
-              color: '#d32f2f', 
-              mr: 2 
-            }} 
-          />
-          <Typography 
-            variant="h4" 
-            component="h2" 
-            sx={{ 
-              color: '#1a237e', 
-              fontWeight: 700 
-            }}
-          >
-            The Holy Cross Family, Brooklyn
-      </Typography>
-    </Box>
-        
-        <Box sx={{ textAlign: 'center' }}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Box
-              component="img"
-              src={holyCrossFamilyImageUrl}
-              alt="The Holy Cross Family, Brooklyn Statement"
-              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                const target = e.target as HTMLImageElement;
-                if (target.src === holyCrossFamilyFallback) return; // Prevent infinite loop
-                target.src = holyCrossFamilyFallback;
-              }}
-              sx={{
-                borderRadius: 2,
-                boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
-                maxWidth: '600px',
-                width: '100%',
-                height: 'auto',
-                objectFit: 'contain',
-                display: 'block',
-                mx: 'auto'
-              }}
-            />
-          )}
-        </Box>
-      </Paper>
 
     {/* Quick Facts */}
       <Box sx={{ mb: 6 }}>

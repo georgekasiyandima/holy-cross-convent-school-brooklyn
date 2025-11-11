@@ -21,6 +21,7 @@ import Music from './pages/Music';
 import ContactForm from './components/ContactForm';
 import Donate from './pages/Donate';
 import AdminDocumentUpload from './pages/AdminDocumentUpload';
+import AdminDocumentManagement from './pages/AdminDocumentManagement';
 import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -39,6 +40,8 @@ import SchoolHub from './pages/SchoolHub';
 import CalendarManagement from './pages/CalendarManagement';
 import GalleryManagement from './pages/GalleryManagement';
 import NewsletterManagement from './pages/NewsletterManagement';
+import AdminGoverningBody from './pages/AdminGoverningBody';
+import AdminAnnouncements from './pages/AdminAnnouncements';
 import Academic from './pages/Academic';
 import Robotics from './pages/Robotics';
 import Sport from './pages/Sport';
@@ -182,7 +185,9 @@ const NavigationWrapper: React.FC = () => {
       case '/news':
         return 'News';
       case '/school-board':
-        return 'School Board';
+        return 'Governing Body';
+      case '/admin/announcements':
+        return 'Announcements';
       case '/staff':
         return 'Staff';
       case '/info':
@@ -287,6 +292,14 @@ const NavigationWrapper: React.FC = () => {
           } 
         />
         <Route 
+          path="/admin/document-management" 
+          element={
+            <ProtectedRoute>
+              <AdminDocumentManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/admin/school-stats" 
           element={
             <ProtectedRoute>
@@ -311,12 +324,28 @@ const NavigationWrapper: React.FC = () => {
           } 
         />
         <Route 
+          path="/admin/announcements" 
+          element={
+            <ProtectedRoute>
+              <AdminAnnouncements />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/admin/newsletters" 
           element={
             <ProtectedRoute>
               <NewsletterManagement />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/admin/governing-body"
+          element={
+            <ProtectedRoute>
+              <AdminGoverningBody />
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/admin/vacancies" 

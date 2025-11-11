@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 export interface ApplicationData {
   // Learner Information
   surname: string;
-  christianName: string;
+  learnerName: string;
   dateOfBirth: string;
   placeOfBirth: string;
   gradeApplying: string;
@@ -94,7 +94,7 @@ export interface Application {
   
   // Learner Information
   surname: string;
-  christianName: string;
+  learnerName: string;
   dateOfBirth: string;
   placeOfBirth: string;
   gradeApplying: string;

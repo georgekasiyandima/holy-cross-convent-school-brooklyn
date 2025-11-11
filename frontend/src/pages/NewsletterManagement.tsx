@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -21,20 +21,15 @@ import {
   Paper,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
   Menu,
   ListItemIcon,
   ListItemText,
-  Avatar,
-  List,
-  ListItem,
-  ListItemText as MuiListItemText,
-  ListItemAvatar,
-  Divider,
   Switch,
   FormControlLabel,
-  Autocomplete
+  Autocomplete,
+  Container,
+  Grid,
+  Stack
 } from '@mui/material';
 import {
   Add,
@@ -46,14 +41,11 @@ import {
   MoreVert,
   Email,
   People,
-  TrendingUp,
   Drafts,
   CheckCircle,
   Error as ErrorIcon,
   AccessTime,
-  PriorityHigh,
-  School,
-  Person
+  PriorityHigh
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
@@ -158,12 +150,7 @@ const NewsletterManagement: React.FC = () => {
 
   const grades = ['Grade R', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7'];
 
-  useEffect(() => {
-    fetchNewsletters();
-    fetchParents();
-  }, [filterStatus]);
-
-  const fetchNewsletters = async () => {
+  const fetchNewsletters = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -180,9 +167,9 @@ const NewsletterManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterStatus]);
 
-  const fetchParents = async () => {
+  const fetchParents = useCallback(async () => {
     try {
       const response = await fetch('/api/newsletters/parents/list');
       if (!response.ok) throw new Error('Failed to fetch parents');
@@ -192,7 +179,12 @@ const NewsletterManagement: React.FC = () => {
     } catch (err) {
       console.error('Error fetching parents:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNewsletters();
+    fetchParents();
+  }, [fetchNewsletters, fetchParents]);
 
   const handleCreateNewsletter = async () => {
     try {
@@ -291,29 +283,95 @@ const NewsletterManagement: React.FC = () => {
     return true;
   });
 
+  const stats = useMemo(() => {
+    const totals = {
+      total: newsletters.length,
+      drafts: newsletters.filter((n) => n.status === 'DRAFT').length,
+      scheduled: newsletters.filter((n) => n.status === 'SCHEDULED').length,
+      sent: newsletters.filter((n) => n.status === 'SENT').length,
+    };
+    return totals;
+  }, [newsletters]);
+
   return (
     <AdminLayout>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#1a237e' }}>
-          Newsletter Management
-        </Typography>
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg,#1a237e 0%,#3949ab 60%,#5c6bc0 100%)',
+          color: '#fff',
+          py: { xs: 6, md: 8 },
+          borderBottomLeftRadius: { xs: 0, md: 32 },
+          borderBottomRightRadius: { xs: 0, md: 32 },
+        }}
+      >
+        <Container maxWidth="lg">
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+            Newsletter Management
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720 }}>
+            Craft announcements, schedule parent communications, and track delivery performance.
+          </Typography>
+        </Container>
+      </Box>
 
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, mt: { md: -6 } }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
         {success && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>
             {success}
           </Alert>
         )}
 
-        {/* Controls */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-            <FormControl sx={{ minWidth: 150 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {[
+            { label: 'Total Messages', value: stats.total, color: '#1a237e' },
+            { label: 'Drafts', value: stats.drafts, color: '#ef6c00' },
+            { label: 'Scheduled', value: stats.scheduled, color: '#3949ab' },
+            { label: 'Sent', value: stats.sent, color: '#2e7d32' },
+          ].map((stat) => (
+            <Grid item xs={12} sm={6} md={3} key={stat.label}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 12px 24px rgba(15,23,42,0.08)',
+                }}
+              >
+                <Typography variant="overline" sx={{ color: '#64748b' }}>
+                  {stat.label}
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color }}>
+                  {stat.value}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            mb: 4,
+            borderRadius: 3,
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 16px 32px rgba(15,23,42,0.08)',
+          }}
+        >
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={2}
+            alignItems={{ xs: 'stretch', md: 'center' }}
+            sx={{ mb: 3 }}
+          >
+            <FormControl sx={{ minWidth: 180 }} size="small">
               <InputLabel>Status</InputLabel>
               <Select
                 value={filterStatus}
@@ -329,35 +387,49 @@ const NewsletterManagement: React.FC = () => {
               </Select>
             </FormControl>
 
+            <Tabs
+              value={activeTab}
+              onChange={(e, newValue) => setActiveTab(newValue)}
+              sx={{ flex: 1 }}
+              variant="scrollable"
+              scrollButtons="auto"
+            >
+              <Tab label="All Newsletters" sx={{ fontWeight: 600 }} />
+              <Tab label="Drafts" sx={{ fontWeight: 600 }} />
+              <Tab label="Scheduled" sx={{ fontWeight: 600 }} />
+              <Tab label="Sent" sx={{ fontWeight: 600 }} />
+            </Tabs>
+
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => setCreateDialogOpen(true)}
-              sx={{ ml: 'auto' }}
+              sx={{ bgcolor: '#1a237e', ml: { md: 'auto' } }}
             >
               Create Newsletter
             </Button>
-          </Box>
-
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-            <Tab label="All Newsletters" />
-            <Tab label="Drafts" />
-            <Tab label="Scheduled" />
-            <Tab label="Sent" />
-          </Tabs>
+          </Stack>
         </Paper>
 
-        {/* Newsletters List */}
         {loading ? (
           <LinearProgress />
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          <Grid container spacing={3}>
             {filteredNewsletters.map((newsletter) => (
-              <Box key={newsletter.id} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', md: 'calc(50% - 12px)', lg: 'calc(33.333% - 16px)' } }}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardContent sx={{ flex: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, flex: 1 }}>
+              <Grid item xs={12} md={6} lg={4} key={newsletter.id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 3,
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 12px 28px rgba(15,23,42,0.08)',
+                  }}
+                >
+                  <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e', pr: 2 }}>
                         {newsletter.title}
                       </Typography>
                       <IconButton
@@ -369,9 +441,9 @@ const NewsletterManagement: React.FC = () => {
                       >
                         <MoreVert />
                       </IconButton>
-                    </Box>
+                    </Stack>
 
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                       <StatusChip
                         icon={getStatusIcon(newsletter.status)}
                         label={newsletter.status}
@@ -384,45 +456,61 @@ const NewsletterManagement: React.FC = () => {
                         size="small"
                         priority={newsletter.priority}
                       />
-                    </Box>
+                    </Stack>
 
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {newsletter.content.substring(0, 100)}...
+                      {newsletter.content.substring(0, 120)}...
                     </Typography>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <People fontSize="small" color="action" />
-                      <Typography variant="caption">
-                        {newsletter.recipients.length} recipients
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Email fontSize="small" color="action" />
-                      <Typography variant="caption">
-                        {newsletter.targetAudience === 'ALL' ? 'All Parents' :
-                         newsletter.targetAudience === 'SPECIFIC_GRADES' ? `Grades: ${newsletter.gradeLevels.join(', ')}` :
-                         'Specific Parents'}
-                      </Typography>
-                    </Box>
-
-                    {newsletter.scheduledFor && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Schedule fontSize="small" color="action" />
+                    <Stack spacing={1} sx={{ color: '#64748b', flex: 1 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <People fontSize="small" color="action" />
                         <Typography variant="caption">
-                          Scheduled: {new Date(newsletter.scheduledFor).toLocaleString()}
+                          {newsletter.recipients.length} recipients
                         </Typography>
-                      </Box>
-                    )}
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Email fontSize="small" color="action" />
+                        <Typography variant="caption">
+                          {newsletter.targetAudience === 'ALL' ? 'All Parents'
+                            : newsletter.targetAudience === 'SPECIFIC_GRADES' ? `Grades: ${newsletter.gradeLevels.join(', ')}`
+                            : 'Specific Parents'}
+                        </Typography>
+                      </Stack>
+                      {newsletter.scheduledFor && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Schedule fontSize="small" color="action" />
+                          <Typography variant="caption">
+                            Scheduled: {new Date(newsletter.scheduledFor).toLocaleString()}
+                          </Typography>
+                        </Stack>
+                      )}
+                    </Stack>
 
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
                       By {newsletter.author.name} • {new Date(newsletter.createdAt).toLocaleDateString()}
                     </Typography>
                   </CardContent>
                 </Card>
-              </Box>
+              </Grid>
             ))}
-          </Box>
+
+            {!loading && filteredNewsletters.length === 0 && (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, border: '1px dashed #cbd5f5' }}>
+                  <Typography variant="h6" sx={{ color: '#1a237e', mb: 1 }}>
+                    No newsletters found for the selected filters.
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
+                    Adjust the filters or create a new message.
+                  </Typography>
+                  <Button variant="contained" startIcon={<Add />} onClick={() => setCreateDialogOpen(true)}>
+                    Create Newsletter
+                  </Button>
+                </Paper>
+              </Grid>
+            )}
+          </Grid>
         )}
 
         {/* Create Newsletter Dialog */}
@@ -449,7 +537,7 @@ const NewsletterManagement: React.FC = () => {
                 required
               />
 
-              <Box sx={{ display: 'flex', gap: 2 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <FormControl sx={{ flex: 1 }}>
                   <InputLabel>Priority</InputLabel>
                   <Select
@@ -477,7 +565,7 @@ const NewsletterManagement: React.FC = () => {
                     <MenuItem value="SPECIFIC_PARENTS">Specific Parents</MenuItem>
                   </Select>
                 </FormControl>
-              </Box>
+              </Stack>
 
               {formData.targetAudience === 'SPECIFIC_GRADES' && (
                 <Autocomplete
@@ -496,9 +584,9 @@ const NewsletterManagement: React.FC = () => {
                   multiple
                   options={parents}
                   value={parents.filter(p => formData.selectedParents.includes(p.id))}
-                  onChange={(e, newValue) => setFormData(prev => ({ 
-                    ...prev, 
-                    selectedParents: newValue.map(p => p.id) 
+                  onChange={(e, newValue) => setFormData(prev => ({
+                    ...prev,
+                    selectedParents: newValue.map(p => p.id)
                   }))}
                   getOptionLabel={(option) => `${option.name} (${option.email})`}
                   renderInput={(params) => (
@@ -546,11 +634,11 @@ const NewsletterManagement: React.FC = () => {
                 <Typography variant="h4" sx={{ mb: 2 }}>
                   {selectedNewsletter.title}
                 </Typography>
-                <Box 
-                  sx={{ 
-                    border: '1px solid #e0e0e0', 
-                    borderRadius: 1, 
-                    p: 2,
+                <Box
+                  sx={{
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 2,
+                    p: 3,
                     backgroundColor: '#f9f9f9'
                   }}
                   dangerouslySetInnerHTML={{ __html: selectedNewsletter.content }}
@@ -589,7 +677,7 @@ const NewsletterManagement: React.FC = () => {
               <ListItemText>Send Now</ListItemText>
             </MenuItem>
           )}
-          <MenuItem 
+          <MenuItem
             onClick={() => {
               if (selectedNewsletter) handleDeleteNewsletter(selectedNewsletter.id);
               setAnchorEl(null);
@@ -600,7 +688,7 @@ const NewsletterManagement: React.FC = () => {
             <ListItemText>Delete</ListItemText>
           </MenuItem>
         </Menu>
-      </Box>
+      </Container>
     </AdminLayout>
   );
 };

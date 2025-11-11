@@ -6,8 +6,7 @@ import {
   Card, 
   CardMedia, 
   CardContent, 
-  Divider, 
-  useTheme,
+  Divider,
   IconButton,
   Dialog,
   DialogContent,
@@ -19,8 +18,7 @@ import {
 import { 
   PlayArrow,
   Close,
-  Facebook,
-  VideoLibrary
+  Facebook
 } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import { styled } from '@mui/material/styles';
@@ -124,7 +122,6 @@ const VideoThumbnail = styled(Box)(({ theme }) => ({
 }));
 
 const Spiritual: React.FC = () => {
-  const theme = useTheme();
   const [selectedVideo, setSelectedVideo] = useState<SchoolVideo | null>(null);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
 

@@ -3,8 +3,6 @@ import {
   Box,
   Container,
   Typography,
-  Card,
-  CardContent,
   Button,
   Dialog,
   DialogTitle,
@@ -28,10 +26,8 @@ import {
   Snackbar,
   Switch,
   FormControlLabel,
-  Divider,
   CircularProgress,
   Stack,
-  Chip as MuiChip,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import AdminLayout from '../components/AdminLayout';
@@ -48,8 +44,6 @@ import {
   Cancel,
   Visibility,
   VisibilityOff,
-  Schedule,
-  LocationOn,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';

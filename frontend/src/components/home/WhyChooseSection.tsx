@@ -4,7 +4,6 @@ import {
   Container,
   Typography,
   Card,
-  CardContent,
   Grid,
   Slide,
   Fade

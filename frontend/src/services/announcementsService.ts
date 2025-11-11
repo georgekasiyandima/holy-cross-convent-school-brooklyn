@@ -8,8 +8,10 @@ export interface Announcement {
   content: string;
   summary: string;
   imageUrl: string | null;
+  attachmentUrl?: string | null;
+  attachmentType?: string | null;
   type: 'news' | 'newsletter';
-  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' | 'MEDIUM';
   publishedAt: string;
   createdAt: string;
   updatedAt?: string;
@@ -70,6 +72,8 @@ class AnnouncementsService {
   }
 }
 
-export default new AnnouncementsService();
+const announcementsService = new AnnouncementsService();
+
+export default announcementsService;
 
 

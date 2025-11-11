@@ -16,10 +16,10 @@ import {
   Badge,
   Tooltip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CircularProgress
 } from '@mui/material';
 import { 
-  AdminPanelSettings, 
   Logout, 
   Dashboard,
   CalendarToday,
@@ -32,7 +32,10 @@ import {
   Home,
   PhotoLibrary,
   Email,
-  Assignment
+  Assignment,
+  Description,
+  Group,
+  Campaign
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -42,7 +45,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -50,6 +53,28 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(!isMobile);
+
+  // Show loading state while auth is being checked
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          bgcolor: '#f8fafc'
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={40} sx={{ mb: 2 }} />
+          <Typography variant="body2" sx={{ color: '#6b7280' }}>
+            Loading...
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -87,6 +112,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: <Dashboard />,
       path: '/admin',
       description: 'Overview and analytics'
+    },
+    {
+      text: 'Governing Body',
+      icon: <Group />,
+      path: '/admin/governing-body',
+      description: 'Manage board members'
+    },
+    {
+      text: 'Announcements',
+      icon: <Campaign />,
+      path: '/admin/announcements',
+      description: 'Publish announcements & flyers'
     },
     {
       text: 'Application Management',
@@ -129,6 +166,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: <School />,
       path: '/admin/document-upload',
       description: 'Upload school documents'
+    },
+    {
+      text: 'Document Management',
+      icon: <Description />,
+      path: '/admin/document-management',
+      description: 'Publish and organize documents'
     }
   ];
 

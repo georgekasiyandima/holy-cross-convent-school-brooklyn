@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Container,
   Card,
@@ -55,14 +55,6 @@ interface GroupedStaff {
   teaching: StaffMember[];
   admin: StaffMember[];
   support: StaffMember[];
-}
-
-interface StaffApiResponse {
-  success: boolean;
-  data: {
-    staff: StaffMember[];
-    groupedStaff: GroupedStaff;
-  };
 }
 
 /**
@@ -445,6 +437,124 @@ const Staff: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
 
+  const allStaffMembers = useMemo(
+    () => [
+      ...groupedStaff.leadership,
+      ...groupedStaff.teaching,
+      ...groupedStaff.admin,
+      ...groupedStaff.support,
+    ],
+    [groupedStaff]
+  );
+
+  const selectPreferredMember = React.useCallback((candidates: StaffMember[]) => {
+    if (candidates.length === 0) return undefined;
+
+    const scoreMember = (member: StaffMember) => {
+      let score = 0;
+      if (member.imageUrl) score += 2;
+      if (member.favoriteQuote && member.favoriteQuote.trim().length > 0) score += 2;
+      if (member.grade && member.grade.trim().length > 0) score += 1;
+      if (member.bio && member.bio.trim().length > 0) score += 1;
+      return score;
+    };
+
+    return [...candidates].sort((a, b) => scoreMember(b) - scoreMember(a))[0];
+  }, []);
+
+  const principalMember = useMemo(() => {
+    const principalCandidates = allStaffMembers.filter((member) => {
+      const role = member.role?.toLowerCase() ?? "";
+      return role.includes("principal") && !role.includes("deputy");
+    });
+    return selectPreferredMember(principalCandidates);
+  }, [allStaffMembers, selectPreferredMember]);
+
+  const duPlessisMember = useMemo(() => {
+    const duPlessisCandidates = allStaffMembers.filter((member) => {
+      const name = member.name?.toLowerCase() ?? "";
+      const role = member.role?.toLowerCase() ?? "";
+
+      const matchesName =
+        name.includes("du plessis") ||
+        name.includes("duplessis") ||
+        name.includes("du-plessis");
+
+      const matchesRole = role.includes("principal") || role.includes("leadership");
+
+      return matchesName || matchesRole;
+    });
+    return selectPreferredMember(duPlessisCandidates);
+  }, [allStaffMembers, selectPreferredMember]);
+
+  const leadershipHighlights = useMemo(() => {
+    const highlights: StaffMember[] = [];
+    if (principalMember) {
+      highlights.push(principalMember);
+    }
+    if (
+      duPlessisMember &&
+      (!principalMember || duPlessisMember.id !== principalMember.id)
+    ) {
+      highlights.push(duPlessisMember);
+    }
+    return highlights;
+  }, [principalMember, duPlessisMember]);
+
+  const highlightIds = useMemo(
+    () => new Set(leadershipHighlights.map((member) => member.id)),
+    [leadershipHighlights]
+  );
+
+  const highlightNameKeys = useMemo(
+    () =>
+      new Set(
+        leadershipHighlights
+          .map((member) => member.name?.trim().toLowerCase())
+          .filter((name): name is string => !!name)
+      ),
+    [leadershipHighlights]
+  );
+
+  const filteredTeachingStaff = useMemo(
+    () =>
+      groupedStaff.teaching.filter(
+        (member) =>
+          !highlightIds.has(member.id) &&
+          (() => {
+            const nameKey = member.name?.trim().toLowerCase();
+            return nameKey ? !highlightNameKeys.has(nameKey) : true;
+          })()
+      ),
+    [groupedStaff.teaching, highlightIds, highlightNameKeys]
+  );
+
+  const filteredAdminStaff = useMemo(
+    () =>
+      groupedStaff.admin.filter(
+        (member) =>
+          !highlightIds.has(member.id) &&
+          (() => {
+            const nameKey = member.name?.trim().toLowerCase();
+            return nameKey ? !highlightNameKeys.has(nameKey) : true;
+          })()
+      ),
+    [groupedStaff.admin, highlightIds, highlightNameKeys]
+  );
+
+  const filteredSupportStaff = useMemo(
+    () =>
+      groupedStaff.support.filter(
+        (member) =>
+          !highlightIds.has(member.id) &&
+          (() => {
+            const nameKey = member.name?.trim().toLowerCase();
+            return nameKey ? !highlightNameKeys.has(nameKey) : true;
+          })()
+      ),
+    [groupedStaff.support, highlightIds, highlightNameKeys]
+  );
+
   useEffect(() => {
     const fetchStaff = async () => {
       try {
@@ -675,113 +785,167 @@ const Staff: React.FC = () => {
 
     <Container maxWidth="xl" sx={{ py: 6 }}>
 
-      {/* Principal Section - Horizontal Banner Style */}
-      {groupedStaff.leadership.length > 0 && (
+      {/* Leadership Highlights */}
+      {leadershipHighlights.length > 0 && (
         <Box sx={{ mb: 8 }}>
           <Typography variant="h3" sx={{ color: "#1a237e", fontWeight: 700, mb: 3, textAlign: "center" }}>
-            Our Principal
+            Our Leadership Team
           </Typography>
           <Divider sx={{ bgcolor: "#ffd700", height: 4, width: 100, mx: "auto", mb: 4 }} />
-          
-          {/* Principal Banner Card - Horizontal Layout */}
-          {groupedStaff.leadership.filter(member => member.role.toLowerCase().includes('principal')).map((member) => (
-            <Card
-              key={member.id}
-              sx={{
-                background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
-                color: "white",
-                borderRadius: 4,
-                overflow: "hidden",
-                boxShadow: "0 8px 32px rgba(26, 35, 126, 0.3)",
-                mb: 4,
-                position: "relative",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: "200px",
-                  height: "200px",
-                  background: "radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)",
-                  borderRadius: "50%",
-                  transform: "translate(50%, -50%)",
-                },
-              }}
-            >
-              <CardContent sx={{ p: 0 }}>
-                <Box sx={{ display: "flex", alignItems: "center", minHeight: 200 }}>
-                  {/* Principal Image */}
-                  <Box sx={{ flex: "0 0 200px", p: 3, display: "flex", justifyContent: "center" }}>
-                    <StaffAvatar
-                      src={getStaffImageUrl(member.imageUrl)}
-                      name={member.name}
-                      size={160}
-                      category={member.category}
-                      sx={{
-                        border: "4px solid #ffd700",
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-                      }}
-                    />
-                  </Box>
 
-                  {/* Principal Info */}
-                  <Box sx={{ flex: 1, p: 3, pr: 4 }}>
-                    <Typography variant="h4" sx={{ color: "#ffd700", fontWeight: 700, mb: 1 }}>
-                      {member.name}
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)", mb: 1, fontWeight: 500 }}>
-                      Principal
-                    </Typography>
-                    {member.grade && member.grade !== 'All' && member.grade !== 'All Grades' && (
-                      <Typography variant="body1" sx={{ color: "#ffd700", mb: 2, fontWeight: 600, fontSize: "1.1rem" }}>
-                        {member.grade}
-                      </Typography>
-                    )}
-                    
-                    {/* Bio */}
-                    {member.bio && (
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: "rgba(255,255,255,0.9)",
-                          mb: 3,
-                          lineHeight: 1.6,
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {member.bio}
-                      </Typography>
-                    )}
-
-                    {/* Favorite Quote */}
-                    {member.favoriteQuote && (
           <Box
             sx={{
-                          p: 2,
-                          bgcolor: "rgba(255, 215, 0, 0.1)",
-                          borderRadius: 2,
-                          border: "1px solid rgba(255, 215, 0, 0.3)",
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: `repeat(${Math.min(leadershipHighlights.length, 2)}, minmax(0, 1fr))`,
+              },
+              gap: 3,
+            }}
+          >
+            {leadershipHighlights.map((member) => {
+              const isPrincipal =
+                principalMember && member.id === principalMember.id;
+              const accentColor = "#ffd700";
+              const gradientBackground = isPrincipal
+                ? "linear-gradient(135deg, #1a237e 0%, #283593 100%)"
+                : "linear-gradient(135deg, #283593 0%, #3949ab 70%, #5c6bc0 100%)";
+
+              return (
+                <Card
+                  key={member.id}
+                  sx={{
+                    background: gradientBackground,
+                    color: "white",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    boxShadow: "0 8px 32px rgba(26, 35, 126, 0.3)",
+                    position: "relative",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: "200px",
+                      height: "200px",
+                      background:
+                        "radial-gradient(circle, rgba(255, 215, 0, 0.12) 0%, transparent 70%)",
+                      borderRadius: "50%",
+                      transform: "translate(40%, -40%)",
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        alignItems: { xs: "center", md: "flex-start" },
+                        gap: { xs: 3, md: 4 },
+                      }}
+                    >
+                      <Box sx={{ flexShrink: 0, textAlign: "center" }}>
+                        <StaffAvatar
+                          src={getStaffImageUrl(member.imageUrl)}
+                          name={member.name}
+                          size={180}
+                          category={member.category}
                           sx={{
-                            color: "#ffd700",
-                            fontSize: "1rem",
-                            lineHeight: 1.6,
-                            textAlign: "left",
-                            fontWeight: 500,
+                            border: `4px solid ${accentColor}`,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+                          }}
+                        />
+                      </Box>
+
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: accentColor,
+                            fontWeight: 700,
+                            mb: 1,
+                            textAlign: { xs: "center", md: "left" },
                           }}
                         >
-                          "{member.favoriteQuote}"
+                          {member.name}
                         </Typography>
+
+                        {member.role && (
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: "rgba(255,255,255,0.95)",
+                              fontWeight: 500,
+                              mb: 1,
+                              textAlign: { xs: "center", md: "left" },
+                            }}
+                          >
+                            {member.role}
+                          </Typography>
+                        )}
+
+                        {member.grade &&
+                          member.grade !== "All" &&
+                          member.grade !== "All Grades" && (
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color: accentColor,
+                                fontWeight: 600,
+                                mb: 2,
+                                textAlign: { xs: "center", md: "left" },
+                              }}
+                            >
+                              {member.grade}
+                            </Typography>
+                          )}
+
+                        {member.bio && (
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: "rgba(255,255,255,0.95)",
+                              lineHeight: 1.7,
+                              fontSize: "1.05rem",
+                              mb: member.favoriteQuote ? 3 : 0,
+                              textAlign: { xs: "center", md: "left" },
+                            }}
+                          >
+                            {member.bio}
+                          </Typography>
+                        )}
+
+                        {member.favoriteQuote && (
+                          <Box
+                            sx={{
+                              p: 3,
+                              bgcolor: "rgba(255, 215, 0, 0.12)",
+                              borderRadius: 3,
+                              border: "1px solid rgba(255, 215, 0, 0.35)",
+                            }}
+                          >
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color: accentColor,
+                                fontSize: "1rem",
+                                lineHeight: 1.7,
+                                fontWeight: 500,
+                                textAlign: "center",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              “{member.favoriteQuote}”
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
-                    )}
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                    </Box>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </Box>
         </Box>
       )}
 
@@ -815,26 +979,26 @@ const Staff: React.FC = () => {
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          {groupedStaff.teaching.length > 0 ? (
-            renderStaffGrid(groupedStaff.teaching)
+          {filteredTeachingStaff.length > 0 ? (
+            renderStaffGrid(filteredTeachingStaff)
           ) : (
             <EmptyState category="teaching" />
           )}
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
-          {groupedStaff.admin.length > 0 ? (
-            renderStaffGrid(groupedStaff.admin)
+          {filteredAdminStaff.length > 0 ? (
+            renderStaffGrid(filteredAdminStaff)
           ) : (
             <EmptyState category="administrative" />
           )}
         </TabPanel>
 
         <TabPanel value={tabValue} index={2}>
-          {groupedStaff.support.length > 0 ? (
+          {filteredSupportStaff.length > 0 ? (
             renderStaffGrid(
               // Sort support staff to put Mrs Benita Faulman first
-              [...groupedStaff.support].sort((a, b) => {
+              [...filteredSupportStaff].sort((a, b) => {
                 const aName = a.name.toLowerCase();
                 const bName = b.name.toLowerCase();
                 const faulmanInA = aName.includes('faulman') || aName.includes('benita');

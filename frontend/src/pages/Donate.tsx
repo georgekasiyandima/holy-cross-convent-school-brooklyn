@@ -7,21 +7,13 @@ import {
   CardContent,
   Button,
   TextField,
+  Chip,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Radio,
   RadioGroup,
   FormControlLabel,
   FormLabel,
-  Chip,
   Avatar,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
   Paper,
   Stepper,
   Step,
@@ -30,13 +22,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
   Alert,
-  Snackbar,
   CircularProgress
 } from '@mui/material';
 import {
-  Favorite,
   School,
   Construction,
   MusicNote,
@@ -48,11 +37,8 @@ import {
   CheckCircle,
   Star,
   Diamond,
-  Close,
   Payment,
-  Receipt,
-  Security,
-  VerifiedUser
+  Receipt
 } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import { styled } from '@mui/material/styles';
@@ -230,9 +216,6 @@ const Donate: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [processing, setProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
   const steps = [
     'Choose Donation Type',
     'Select Amount',
@@ -797,16 +780,6 @@ const Donate: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Error Snackbar */}
-        <Snackbar
-          open={showError}
-          autoHideDuration={6000}
-          onClose={() => setShowError(false)}
-        >
-          <Alert onClose={() => setShowError(false)} severity="error">
-            {errorMessage}
-          </Alert>
-        </Snackbar>
       </Container>
     </>
   );

@@ -63,6 +63,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
   };
 
   const imageCount = album._count?.items || album.items?.length || 0;
+  const subAlbumCount = album._count?.subAlbums || album.subAlbums?.length || 0;
   const coverImageUrl = getCoverImageUrl();
 
   return (
@@ -80,8 +81,21 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
           <Collections sx={{ fontSize: 18 }} />
           {imageCount} {imageCount === 1 ? 'photo' : 'photos'}
         </Box>
-        {album.albumType === 'CLASS' && album.classGrade && (
+        {(album.albumType === 'CLASS' && album.classGrade) && (
           <Chip label={album.classGrade} sx={{ position: 'absolute', bottom: 16, left: 16, bgcolor: '#1a237e', color: '#fff', fontWeight: 700 }} />
+        )}
+        {album.albumType === 'GENERAL' && album.phase && (
+          <Chip
+            label={album.phase}
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              left: 16,
+              bgcolor: '#ffd700',
+              color: '#1a237e',
+              fontWeight: 700,
+            }}
+          />
         )}
       </Box>
       <CardContent sx={{ p: 3 }}>
@@ -122,6 +136,19 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
               height: 24
             }} 
           />
+          {subAlbumCount > 0 && (
+            <Chip
+              label={`${subAlbumCount} ${subAlbumCount === 1 ? 'sub-album' : 'sub-albums'}`}
+              size="small"
+              sx={{
+                bgcolor: '#e8eaf6',
+                color: '#1a237e',
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                height: 24,
+              }}
+            />
+          )}
         </Box>
       </CardContent>
     </AlbumCardContainer>

@@ -21,8 +21,7 @@ import {
 import {
   Menu as MenuIcon,
   ExpandMore,
-  ChevronRight,
-  ArrowForward
+  ChevronRight
 } from '@mui/icons-material';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 

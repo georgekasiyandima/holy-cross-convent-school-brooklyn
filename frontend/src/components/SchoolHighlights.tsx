@@ -6,8 +6,7 @@ import {
   CardContent,
   Typography,
   Chip,
-  Grid,
-  useTheme
+  Grid
 } from '@mui/material';
 import {
   AutoAwesome,
@@ -92,7 +91,6 @@ const highlights: Highlight[] = [
 
 const SchoolHighlights: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const handleHighlightClick = (link?: string) => {
     if (link) {

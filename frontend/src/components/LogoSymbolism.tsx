@@ -11,10 +11,7 @@ import {
   CardContent,
   IconButton,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button
+  DialogContent
 } from '@mui/material';
 import { 
   ExpandMore as ExpandMoreIcon,

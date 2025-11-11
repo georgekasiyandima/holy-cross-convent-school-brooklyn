@@ -8,7 +8,6 @@ import {
   CardMedia,
   Divider, 
   Chip, 
-  Stack,
   CircularProgress,
   Alert,
   Button,
@@ -17,11 +16,8 @@ import {
 } from '@mui/material';
 import { 
   Announcement, 
-  Event, 
-  School,
   Email,
   Newspaper,
-  CalendarToday,
   Error as ErrorIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';

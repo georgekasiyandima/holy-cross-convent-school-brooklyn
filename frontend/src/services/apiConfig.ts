@@ -16,9 +16,11 @@ const resolvedBase = (envApiBase || (process.env.NODE_ENV === 'production' ? def
 export const API_BASE_URL = resolvedBase;
 export const API_BASE_URL_WITH_PREFIX = `${API_BASE_URL}/api`;
 
-export default {
+const apiConfig = {
   API_BASE_URL,
   API_BASE_URL_WITH_PREFIX,
 };
+
+export default apiConfig;
 
 

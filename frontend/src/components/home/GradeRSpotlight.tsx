@@ -5,13 +5,10 @@ import {
   Container,
   Typography,
   Card,
-  CardContent,
   Button,
   Chip,
   Grid,
   Stack,
-  useTheme,
-  useMediaQuery,
   Fade,
   Slide
 } from '@mui/material';
@@ -146,9 +143,6 @@ interface GradeRSpotlightProps {
 
 const GradeRSpotlight: React.FC<GradeRSpotlightProps> = ({ variant = 'default' }) => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   const features = [
     {

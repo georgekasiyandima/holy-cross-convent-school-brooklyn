@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -13,7 +12,6 @@ import {
   Box,
   Typography,
   Chip,
-  Autocomplete,
   IconButton,
   Alert,
   Divider,
@@ -25,7 +23,6 @@ import {
   PhotoLibrary,
   Event,
   School,
-  Add,
   CheckCircle,
   Info
 } from '@mui/icons-material';
@@ -89,6 +86,8 @@ interface CreateAlbumDialogProps {
   initialCategory?: string;
 }
 
+const PHASE_OPTIONS = ['Foundation Phase', 'Intermediate Phase', 'Senior Phase'];
+
 const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
   open,
   onClose,
@@ -100,11 +99,14 @@ const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [classGrade, setClassGrade] = useState('');
+  const [phase, setPhase] = useState('');
+  const [parentAlbumId, setParentAlbumId] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [category, setCategory] = useState(initialCategory || 'EVENTS');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableAlbums, setAvailableAlbums] = useState<{ id: string; title: string }[]>([]);
 
   const grades = ['Grade R', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7'];
 
@@ -114,11 +116,29 @@ const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
       setTitle('');
       setDescription('');
       setClassGrade('');
+      setPhase('');
+      setParentAlbumId(null);
       setSelectedTemplate(null);
       setYear(new Date().getFullYear().toString());
       setError(null);
       setAlbumType(initialAlbumType);
       setCategory(initialCategory || 'EVENTS');
+
+      // Load existing albums for parent selection
+      GalleryService.getAlbums({ isPublished: undefined })
+        .then((albums) => {
+          setAvailableAlbums(
+            albums
+              .filter((album) => !album.parentAlbumId) // only top-level for parent choices
+              .map((album) => ({
+                id: album.id,
+                title: album.title,
+              }))
+          );
+        })
+        .catch((err) => {
+          console.error('Failed to load albums for parent selection', err);
+        });
     }
   }, [open, initialAlbumType, initialCategory]);
 
@@ -140,6 +160,12 @@ const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
       return;
     }
 
+    if (phase && !PHASE_OPTIONS.includes(phase)) {
+      // ensure only valid selections
+      setError('Please select a valid phase');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -149,6 +175,8 @@ const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
         description: description.trim() || undefined,
         albumType,
         classGrade: albumType === 'CLASS' ? classGrade : undefined,
+        phase: phase || undefined,
+        parentAlbumId: parentAlbumId || undefined,
         isPublished: true
       });
 
@@ -317,6 +345,47 @@ const CreateAlbumDialog: React.FC<CreateAlbumDialogProps> = ({
               />
             </Box>
           )}
+
+          {albumType === 'GENERAL' && (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Phase (optional)</InputLabel>
+              <Select
+                value={phase}
+                onChange={(e) => setPhase(e.target.value)}
+                label="Phase (optional)"
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {PHASE_OPTIONS.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Parent Album</InputLabel>
+            <Select
+              value={parentAlbumId ?? ''}
+              onChange={(e) => {
+                const value = e.target.value as string;
+                setParentAlbumId(value === '' ? null : value);
+              }}
+              label="Parent Album"
+            >
+              <MenuItem value="">
+                <em>Main Gallery (no parent)</em>
+              </MenuItem>
+              {availableAlbums.map((album) => (
+                <MenuItem key={album.id} value={album.id}>
+                  {album.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <TextField
             fullWidth

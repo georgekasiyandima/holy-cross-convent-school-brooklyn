@@ -7,51 +7,26 @@ import {
   Card,
   CardContent,
   Button,
-  IconButton,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Chip,
   Stack,
   Fade,
-  Slide,
 } from '@mui/material';
 import { 
-  School, 
-  Book, 
-  People, 
-  Event, 
-  PlayArrow,
-  Close,
   Facebook,
-  LocationOn,
-  Phone,
-  Email,
   AutoAwesome,
   Groups,
   Security,
   Favorite,
   History,
   Visibility,
-  CheckCircle,
   Church,
-  Science,
-  MusicNote,
-  SportsSoccer,
-  Computer,
   Schedule,
-  ChildCare,
-  Star,
-  Group,
-  School as SchoolIcon,
-  AutoAwesome as Sparkles,
   ExpandMore
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { videoManager, SchoolVideo } from '../utils/videoManager';
+import { videoManager } from '../utils/videoManager';
 import SEO from '../components/SEO';
 import SchoolHighlights from '../components/SchoolHighlights';
-import SchoolStatistics from '../components/SchoolStatistics';
 import FloatingSocialIcons from '../components/FloatingSocialIcons';
 import BackToTop from '../components/BackToTop';
 import PillarCarousel from '../components/PillarCarousel';
@@ -60,7 +35,7 @@ import GradeRSpotlight from '../components/home/GradeRSpotlight';
 import QuickStatsBanner from '../components/home/QuickStatsBanner';
 import WhyChooseSection from '../components/home/WhyChooseSection';
 import CTASection from '../components/home/CTASection';
-import { holyCrossBrand, pillarColors } from '../theme/branding';
+import { holyCrossBrand } from '../theme/branding';
 import { getBackgroundImageUrl } from '../utils/staticFiles';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
@@ -78,46 +53,6 @@ const VideoContainer = styled(Box)(({ theme }) => ({
     width: '100%',
     height: '100%',
     border: 'none'
-  }
-}));
-
-const VideoCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  cursor: 'pointer',
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[8]
-  }
-}));
-
-const VideoThumbnail = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  width: '100%',
-  height: 0,
-  paddingBottom: '56.25%',
-  backgroundColor: '#f5f5f5',
-  borderRadius: theme.spacing(1),
-  overflow: 'hidden',
-  '& .play-button': {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: 'rgba(26, 35, 126, 0.9)',
-    color: 'white',
-    borderRadius: '50%',
-    width: 60,
-    height: 60,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      backgroundColor: '#ffd700',
-      color: '#1a237e',
-      transform: 'translate(-50%, -50%) scale(1.1)'
-    }
   }
 }));
 
@@ -265,8 +200,6 @@ const heroImages = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedVideo, setSelectedVideo] = useState<SchoolVideo | null>(null);
-  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -284,20 +217,6 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleVideoClick = (video: SchoolVideo) => {
-    setSelectedVideo(video);
-    setVideoDialogOpen(true);
-  };
-
-  const handleCloseVideo = () => {
-    setVideoDialogOpen(false);
-    setSelectedVideo(null);
-  };
-
-  const handleContactClick = () => {
-    navigate('/contact');
-  };
-
   const handleScheduleVisit = () => {
     navigate('/contact');
   };
@@ -313,14 +232,6 @@ const Home: React.FC = () => {
     const timer = setTimeout(() => setAnimateStats(true), 500);
     return () => clearTimeout(timer);
   }, []);
-
-  // School statistics data
-  const schoolStats = [
-    { number: '65+', label: 'Years of Excellence', icon: <History /> },
-    { number: '500+', label: 'Learners', icon: <People /> },
-    { number: '98%', label: 'Pass Rate', icon: <CheckCircle /> },
-    { number: '15+', label: 'Programs', icon: <School /> }
-  ];
 
   // Heritage timeline data
   const heritageTimeline = [
@@ -905,56 +816,6 @@ const Home: React.FC = () => {
 
       {/* Unified CTA Section */}
       <CTASection />
-
-      {/* Video Dialog */}
-      <Dialog
-        open={videoDialogOpen}
-        onClose={handleCloseVideo}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">
-              {selectedVideo?.title}
-            </Typography>
-            <IconButton onClick={handleCloseVideo}>
-              <Close />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedVideo && (
-            <>
-              <VideoContainer sx={{ mb: 2 }}>
-                <div dangerouslySetInnerHTML={{ __html: selectedVideo.embedCode }} />
-              </VideoContainer>
-              <Typography variant="body1" gutterBottom>
-                {selectedVideo.description}
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Facebook />}
-                  href={selectedVideo.facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    borderColor: '#1a237e',
-                    color: '#1a237e',
-                    '&:hover': {
-                      borderColor: '#ffd700',
-                      backgroundColor: '#fffde7'
-                    }
-                  }}
-                >
-                  View on Facebook
-                </Button>
-              </Box>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Floating Social Icons */}
       <FloatingSocialIcons />

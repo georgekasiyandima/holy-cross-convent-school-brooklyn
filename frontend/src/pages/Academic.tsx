@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { School, MenuBook, Groups, Lightbulb, Favorite, CheckCircle } from '@mui/icons-material';
+import { School, MenuBook, Groups, Lightbulb, Favorite } from '@mui/icons-material';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 

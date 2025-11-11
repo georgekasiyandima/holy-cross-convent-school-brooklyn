@@ -19,7 +19,6 @@ import {
   Event,
   CalendarToday,
   Email,
-  Newspaper,
   ArrowForward,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -112,10 +111,6 @@ const HomeAnnouncements: React.FC<HomeAnnouncementsProps> = ({
 
     fetchData();
   }, [announcementsLimit, eventsLimit]);
-
-  const getIcon = (type: string) => {
-    return type === 'newsletter' ? <Email /> : <Newspaper />;
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-ZA', {

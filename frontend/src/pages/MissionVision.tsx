@@ -9,7 +9,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { School, Visibility, Flag } from '@mui/icons-material';
+import { Visibility, Flag } from '@mui/icons-material';
 import MissionStatement from '../components/MissionStatement';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';

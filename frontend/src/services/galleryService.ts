@@ -31,14 +31,18 @@ export interface Album {
   description?: string;
   albumType: 'GENERAL' | 'CLASS';
   classGrade?: string;
+  phase?: string;
   coverImageId?: string;
   isPublished: boolean;
+  parentAlbumId?: string | null;
   createdAt: string;
   updatedAt: string;
   coverImage?: GalleryItem;
   items?: GalleryItem[];
+  subAlbums?: Album[];
   _count?: {
     items: number;
+    subAlbums?: number;
   };
 }
 
@@ -271,12 +275,18 @@ class GalleryService {
   async getAlbums(filters?: {
     albumType?: 'GENERAL' | 'CLASS';
     classGrade?: string;
+    phase?: string;
+    parentAlbumId?: string | null;
     isPublished?: boolean;
   }): Promise<Album[]> {
     try {
       const params = new URLSearchParams();
       if (filters?.albumType) params.append('albumType', filters.albumType);
       if (filters?.classGrade) params.append('classGrade', filters.classGrade);
+      if (filters?.phase) params.append('phase', filters.phase);
+      if (filters?.parentAlbumId !== undefined) {
+        params.append('parentAlbumId', filters.parentAlbumId === null ? 'null' : filters.parentAlbumId);
+      }
       if (filters?.isPublished !== undefined) params.append('isPublished', filters.isPublished.toString());
 
       const response = await axios.get<GalleryResponse<Album[]>>(
@@ -320,7 +330,9 @@ class GalleryService {
     description?: string;
     albumType?: 'GENERAL' | 'CLASS';
     classGrade?: string;
+    phase?: string;
     coverImageId?: string;
+    parentAlbumId?: string | null;
     isPublished?: boolean;
   }): Promise<Album> {
     try {
@@ -348,7 +360,9 @@ class GalleryService {
       description?: string;
       albumType?: 'GENERAL' | 'CLASS';
       classGrade?: string | null;
+      phase?: string | null;
       coverImageId?: string | null;
+      parentAlbumId?: string | null;
       isPublished?: boolean;
     }
   ): Promise<Album> {

@@ -151,25 +151,34 @@ const SchoolStatsAdmin: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 8 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <CircularProgress />
+          <CircularProgress sx={{ color: '#1a237e' }} />
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, mt: { md: -6 } }}>
+      <Box
+        sx={{
+          mb: 4,
+          p: { xs: 3, md: 4 },
+          borderRadius: 3,
+          border: '1px solid #e2e8f0',
+          backgroundColor: '#fff',
+          boxShadow: '0 16px 32px rgba(15,23,42,0.08)',
+        }}
+      >
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
           School Statistics Management
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Manage the statistics displayed in the "Our School by the Numbers" section on the homepage.
+          Manage the numbers displayed in the "Our School by the Numbers" section on the homepage.
         </Typography>
-        
-        <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -196,7 +205,7 @@ const SchoolStatsAdmin: React.FC = () => {
         </Stack>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mt: 3 }}>
             {error}
           </Alert>
         )}
@@ -205,10 +214,18 @@ const SchoolStatsAdmin: React.FC = () => {
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {stats.map((stat) => (
           <Box key={stat.id} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
-            <Card sx={{ height: '100%' }}>
+            <Card
+              sx={{
+                height: '100%',
+                borderRadius: 3,
+                border: stat.isVisible ? '1px solid #e2e8f0' : '1px dashed #e2e8f0',
+                boxShadow: stat.isVisible ? '0 12px 24px rgba(26,35,126,0.1)' : '0 6px 16px rgba(148,163,184,0.22)',
+                backgroundColor: '#ffffff',
+              }}
+            >
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h6" component="h3" sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" component="h3" sx={{ fontWeight: 700, color: '#1a237e' }}>
                     {stat.label}
                   </Typography>
                   <Box>
@@ -235,17 +252,17 @@ const SchoolStatsAdmin: React.FC = () => {
                     </IconButton>
                   </Box>
                 </Box>
-                
-                <Typography variant="h4" component="div" sx={{ color: '#1a237e', fontWeight: 700, mb: 1 }}>
+
+                <Typography variant="h3" component="div" sx={{ color: '#1a237e', fontWeight: 800, mb: 1 }}>
                   {stat.value}
                 </Typography>
-                
+
                 <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                   <Chip label={stat.type} size="small" color="primary" />
                   <Chip label={stat.icon} size="small" variant="outlined" />
                   {!stat.isVisible && <Chip label="Hidden" size="small" color="warning" />}
                 </Stack>
-                
+
                 <Typography variant="body2" color="text.secondary">
                   Key: {stat.key}
                 </Typography>
@@ -256,16 +273,22 @@ const SchoolStatsAdmin: React.FC = () => {
             </Card>
           </Box>
         ))}
-        
+
         {stats.length === 0 && (
           <Box sx={{ width: '100%' }}>
-            <Card>
+            <Card
+              sx={{
+                borderRadius: 3,
+                border: '1px dashed #cbd5f5',
+                backgroundColor: '#f8fafc',
+              }}
+            >
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No statistics configured
+                  No statistics configured yet
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Click "Initialize Defaults" to create default statistics or "Add Statistic" to create custom ones.
+                  Click "Initialize Defaults" to create starter statistics or "Add Statistic" to build your own.
                 </Typography>
                 <Button
                   variant="contained"
@@ -289,107 +312,88 @@ const SchoolStatsAdmin: React.FC = () => {
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
+              <TextField
+                fullWidth
+                label="Key (unique identifier)"
+                value={formData.key}
+                onChange={(e) => setFormData({ ...formData, key: e.target.value })}
+                disabled={!!editingStat}
+                helperText="Used internally - cannot be changed after creation"
+              />
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   fullWidth
-                  label="Key (unique identifier)"
-                  value={formData.key}
-                  onChange={(e) => setFormData({ ...formData, key: e.target.value })}
-                  disabled={!!editingStat}
-                  helperText="Used internally - cannot be changed after creation"
+                  label="Value"
+                  value={formData.value}
+                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                  placeholder="e.g., 300+, 95%, 64+"
+                  required
                 />
-              </Box>
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                  <TextField
-                    fullWidth
-                    label="Value"
-                    value={formData.value}
-                    onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                    placeholder="e.g., 300+, 95%, 64+"
-                    required
-                  />
-                </Box>
-                
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                  <TextField
-                    fullWidth
-                    label="Display Label"
-                    value={formData.label}
-                    onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    placeholder="e.g., Years of Excellence"
-                  />
-                </Box>
-              </Box>
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Icon</InputLabel>
-                    <Select
-                      value={formData.icon}
-                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                      label="Icon"
-                    >
-                      {AVAILABLE_ICONS.map((icon) => (
-                        <MenuItem key={icon} value={icon}>
-                          {icon}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-                
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                      label="Type"
-                    >
-                      {STATISTIC_TYPES.map((type) => (
-                        <MenuItem key={type.value} value={type.value}>
-                          {type.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Box>
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                  <TextField
-                    fullWidth
-                    label="Order"
-                    type="number"
-                    value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                    helperText="Display order (lower numbers appear first)"
-                  />
-                </Box>
-                
-                <Box sx={{ flex: '1 1 300px', minWidth: '300px', display: 'flex', alignItems: 'center' }}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isVisible}
-                        onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                      />
-                    }
-                    label="Visible on homepage"
-                  />
-                </Box>
-              </Box>
+                <TextField
+                  fullWidth
+                  label="Display Label"
+                  value={formData.label}
+                  onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                  placeholder="e.g., Years of Excellence"
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Icon</InputLabel>
+                  <Select
+                    value={formData.icon}
+                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                    label="Icon"
+                  >
+                    {AVAILABLE_ICONS.map((icon) => (
+                      <MenuItem key={icon} value={icon}>
+                        {icon}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                    label="Type"
+                  >
+                    {STATISTIC_TYPES.map((type) => (
+                      <MenuItem key={type.value} value={type.value}>
+                        {type.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  fullWidth
+                  label="Order"
+                  type="number"
+                  value={formData.order}
+                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value, 10) || 0 })}
+                  helperText="Display order (lower numbers appear first)"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.isVisible}
+                      onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                    />
+                  }
+                  label="Visible on homepage"
+                />
+              </Stack>
             </Box>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} startIcon={<Cancel />}>
-            Cancel
-          </Button>
+          <Button onClick={handleCloseDialog} startIcon={<Cancel />}>Cancel</Button>
           <Button
             onClick={handleSave}
             variant="contained"

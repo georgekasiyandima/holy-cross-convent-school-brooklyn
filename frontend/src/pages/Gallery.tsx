@@ -10,7 +10,6 @@ import {
   Alert,
   Grid,
   Chip,
-  Button,
   Paper
 } from '@mui/material';
 import {
@@ -18,8 +17,7 @@ import {
   Event,
   School,
   Collections,
-  Image as ImageIcon,
-  ArrowForward
+  Image as ImageIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { Fade, Slide } from '@mui/material';
@@ -163,36 +161,34 @@ const Gallery: React.FC = () => {
         setError(null);
 
         // Load events albums
-        const albums = await GalleryService.getAlbums({
-          albumType: 'GENERAL',
-          isPublished: true
+        const allPublishedAlbums = await GalleryService.getAlbums({
+          isPublished: true,
         });
-        setEventsAlbums(albums);
+
+        const generalAlbums = allPublishedAlbums.filter((album) => album.albumType === 'GENERAL');
+        const generalWithChildren = generalAlbums.map((album) => ({
+          ...album,
+          subAlbums: generalAlbums.filter((child) => child.parentAlbumId === album.id),
+        }));
+        const topLevelGeneral = generalWithChildren.filter((album) => !album.parentAlbumId);
+        setEventsAlbums(topLevelGeneral);
 
         // Load class photos albums
-        const classAlbums = await GalleryService.getClassPhotosAlbums();
+        const classAlbums = allPublishedAlbums.filter((album) => album.albumType === 'CLASS');
 
         // Load all published items for "All Gallery" tab
         const response = await GalleryService.getGalleryItems({
           isPublished: true,
-          limit: 100
+          limit: 100,
         });
-        
-        console.log('📊 Gallery: Loaded items:', response.items.length);
-        console.log('📊 Gallery: Items:', response.items.map(i => ({ 
-          id: i.id, 
-          title: i.title, 
-          fileName: i.fileName, 
-          isPublished: i.isPublished 
-        })));
-        
+
         setAllItems(response.items);
 
         // Calculate stats
         setStats({
-          totalAlbums: albums.length + classAlbums.length,
+          totalAlbums: generalAlbums.length + classAlbums.length,
           totalPhotos: response.items.length,
-          eventsCount: albums.length,
+          eventsCount: generalAlbums.length,
           classPhotosCount: classAlbums.length
         });
       } catch (err: any) {
@@ -467,6 +463,43 @@ const Gallery: React.FC = () => {
                     <Fade in timeout={600 + (index * 100)}>
                       <Box>
                         <AlbumCard album={album} onClick={handleAlbumClick} />
+                        {album.subAlbums && album.subAlbums.length > 0 && (
+                          <Box
+                            sx={{
+                              mt: 2,
+                              p: 2,
+                              borderRadius: 2,
+                              backgroundColor: 'rgba(26,35,126,0.04)',
+                              border: '1px dashed rgba(26,35,126,0.2)',
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: 600, color: '#1a237e', fontFamily: '"Poppins", sans-serif', mb: 1 }}
+                            >
+                              Featured Albums
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              {album.subAlbums.map((sub) => (
+                                <Chip
+                                  key={sub.id}
+                                  label={sub.title}
+                                  onClick={() => handleAlbumClick(sub)}
+                                  clickable
+                                  sx={{
+                                    bgcolor: '#ffffff',
+                                    border: '1px solid rgba(26,35,126,0.2)',
+                                    fontWeight: 600,
+                                    fontFamily: '"Poppins", sans-serif',
+                                    '&:hover': {
+                                      bgcolor: '#e8eaf6',
+                                    },
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
                       </Box>
                     </Fade>
                   </Grid>

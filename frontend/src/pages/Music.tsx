@@ -9,18 +9,14 @@ import {
   Stack, 
   Button, 
   Chip, 
-  Link as MuiLink,
   IconButton,
   Dialog,
   DialogContent,
   DialogTitle,
-  useTheme,
-  useMediaQuery
 } from '@mui/material';
 import { 
   MusicNote, 
   Group, 
-  School, 
   Audiotrack, 
   VideoLibrary, 
   Download,
@@ -110,8 +106,6 @@ const downloads = [
 ];
 
 const Music: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedVideo, setSelectedVideo] = useState<SchoolVideo | null>(null);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
 
@@ -123,10 +117,6 @@ const Music: React.FC = () => {
   const handleCloseVideo = () => {
     setVideoDialogOpen(false);
     setSelectedVideo(null);
-  };
-
-  const getVideosByCategory = (category: SchoolVideo['category']) => {
-    return schoolVideos.filter(video => video.category === category);
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -12,7 +12,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   IconButton,
   Dialog,
   DialogTitle,
@@ -25,60 +24,39 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Tabs,
-  Tab,
-  Badge,
   Tooltip,
   Avatar,
-  Divider,
-  Stack,
   Grid,
-  LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  ListItemSecondaryAction,
-  Link,
-  Breadcrumbs
+  Breadcrumbs,
+  ListItemAvatar,
+  Paper,
+  Stack
 } from '@mui/material';
 import {
   Visibility,
   Edit,
   CheckCircle,
-  Cancel,
   Person,
-  Email,
-  Phone,
-  Home,
-  School,
-  Work,
-  Group,
-  Church,
-  Description,
   Download,
-  Upload,
-  FilterList,
   Search,
   Refresh,
   Assignment,
-  TrendingUp,
   People,
-  Grade,
-  CalendarToday,
   ExpandMore,
   AttachFile,
-  CheckCircleOutline,
   Warning,
-  Info
+  Timeline,
+  Delete
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
 import { API_BASE_URL_WITH_PREFIX } from '../services/apiConfig';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 // ========================================
 // TYPE DEFINITIONS
@@ -88,7 +66,7 @@ interface Application {
   id: number;
   // Learner Information
   surname: string;
-  christianName: string;
+  learnerName: string;
   dateOfBirth: string;
   placeOfBirth: string;
   gradeApplying: string;
@@ -170,6 +148,11 @@ interface Application {
   // Application Status
   status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'ENROLLED';
   notes?: string;
+  currentStageKey?: string;
+  currentStageStatus?: string;
+  currentAssigneeRole?: string | null;
+  currentAssigneeId?: string | null;
+  nextActionDue?: string | null;
   
   // Timestamps
   submittedAt: string;
@@ -177,6 +160,7 @@ interface Application {
   
   // Documents
   documents?: ApplicationDocument[];
+  stages?: ApplicationStage[];
 }
 
 interface ApplicationDocument {
@@ -188,6 +172,46 @@ interface ApplicationDocument {
   fileSize: number;
   documentType: string;
   uploadedAt: string;
+  downloadUrl?: string;
+}
+
+interface ApplicationStage {
+  id: number;
+  stageKey: string;
+  name: string;
+  assignedRole: string;
+  assignedUserId?: string | null;
+  sequence: number;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ON_HOLD';
+  startedAt?: string | null;
+  completedAt?: string | null;
+  dueDate?: string | null;
+  description?: string | null;
+  payload?: string | null;
+}
+
+interface ApplicationTimelineEvent {
+  id: number;
+  stageKey?: string | null;
+  eventType: string;
+  performedByName?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+interface ApplicationCommunication {
+  id: number;
+  channel: string;
+  recipientAddress: string;
+  subject?: string | null;
+  status: string;
+  createdAt: string;
+}
+
+interface WorkflowSummary {
+  stages: ApplicationStage[];
+  timeline: ApplicationTimelineEvent[];
+  communications: ApplicationCommunication[];
 }
 
 interface ApplicationStats {
@@ -215,17 +239,6 @@ const StatCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-  }
-}));
-
-const ApplicationCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-  borderRadius: 12,
-  border: '1px solid #e2e8f0',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    borderColor: '#1a237e'
   }
 }));
 
@@ -258,6 +271,7 @@ const StatusChip = styled(Chip)<{ status: string }>(({ status }) => {
 // ========================================
 
 const AdminApplicationManagement: React.FC = () => {
+  const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
   const [stats, setStats] = useState<ApplicationStats | null>(null);
@@ -271,7 +285,19 @@ const AdminApplicationManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [gradeFilter, setGradeFilter] = useState<string>('ALL');
-  const [tabValue, setTabValue] = useState(0);
+  const [workflowSummary, setWorkflowSummary] = useState<WorkflowSummary | null>(null);
+  const [workflowLoading, setWorkflowLoading] = useState(false);
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
+  const [documentTypes, setDocumentTypes] = useState<{ value: string; label: string }[]>([]);
+  const [documentUploadType, setDocumentUploadType] = useState<string>('');
+  const [documentUploadFile, setDocumentUploadFile] = useState<File | null>(null);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  const [documentUploadError, setDocumentUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [actionId, setActionId] = useState<string | null>(null);
 
   // ========================================
   // HELPER FUNCTIONS
@@ -290,7 +316,7 @@ const AdminApplicationManagement: React.FC = () => {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(app => 
         app.surname.toLowerCase().includes(term) ||
-        app.christianName.toLowerCase().includes(term) ||
+        app.learnerName.toLowerCase().includes(term) ||
         app.motherFullName.toLowerCase().includes(term) ||
         app.fatherFullName.toLowerCase().includes(term) ||
         app.gradeApplying.toLowerCase().includes(term)
@@ -323,38 +349,63 @@ const AdminApplicationManagement: React.FC = () => {
     filterApplications();
   }, [filterApplications]);
 
+  useEffect(() => {
+    if (viewDialogOpen && selectedApplication) {
+      loadDocumentTypes();
+      loadWorkflowSummary(selectedApplication.id);
+      loadApplicationDocuments(selectedApplication.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewDialogOpen, selectedApplication?.id]);
+
+  useEffect(() => {
+    if (!viewDialogOpen) {
+      setWorkflowSummary(null);
+      setWorkflowError(null);
+      setDocumentsError(null);
+      setDocumentUploadError(null);
+      setDocumentUploadFile(null);
+      setDocumentUploadType('');
+    }
+  }, [viewDialogOpen]);
+
   // ========================================
   // API FUNCTIONS
   // ========================================
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (showLoader: boolean = true): Promise<Application[]> => {
     try {
-      setLoading(true);
-      setError(null);
+      if (showLoader) {
+        setLoading(true);
+        setError(null);
+      }
       const token = localStorage.getItem('adminToken');
       const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined
         }
       });
-      
-      // Backend returns { success: true, applications: [...] }
       if (response.data.success && Array.isArray(response.data.applications)) {
         setApplications(response.data.applications);
-      } else if (Array.isArray(response.data)) {
-        // Fallback if response is directly an array
-        setApplications(response.data);
-      } else {
-        console.error('Unexpected response format:', response.data);
-        setApplications([]);
-        setError('Invalid response format from server');
+        return response.data.applications;
       }
+      if (Array.isArray(response.data)) {
+        setApplications(response.data);
+        return response.data;
+      }
+      console.error('Unexpected response format:', response.data);
+      setApplications([]);
+      setError('Invalid response format from server');
+      return [];
     } catch (err: any) {
       console.error('Error fetching applications:', err);
       setError(err.response?.data?.message || 'Failed to load applications. Please check your connection and try again.');
       setApplications([]);
+      return [];
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
@@ -410,12 +461,260 @@ const AdminApplicationManagement: React.FC = () => {
     }
   };
 
+  const mergeApplicationWithSummary = useCallback(
+    (application: Application, summary: WorkflowSummary, overrideDocs?: ApplicationDocument[]): Application => {
+      const stages = summary.stages;
+      if (!stages.length) {
+        return {
+          ...application,
+          stages,
+          documents: overrideDocs ?? application.documents,
+        };
+      }
+      const activeStage = stages.find((stage) => stage.status !== 'COMPLETED');
+      const referenceStage = activeStage ?? stages[stages.length - 1];
+      return {
+        ...application,
+        currentStageKey: referenceStage?.stageKey ?? application.currentStageKey,
+        currentStageStatus: referenceStage?.status ?? application.currentStageStatus,
+        currentAssigneeRole: activeStage ? activeStage.assignedRole : null,
+        nextActionDue: activeStage ? activeStage.dueDate ?? null : null,
+        stages,
+        documents: overrideDocs ?? application.documents,
+      };
+    },
+    []
+  );
+
+  const loadWorkflowSummary = async (applicationId: number) => {
+    setWorkflowLoading(true);
+    setWorkflowError(null);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(
+        `${API_BASE_URL_WITH_PREFIX}/admissions/applications/${applicationId}/workflow`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+
+      if (response.data.success && response.data.data) {
+        const summary = response.data.data as WorkflowSummary;
+        setWorkflowSummary(summary);
+        setApplications((prev) =>
+          prev.map((app) => (app.id === applicationId ? mergeApplicationWithSummary(app, summary) : app))
+        );
+        setSelectedApplication((prev) =>
+          prev && prev.id === applicationId ? mergeApplicationWithSummary(prev, summary, documents) : prev
+        );
+        return summary;
+      }
+      if (response.data.data) {
+        const summary = response.data.data as WorkflowSummary;
+        setWorkflowSummary(summary);
+        setApplications((prev) =>
+          prev.map((app) => (app.id === applicationId ? mergeApplicationWithSummary(app, summary) : app))
+        );
+        setSelectedApplication((prev) =>
+          prev && prev.id === applicationId ? mergeApplicationWithSummary(prev, summary, documents) : prev
+        );
+        return summary;
+      }
+      setWorkflowSummary(null);
+      setWorkflowError('No workflow details found for this application.');
+      return null;
+    } catch (err) {
+      console.error('Error loading workflow summary:', err);
+      setWorkflowSummary(null);
+      setWorkflowError('Failed to load workflow details. Please try again.');
+      return null;
+    } finally {
+      setWorkflowLoading(false);
+    }
+  };
+
+  const loadApplicationDocuments = async (applicationId: number) => {
+    setDocumentsLoading(true);
+    setDocumentsError(null);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(
+        `${API_BASE_URL_WITH_PREFIX}/application-documents/${applicationId}`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setDocuments(response.data.data);
+        setSelectedApplication((prev) =>
+          prev && prev.id === applicationId ? { ...prev, documents: response.data.data } : prev
+        );
+        setApplications((prev) =>
+          prev.map((app) => (app.id === applicationId ? { ...app, documents: response.data.data } : app))
+        );
+      } else {
+        setDocuments(selectedApplication?.documents || []);
+        setDocumentsError('Unexpected response while loading documents.');
+      }
+    } catch (err) {
+      console.error('Error loading application documents:', err);
+      setDocumentsError('Failed to load documents. Please try again.');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const loadDocumentTypes = async () => {
+    if (documentTypes.length) return;
+    try {
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/application-documents/types`);
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setDocumentTypes(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error loading document types:', err);
+    }
+  };
+
+  const canManageStage = useCallback(
+    (stage: ApplicationStage) => {
+      if (!user) return false;
+      if (['SUPER_ADMIN', 'ADMIN'].includes(user.role)) return true;
+      return stage.assignedRole === user.role;
+    },
+    [user]
+  );
+
+  const handleStageStatusUpdate = async (
+    application: Application,
+    stage: ApplicationStage,
+    status: ApplicationStage['status']
+  ) => {
+    setActionId(`stage-${stage.id}`);
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.patch(
+        `${API_BASE_URL_WITH_PREFIX}/admissions/applications/${application.id}/stages/${stage.id}/status`,
+        {
+          status,
+        },
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+
+      const summary = await loadWorkflowSummary(application.id);
+      if (!summary) return;
+      if (!viewDialogOpen) {
+        await fetchApplications(false);
+      }
+    } catch (err: any) {
+      console.error('Failed to update stage status:', err);
+      setWorkflowError(
+        err?.response?.data?.message || 'Unable to update stage status. Please try again.'
+      );
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleDocumentUploadSubmit = async () => {
+    if (!selectedApplication) return;
+    if (!documentUploadType) {
+      setDocumentUploadError('Please select a document type.');
+      return;
+    }
+    if (!documentUploadFile) {
+      setDocumentUploadError('Please choose a file to upload.');
+      return;
+    }
+
+    setDocumentUploadError(null);
+    setDocumentUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('applicationId', selectedApplication.id.toString());
+      formData.append('documentType', documentUploadType);
+      formData.append('document', documentUploadFile);
+      const token = localStorage.getItem('adminToken');
+      await axios.post(`${API_BASE_URL_WITH_PREFIX}/application-documents/upload`, formData, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setDocumentUploadFile(null);
+      setDocumentUploadType('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      await loadApplicationDocuments(selectedApplication.id);
+    } catch (err: any) {
+      console.error('Failed to upload document:', err);
+      setDocumentUploadError(
+        err?.response?.data?.message || 'Failed to upload document. Please try again.'
+      );
+    } finally {
+      setDocumentUploading(false);
+    }
+  };
+
+  const handleDeleteApplicationDocument = async (documentId: number) => {
+    if (!selectedApplication) return;
+    const confirmed = window.confirm('Delete this document? This action cannot be undone.');
+    if (!confirmed) return;
+
+    setActionId(`doc-${documentId}`);
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.delete(`${API_BASE_URL_WITH_PREFIX}/application-documents/${documentId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
+      await loadApplicationDocuments(selectedApplication.id);
+    } catch (err) {
+      console.error('Failed to delete document:', err);
+      setDocumentsError('Unable to delete document. Please try again.');
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const resolveDocumentDownloadUrl = (document: ApplicationDocument) => {
+    if (document.downloadUrl) {
+      if (document.downloadUrl.startsWith('http')) {
+        return document.downloadUrl;
+      }
+      return `${API_BASE_URL_WITH_PREFIX}${document.downloadUrl.startsWith('/') ? document.downloadUrl : `/${document.downloadUrl}`}`;
+    }
+    return `${API_BASE_URL_WITH_PREFIX}/application-documents/download/${document.id}`;
+  };
+
   // ========================================
   // HELPER FUNCTIONS
   // ========================================
 
   const handleViewApplication = (application: Application) => {
     setSelectedApplication(application);
+    setDocuments(application.documents || []);
+    setWorkflowSummary(null);
+    setWorkflowError(null);
+    setDocumentsError(null);
+    setDocumentUploadError(null);
+    setDocumentUploadType('');
+    setDocumentUploadFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setViewDialogOpen(true);
   };
 
@@ -424,17 +723,6 @@ const AdminApplicationManagement: React.FC = () => {
     setNewStatus(application.status);
     setNotes(application.notes || '');
     setStatusDialogOpen(true);
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PENDING': return <Warning color="warning" />;
-      case 'UNDER_REVIEW': return <Info color="info" />;
-      case 'APPROVED': return <CheckCircle color="success" />;
-      case 'REJECTED': return <Cancel color="error" />;
-      case 'ENROLLED': return <CheckCircleOutline color="action" />;
-      default: return <Info color="action" />;
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -446,6 +734,24 @@ const AdminApplicationManagement: React.FC = () => {
       minute: '2-digit'
     });
   };
+
+  const getDocumentOverview = useCallback((application: Application) => {
+    const uploaded = application.documents?.length ?? 0;
+    const docStage = application.stages?.find((stage) => stage.stageKey === 'DOCUMENT_VERIFICATION');
+    let expected = 0;
+    if (docStage?.payload) {
+      try {
+        const payload = JSON.parse(docStage.payload);
+        if (Array.isArray(payload?.checklist)) {
+          expected = payload.checklist.length;
+        }
+      } catch (err) {
+        // ignore parse errors
+      }
+    }
+    const outstanding = expected > 0 ? Math.max(expected - uploaded, 0) : 0;
+    return { uploaded, expected, outstanding };
+  }, []);
 
   // ========================================
   // RENDER FUNCTIONS
@@ -560,7 +866,7 @@ const AdminApplicationManagement: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<Refresh />}
-            onClick={fetchApplications}
+            onClick={() => fetchApplications()}
             sx={{ ml: 'auto' }}
           >
             Refresh
@@ -587,18 +893,18 @@ const AdminApplicationManagement: React.FC = () => {
             </TableHead>
             <TableBody>
               {Array.isArray(filteredApplications) && filteredApplications.map((application) => (
-                <TableRow key={application.id} hover>
+                <TableRow hover key={application.id}>
                   <TableCell>
                     <Box>
                       <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {application.christianName} {application.surname}
+                        {application.learnerName} {application.surname}
                       </Typography>
                       <Typography variant="caption" sx={{ color: '#6b7280' }}>
                         DOB: {formatDate(application.dateOfBirth)}
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <Chip
                       label={application.gradeApplying}
                       size="small"
@@ -609,7 +915,7 @@ const AdminApplicationManagement: React.FC = () => {
                       }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {application.motherFullName}
@@ -619,15 +925,48 @@ const AdminApplicationManagement: React.FC = () => {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     <StatusChip
                       label={application.status.replace('_', ' ')}
                       status={application.status}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {formatDate(application.submittedAt)}
+                  <TableCell align="center">
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {application.currentStageKey?.replace(/_/g, ' ') || '—'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                        {application.currentStageStatus?.replace(/_/g, ' ') || '—'}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    {(() => {
+                      const docInfo = getDocumentOverview(application);
+                      const needsDocs = docInfo.expected ? docInfo.outstanding > 0 : docInfo.uploaded === 0;
+                      const chipColor = needsDocs ? '#fff3e0' : '#e8f5e9';
+                      const chipTextColor = needsDocs ? '#ef6c00' : '#2e7d32';
+                      const label = docInfo.expected
+                        ? `${docInfo.uploaded}/${docInfo.expected}`
+                        : `${docInfo.uploaded}`;
+                      return (
+                        <Chip
+                          size="small"
+                          label={label}
+                          sx={{
+                            bgcolor: `${chipColor} !important`,
+                            color: chipTextColor,
+                            fontWeight: 600,
+                          }}
+                        />
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2">{formatDate(application.submittedAt)}</Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      Updated: {formatDate(application.updatedAt)}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -671,11 +1010,151 @@ const AdminApplicationManagement: React.FC = () => {
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
 
+    const formatDateTime = (value?: string | null) => {
+      if (!value) return '—';
+      return new Date(value).toLocaleString('en-ZA', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    };
+
+    const stageStatusStyles = (status: string) => {
+      switch (status) {
+        case 'COMPLETED':
+          return {
+            bg: '#e8f5e9',
+            color: '#2e7d32',
+            chipBg: '#c8e6c9',
+            chipColor: '#1b5e20',
+          };
+        case 'IN_PROGRESS':
+          return {
+            bg: '#e3f2fd',
+            color: '#1a237e',
+            chipBg: '#bbdefb',
+            chipColor: '#0d47a1',
+          };
+        case 'ON_HOLD':
+          return {
+            bg: '#fff3e0',
+            color: '#ef6c00',
+            chipBg: '#ffe0b2',
+            chipColor: '#e65100',
+          };
+        default:
+          return {
+            bg: '#f1f5f9',
+            color: '#475569',
+            chipBg: '#e2e8f0',
+            chipColor: '#1f2937',
+          };
+      }
+    };
+
+    const currentStage = workflowSummary?.stages.find(
+      (stage) => stage.stageKey === selectedApplication.currentStageKey
+    );
+
+    const stageActionButtons = (stage: ApplicationStage) => {
+      if (!canManageStage(stage)) return null;
+      const isProcessing = actionId === `stage-${stage.id}`;
+
+      const buttons: React.ReactNode[] = [];
+
+      if (stage.status !== 'IN_PROGRESS' && stage.status !== 'COMPLETED') {
+        buttons.push(
+          <Button
+            key="start"
+            variant="outlined"
+            size="small"
+            disabled={isProcessing}
+            onClick={() => handleStageStatusUpdate(selectedApplication, stage, 'IN_PROGRESS')}
+          >
+            Mark In Progress
+          </Button>
+        );
+      }
+
+      if (stage.status !== 'COMPLETED') {
+        buttons.push(
+          <Button
+            key="complete"
+            variant="contained"
+            size="small"
+            sx={{ bgcolor: '#1a237e' }}
+            disabled={isProcessing}
+            onClick={() => handleStageStatusUpdate(selectedApplication, stage, 'COMPLETED')}
+          >
+            Complete Stage
+          </Button>
+        );
+      }
+
+      if (stage.status !== 'ON_HOLD') {
+        buttons.push(
+          <Button
+            key="hold"
+            variant="outlined"
+            color="warning"
+            size="small"
+            disabled={isProcessing}
+            onClick={() => handleStageStatusUpdate(selectedApplication, stage, 'ON_HOLD')}
+          >
+            Put On Hold
+          </Button>
+        );
+      } else {
+        buttons.push(
+          <Button
+            key="resume"
+            variant="outlined"
+            size="small"
+            disabled={isProcessing}
+            onClick={() => handleStageStatusUpdate(selectedApplication, stage, 'IN_PROGRESS')}
+          >
+            Resume
+          </Button>
+        );
+      }
+
+      if (stage.status === 'COMPLETED') {
+        buttons.push(
+          <Button
+            key="reopen"
+            variant="text"
+            size="small"
+            disabled={isProcessing}
+            onClick={() => handleStageStatusUpdate(selectedApplication, stage, 'IN_PROGRESS')}
+          >
+            Reopen
+          </Button>
+        );
+      }
+
+      return (
+        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
+          {buttons}
+        </Stack>
+      );
+    };
+
+    const parsedPayload = (payload?: string | null) => {
+      if (!payload) return null;
+      try {
+        return JSON.parse(payload);
+      } catch (err) {
+        return null;
+      }
+    };
+
     return (
       <Dialog
         open={viewDialogOpen}
         onClose={() => setViewDialogOpen(false)}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
       >
         <DialogTitle>
@@ -683,10 +1162,14 @@ const AdminApplicationManagement: React.FC = () => {
             <Person sx={{ color: '#1a237e' }} />
             <Box>
               <Typography variant="h6">
-                {selectedApplication.christianName} {selectedApplication.surname}
+                {selectedApplication.learnerName} {selectedApplication.surname}
               </Typography>
               <Typography variant="body2" sx={{ color: '#6b7280' }}>
                 Application #{selectedApplication.id}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#1a237e', mt: 0.5 }}>
+                Current Stage:{' '}
+                {currentStage ? currentStage.name : selectedApplication.currentStageKey || 'N/A'}
               </Typography>
             </Box>
             <Box sx={{ ml: 'auto' }}>
@@ -697,184 +1180,325 @@ const AdminApplicationManagement: React.FC = () => {
             </Box>
           </Box>
         </DialogTitle>
-        
-        <DialogContent dividers>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-            <Tab label="Learner Info" />
-            <Tab label="Parent Info" />
-            <Tab label="Family & Religious" />
-            <Tab label="School & Employment" />
-            <Tab label="Documents" />
-          </Tabs>
 
-          <Box sx={{ mt: 3 }}>
-            {tabValue === 0 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>Learner Information</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Full Name:</Typography>
-                    <Typography variant="body2">{selectedApplication.christianName} {selectedApplication.surname}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Date of Birth:</Typography>
-                    <Typography variant="body2">{formatDate(selectedApplication.dateOfBirth)}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Place of Birth:</Typography>
-                    <Typography variant="body2">{selectedApplication.placeOfBirth}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Grade Applying:</Typography>
-                    <Typography variant="body2">{selectedApplication.gradeApplying}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Year:</Typography>
-                    <Typography variant="body2">{selectedApplication.year}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Last Grade Passed:</Typography>
-                    <Typography variant="body2">{selectedApplication.lastGradePassed || 'N/A'}</Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {tabValue === 1 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>Parent Information</Typography>
-                
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Mother's Details</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Full Name:</Typography>
-                        <Typography variant="body2">{selectedApplication.motherFullName}</Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Cell Phone:</Typography>
-                        <Typography variant="body2">{selectedApplication.motherCellPhone}</Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Address:</Typography>
-                        <Typography variant="body2">{selectedApplication.motherAddress}</Typography>
-                      </Grid>
-                    </Grid>
-                  </AccordionDetails>
-                </Accordion>
-
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Father's Details</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Full Name:</Typography>
-                        <Typography variant="body2">{selectedApplication.fatherFullName}</Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Cell Phone:</Typography>
-                        <Typography variant="body2">{selectedApplication.fatherCellPhone}</Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Address:</Typography>
-                        <Typography variant="body2">{selectedApplication.fatherAddress}</Typography>
-                      </Grid>
-                    </Grid>
-                  </AccordionDetails>
-                </Accordion>
-              </Box>
-            )}
-
-            {tabValue === 2 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>Family & Religious Information</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Religious Denomination:</Typography>
-                    <Typography variant="body2">{selectedApplication.religiousDenomination || 'N/A'}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Baptised:</Typography>
-                    <Typography variant="body2">{selectedApplication.isBaptised ? 'Yes' : 'No'}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Home Language:</Typography>
-                    <Typography variant="body2">{selectedApplication.homeLanguage || 'N/A'}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Siblings at Holy Cross:</Typography>
-                    <Typography variant="body2">{selectedApplication.siblingsAtHolyCross ? 'Yes' : 'No'}</Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {tabValue === 3 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>School & Employment Information</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Current School:</Typography>
-                    <Typography variant="body2">{selectedApplication.currentSchool || 'N/A'}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Payment Method:</Typography>
-                    <Typography variant="body2">{selectedApplication.paymentMethod || 'N/A'}</Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {tabValue === 4 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, color: '#1a237e' }}>Supporting Documents</Typography>
-                {selectedApplication.documents && selectedApplication.documents.length > 0 ? (
-                  <List>
-                    {selectedApplication.documents.map((doc) => (
-                      <ListItem key={doc.id}>
-                        <ListItemIcon>
-                          <AttachFile />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={doc.originalName}
-                          secondary={`${doc.documentType} - ${formatDate(doc.uploadedAt)}`}
-                        />
-                        <ListItemSecondaryAction>
-                          <Button
-                            size="small"
-                            startIcon={<Download />}
-                            href={`${API_BASE_URL_WITH_PREFIX}/application-documents/download/${doc.id}`}
-                            target="_blank"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const token = localStorage.getItem('adminToken');
-                              window.open(
-                                `${API_BASE_URL_WITH_PREFIX}/application-documents/download/${doc.id}`,
-                                '_blank'
-                              );
-                            }}
-                          >
-                            Download
-                          </Button>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                    No documents uploaded yet.
+        <DialogContent dividers sx={{ bgcolor: '#f8fafc' }}>
+          {workflowLoading ? (
+            <Box sx={{ py: 6, textAlign: 'center' }}>
+              <CircularProgress sx={{ color: '#1a237e' }} />
+              <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+                Loading workflow details...
+              </Typography>
+            </Box>
+          ) : workflowError ? (
+            <Alert severity="error">{workflowError}</Alert>
+          ) : (
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={7}>
+                <Stack spacing={2}>
+                  <Typography variant="subtitle1" sx={{ color: '#1a237e', fontWeight: 700 }}>
+                    Workflow Stages
                   </Typography>
-                )}
-              </Box>
-            )}
-          </Box>
+                  {workflowSummary?.stages.map((stage) => {
+                    const payload = parsedPayload(stage.payload);
+                    const statusStyles = stageStatusStyles(stage.status);
+                    const documentOverview =
+                      selectedApplication && stage.stageKey === 'DOCUMENT_VERIFICATION'
+                        ? getDocumentOverview(selectedApplication)
+                        : null;
+                    return (
+                      <Paper
+                        key={stage.id}
+                        sx={{
+                          p: 2.5,
+                          borderRadius: 2,
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: statusStyles.bg,
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            {stage.sequence}. {stage.name}
+                          </Typography>
+                          <Chip
+                            label={stage.status.replace('_', ' ')}
+                            size="small"
+                            sx={{ bgcolor: statusStyles.chipBg, color: statusStyles.chipColor, fontWeight: 600 }}
+                          />
+                          <Chip
+                            label={stage.assignedRole.replace('_', ' ')}
+                            size="small"
+                            sx={{ bgcolor: '#e3f2fd', color: '#1a237e', fontWeight: 600 }}
+                          />
+                          {stage.dueDate && (
+                            <Chip
+                              label={`Due: ${formatDate(stage.dueDate)}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ borderColor: '#1a237e', color: '#1a237e' }}
+                            />
+                          )}
+                          {documentOverview && (
+                            <Chip
+                              label={`Docs: ${documentOverview.expected ? `${documentOverview.uploaded}/${documentOverview.expected}` : documentOverview.uploaded}`}
+                              size="small"
+                              sx={{
+                                bgcolor:
+                                  documentOverview.expected && documentOverview.outstanding > 0
+                                    ? '#fff3e0'
+                                    : '#e8f5e9',
+                                color:
+                                  documentOverview.expected && documentOverview.outstanding > 0
+                                    ? '#ef6c00'
+                                    : '#2e7d32',
+                                fontWeight: 600,
+                              }}
+                            />
+                          )}
+                        </Stack>
+                        {stage.description && (
+                          <Typography variant="body2" sx={{ color: '#475569', mb: 1 }}>
+                            {stage.description}
+                          </Typography>
+                        )}
+
+                        {payload?.checklist && Array.isArray(payload.checklist) && (
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                              Checklist
+                            </Typography>
+                            <List dense>
+                              {payload.checklist.map((item: string, idx: number) => (
+                                <ListItem key={idx} sx={{ py: 0 }}>
+                                  <ListItemIcon sx={{ minWidth: 32 }}>
+                                    <CheckCircle sx={{ color: '#1a237e', fontSize: 18 }} />
+                                  </ListItemIcon>
+                                  <ListItemText primary={item} />
+                                </ListItem>
+                              ))}
+                            </List>
+                            {documentOverview && documentOverview.expected && documentOverview.outstanding > 0 && (
+                              <Alert severity="warning" sx={{ mt: 1 }}>
+                                {documentOverview.outstanding} checklist item
+                                {documentOverview.outstanding > 1 ? 's remain outstanding.' : ' remains outstanding.'}
+                              </Alert>
+                            )}
+                          </Box>
+                        )}
+
+                        {stageActionButtons(stage)}
+                      </Paper>
+                    );
+                  })}
+                </Stack>
+              </Grid>
+
+              <Grid item xs={12} md={5}>
+                <Stack spacing={2}>
+                  <Paper
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+                      Upload Supporting Documents
+                    </Typography>
+
+                    {documentUploadError && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {documentUploadError}
+                      </Alert>
+                    )}
+
+                    <Stack spacing={2}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Document Type</InputLabel>
+                        <Select
+                          value={documentUploadType}
+                          label="Document Type"
+                          onChange={(event) => setDocumentUploadType(event.target.value)}
+                        >
+                          {documentTypes.map((type) => (
+                            <MenuItem key={type.value} value={type.value}>
+                              {type.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <Button
+                        variant="outlined"
+                        startIcon={<AttachFile />}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {documentUploadFile ? documentUploadFile.name : 'Choose file'}
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        hidden
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] || null;
+                          setDocumentUploadFile(file);
+                        }}
+                      />
+
+                      <Button
+                        variant="contained"
+                        onClick={handleDocumentUploadSubmit}
+                        disabled={documentUploading}
+                        sx={{ bgcolor: '#1a237e' }}
+                      >
+                        {documentUploading ? 'Uploading...' : 'Upload Document'}
+                      </Button>
+                    </Stack>
+                  </Paper>
+
+                  <Paper
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+                      Documents ({documents.length})
+                    </Typography>
+                    {documentsError && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {documentsError}
+                      </Alert>
+                    )}
+                    {documentsLoading ? (
+                      <Box sx={{ py: 2, textAlign: 'center' }}>
+                        <CircularProgress size={20} />
+                      </Box>
+                    ) : documents.length ? (
+                      <List dense>
+                        {documents.map((doc) => (
+                          <ListItem key={doc.id} alignItems="flex-start" sx={{ py: 1 }}>
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                              <AttachFile sx={{ color: '#1a237e' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={doc.originalName}
+                              secondary={
+                                <>
+                                  <Typography component="span" variant="body2" sx={{ color: '#64748b' }}>
+                                    {doc.documentType.replace(/_/g, ' ')}
+                                  </Typography>
+                                  {' • '}
+                                  <Typography component="span" variant="body2" sx={{ color: '#64748b' }}>
+                                    {formatDateTime(doc.uploadedAt)}
+                                  </Typography>
+                                </>
+                              }
+                            />
+                            <Stack direction="row" spacing={1}>
+                              <Tooltip title="Download">
+                                <IconButton
+                                  size="small"
+                                  component="a"
+                                  href={resolveDocumentDownloadUrl(doc)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <Download fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete document">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    disabled={actionId === `doc-${doc.id}`}
+                                    onClick={() => handleDeleteApplicationDocument(doc.id)}
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </Stack>
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        No supporting documents uploaded yet.
+                      </Typography>
+                    )}
+                  </Paper>
+
+                  <Paper
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+                      Timeline
+                    </Typography>
+                    {workflowSummary?.timeline && workflowSummary.timeline.length > 0 ? (
+                      <List dense>
+                        {workflowSummary.timeline.map((event) => (
+                          <ListItem key={event.id} alignItems="flex-start" sx={{ py: 1 }}>
+                            <ListItemAvatar>
+                              <Avatar sx={{ bgcolor: '#1a237e', width: 32, height: 32 }}>
+                                <Timeline fontSize="small" />
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={
+                                <>
+                                  <Typography component="span" variant="body2" sx={{ fontWeight: 600 }}>
+                                    {event.eventType.replace(/_/g, ' ')}
+                                  </Typography>
+                                  {' • '}
+                                  <Typography component="span" variant="body2" sx={{ color: '#64748b' }}>
+                                    {formatDateTime(event.createdAt)}
+                                  </Typography>
+                                </>
+                              }
+                              secondary={
+                                <>
+                                  {event.stageKey && (
+                                    <Typography component="div" variant="body2" sx={{ color: '#64748b' }}>
+                                      Stage: {event.stageKey.replace(/_/g, ' ')}
+                                    </Typography>
+                                  )}
+                                  {event.performedByName && (
+                                    <Typography component="div" variant="body2" sx={{ color: '#64748b' }}>
+                                      By: {event.performedByName}
+                                    </Typography>
+                                  )}
+                                  {event.notes && (
+                                    <Typography component="div" variant="body2">
+                                      {event.notes}
+                                    </Typography>
+                                  )}
+                                </>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        Workflow activity will appear here as stages progress.
+                      </Typography>
+                    )}
+                  </Paper>
+                </Stack>
+              </Grid>
+            </Grid>
+          )}
         </DialogContent>
-        
+
         <DialogActions>
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
           <Button
@@ -885,7 +1509,7 @@ const AdminApplicationManagement: React.FC = () => {
             }}
             sx={{ bgcolor: '#1a237e' }}
           >
-            Update Status
+            Update Application Status
           </Button>
         </DialogActions>
       </Dialog>

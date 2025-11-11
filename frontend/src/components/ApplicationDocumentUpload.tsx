@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -27,15 +27,7 @@ import {
   FormLabel,
   Divider,
 } from '@mui/material';
-import {
-  CloudUpload,
-  Delete,
-  Download,
-  AttachFile,
-  CheckCircle,
-  Error as ErrorIcon,
-  Description,
-} from '@mui/icons-material';
+import { CloudUpload, Delete, Download, AttachFile, Description } from '@mui/icons-material';
 import applicationDocumentsService, { ApplicationDocument, DocumentType } from '../services/applicationDocumentsService';
 
 interface ApplicationDocumentUploadProps {
@@ -61,29 +53,18 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (applicationId) {
-      loadDocuments();
-      loadDocumentTypes();
+  const loadDocuments = useCallback(async () => {
+    if (!applicationId) {
+      return;
     }
-  }, [applicationId]);
-
-  // Reload document types when dialog opens if they're not loaded
-  useEffect(() => {
-    if (uploadDialogOpen && documentTypes.length === 0 && !loadingDocumentTypes) {
-      loadDocumentTypes();
-    }
-  }, [uploadDialogOpen]);
-
-  const loadDocuments = async () => {
     const result = await applicationDocumentsService.getDocuments(applicationId);
     if (result.success && result.data) {
       setDocuments(result.data);
       onDocumentsChange?.(result.data);
     }
-  };
+  }, [applicationId, onDocumentsChange]);
 
-  const loadDocumentTypes = async () => {
+  const loadDocumentTypes = useCallback(async () => {
     try {
       setLoadingDocumentTypes(true);
       const result = await applicationDocumentsService.getDocumentTypes();
@@ -132,7 +113,21 @@ const ApplicationDocumentUpload: React.FC<ApplicationDocumentUploadProps> = ({
     } finally {
       setLoadingDocumentTypes(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (applicationId) {
+      loadDocuments();
+      loadDocumentTypes();
+    }
+  }, [applicationId, loadDocuments, loadDocumentTypes]);
+
+  // Reload document types when dialog opens if they're not loaded
+  useEffect(() => {
+    if (uploadDialogOpen && documentTypes.length === 0 && !loadingDocumentTypes) {
+      loadDocumentTypes();
+    }
+  }, [uploadDialogOpen, documentTypes.length, loadingDocumentTypes, loadDocumentTypes]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -19,145 +19,65 @@ import {
   MenuItem,
   Dialog,
   DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar
+  DialogContent
 } from '@mui/material';
 import {
   School,
-  Description,
   PictureAsPdf,
   Download,
   Visibility,
-  Search,
-  Add,
-  CheckCircle,
-  Error
+  Search
 } from '@mui/icons-material';
+import { SelectChangeEvent } from '@mui/material/Select';
 import DocumentViewer from '../components/DocumentViewer';
-import useDocumentManagement from '../hooks/useDocumentManagement';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
+import DocumentService, { Document } from '../services/documentService';
 
-//---------------------------------------------------------
-// TYPES & INTERFACES
-//---------------------------------------------------------
-interface Document {
-  id: string;
-  title: string;
-  description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'other';
-  fileUrl: string;
-  fileName: string;
-  fileSize: number;
-  uploadedAt: string;
-  category: string;
-  tags: string[];
-}
+const documentService = DocumentService.getInstance();
 
-//---------------------------------------------------------
-// MAIN COMPONENT
-//---------------------------------------------------------
 const SchoolDocuments: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error';
-  }>({ open: false, message: '', severity: 'success' });
 
-  const { uploadDocument, loading: uploadLoading } = useDocumentManagement();
-
-  //---------------------------------------------------------
-  // SAMPLE DATA (Replace with API calls)
-  //---------------------------------------------------------
-  const sampleDocuments: Document[] = [
-    {
-      id: '1',
-      title: 'Holy Cross Convent School Logo',
-      description: 'Official school logo with detailed explanation of its symbolic meaning and design elements.',
-      type: 'logo',
-      fileUrl: '/documents/logo-explanation.pdf',
-      fileName: 'logo-explanation.pdf',
-      fileSize: 2048576,
-      uploadedAt: '2025-01-15',
-      category: 'Branding',
-      tags: ['logo', 'branding', 'symbolism']
-    },
-    {
-      id: '2',
-      title: 'Mission Statement',
-      description: 'Our school\'s mission statement outlining our commitment to academic excellence and character development.',
-      type: 'mission',
-      fileUrl: '/documents/mission-statement.pdf',
-      fileName: 'mission-statement.pdf',
-      fileSize: 1536000,
-      uploadedAt: '2025-01-10',
-      category: 'Mission',
-      tags: ['mission', 'values', 'education']
-    },
-    {
-      id: '3',
-      title: 'Vision Statement',
-      description: 'Our vision for the future of education and student development at Holy Cross Convent School.',
-      type: 'vision',
-      fileUrl: '/documents/vision-statement.pdf',
-      fileName: 'vision-statement.pdf',
-      fileSize: 1280000,
-      uploadedAt: '2025-01-08',
-      category: 'Vision',
-      tags: ['vision', 'future', 'goals']
-    },
-    {
-      id: '4',
-      title: 'School Policies',
-      description: 'Comprehensive school policies covering academic standards, behavior expectations, and procedures.',
-      type: 'policy',
-      fileUrl: '/documents/school-policies.pdf',
-      fileName: 'school-policies.pdf',
-      fileSize: 5120000,
-      uploadedAt: '2025-01-05',
-      category: 'Policies',
-      tags: ['policies', 'rules', 'procedures']
-    }
-  ];
-
-  //---------------------------------------------------------
-  // EFFECTS
-  //---------------------------------------------------------
-  useEffect(() => {
-    loadDocuments();
-  }, []);
-
-  //---------------------------------------------------------
-  // HANDLERS
-  //---------------------------------------------------------
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setDocuments(sampleDocuments);
+      const fetched = await documentService.getAllPublishedDocuments();
+      setDocuments(fetched);
+
+      const typeSet = new Set<string>();
+      fetched.forEach((doc) => {
+        if (doc.type) {
+          typeSet.add(doc.type.toLowerCase());
+        }
+      });
+      setAvailableTypes(Array.from(typeSet));
     } catch (err) {
-      setError('Failed to load documents');
+      console.error('Failed to load documents:', err);
+      setError('Failed to load documents. Please try again later.');
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleFilterChange = (event: any) => {
+  const handleFilterChange = (event: SelectChangeEvent<string>) => {
     setFilterType(event.target.value);
   };
 
@@ -171,49 +91,23 @@ const SchoolDocuments: React.FC = () => {
     setSelectedDocument(null);
   };
 
-  const handleUploadDialogOpen = () => {
-    setUploadDialogOpen(true);
+  const matchesSearch = (doc: Document) => {
+    if (!searchTerm.trim()) return true;
+    const query = searchTerm.toLowerCase();
+    return (
+      doc.title.toLowerCase().includes(query) ||
+      doc.description.toLowerCase().includes(query) ||
+      doc.tags.some((tag) => tag.toLowerCase().includes(query))
+    );
   };
 
-  const handleUploadDialogClose = () => {
-    setUploadDialogOpen(false);
+  const matchesFilter = (doc: Document) => {
+    if (filterType === 'all') return true;
+    return doc.type?.toLowerCase() === filterType;
   };
 
-  const handleUploadSuccess = () => {
-    setSnackbar({
-      open: true,
-      message: 'Document uploaded successfully!',
-      severity: 'success'
-    });
-    setUploadDialogOpen(false);
-    loadDocuments();
-  };
+  const filteredDocuments = documents.filter((doc) => matchesSearch(doc) && matchesFilter(doc));
 
-  const handleUploadError = (error: string) => {
-    setSnackbar({
-      open: true,
-      message: `Upload failed: ${error}`,
-      severity: 'error'
-    });
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  //---------------------------------------------------------
-  // FILTERED DOCUMENTS
-  //---------------------------------------------------------
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || doc.type === filterType;
-    return matchesSearch && matchesFilter;
-  });
-
-  //---------------------------------------------------------
-  // RENDER
-  //---------------------------------------------------------
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
@@ -240,8 +134,8 @@ const SchoolDocuments: React.FC = () => {
     <>
       <SEO 
         title="School Documents - Holy Cross Convent School"
-        description="Access important school documents including our mission statement, vision statement, school logo explanation, and policy documents."
-        keywords="school documents, mission statement, vision statement, school logo, policies, Holy Cross Convent School"
+        description="Access important school documents including policies, admissions forms, and key resources for parents and learners."
+        keywords="school documents, policies, fees, forms, Holy Cross Convent School"
       />
       
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -268,14 +162,12 @@ const SchoolDocuments: React.FC = () => {
           <Typography 
             variant="h6" 
             color="text.secondary" 
-            sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}
+            sx={{ mb: 3, maxWidth: 650, mx: 'auto' }}
           >
-            Access important school documents including our mission statement, vision statement, 
-            and comprehensive policy documents.
+            Download the latest policies, admissions resources, fee structures, and other key documents to support your family throughout the school year.
           </Typography>
 
-          {/* Search and Filter Controls */}
-          <Paper sx={{ p: 3, mb: 3, maxWidth: 800, mx: 'auto' }}>
+          <Paper sx={{ p: 3, mb: 3, maxWidth: 900, mx: 'auto' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
               <TextField
                 placeholder="Search documents..."
@@ -287,8 +179,7 @@ const SchoolDocuments: React.FC = () => {
                   startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
                 }}
               />
-              
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
                 <InputLabel>Filter by Type</InputLabel>
                 <Select
                   value={filterType}
@@ -296,11 +187,11 @@ const SchoolDocuments: React.FC = () => {
                   label="Filter by Type"
                 >
                   <MenuItem value="all">All Types</MenuItem>
-                  <MenuItem value="logo">Logo</MenuItem>
-                  <MenuItem value="mission">Mission</MenuItem>
-                  <MenuItem value="vision">Vision</MenuItem>
-                  <MenuItem value="policy">Policy</MenuItem>
-                  <MenuItem value="form">Form</MenuItem>
+                  {availableTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Stack>
@@ -309,69 +200,74 @@ const SchoolDocuments: React.FC = () => {
 
         {/* Documents Grid */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-          {filteredDocuments.map((document) => (
-            <Box key={document.id} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 16px)' } }}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4
-                  }
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <PictureAsPdf sx={{ color: '#1a237e', mr: 1 }} />
-                    <Chip 
-                      label={document.type.toUpperCase()} 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: '#1a237e',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }} 
-                    />
-                  </Box>
+          {filteredDocuments.map((document) => {
+            const fileUrl = documentService.getDocumentDownloadUrl(document.fileUrl);
+            const typeLabel = document.type ? document.type.replace(/_/g, ' ').toUpperCase() : 'DOCUMENT';
+
+            return (
+              <Box key={document.id} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 16px)' } }}>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4
+                    }
+                  }}
+                >
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <PictureAsPdf sx={{ color: '#1a237e', mr: 1 }} />
+                      <Chip 
+                        label={typeLabel} 
+                        size="small" 
+                        sx={{ 
+                          bgcolor: '#1a237e',
+                          color: 'white',
+                          fontWeight: 'bold'
+                        }} 
+                      />
+                    </Box>
+                    
+                    <Typography variant="h6" sx={{ mb: 1, color: '#1a237e', fontWeight: 600 }}>
+                      {document.title}
+                    </Typography>
+                    
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {document.description || 'No description provided.'}
+                    </Typography>
+                    
+                    <Typography variant="caption" color="text.secondary">
+                      {document.fileName} • {documentService.formatFileSize(document.fileSize)}
+                    </Typography>
+                  </CardContent>
                   
-                  <Typography variant="h6" sx={{ mb: 1, color: '#1a237e', fontWeight: 600 }}>
-                    {document.title}
-                  </Typography>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {document.description}
-                  </Typography>
-                  
-                  <Typography variant="caption" color="text.secondary">
-                    {document.fileName} • {(document.fileSize / 1024 / 1024).toFixed(1)} MB
-                  </Typography>
-                </CardContent>
-                
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    size="small"
-                    startIcon={<Visibility />}
-                    onClick={() => handleDocumentClick(document)}
-                    sx={{ color: '#1a237e' }}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<Download />}
-                    href={document.fileUrl}
-                    download
-                    sx={{ color: '#1a237e' }}
-                  >
-                    Download
-                  </Button>
-                </CardActions>
-              </Card>
-            </Box>
-          ))}
+                  <CardActions sx={{ p: 2, pt: 0 }}>
+                    <Button
+                      size="small"
+                      startIcon={<Visibility />}
+                      onClick={() => handleDocumentClick(document)}
+                      sx={{ color: '#1a237e' }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      size="small"
+                      startIcon={<Download />}
+                      href={fileUrl}
+                      download={document.fileName || document.title}
+                      sx={{ color: '#1a237e' }}
+                    >
+                      Download
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Box>
+            );
+          })}
         </Box>
 
         {filteredDocuments.length === 0 && (
@@ -402,22 +298,6 @@ const SchoolDocuments: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Upload Success/Error Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 };

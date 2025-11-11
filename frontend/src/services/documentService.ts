@@ -1,15 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL } from './apiConfig';
-import { 
-  staticDocuments, 
-  getDocumentsByType, 
-  getDocumentsByCategory, 
-  getAllPublishedDocuments,
-  searchDocuments,
-  getDocumentById,
-  getDocumentStats,
-  StaticDocument
-} from '../data/staticDocuments';
+import { API_BASE_URL, API_BASE_URL_WITH_PREFIX } from './apiConfig';
 
 //---------------------------------------------------------
 // TYPES & INTERFACES
@@ -22,7 +12,7 @@ export interface Document {
   fileUrl: string;
   fileSize: number;
   mimeType: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
+  type: string;
   category: string;
   tags: string[];
   isPublished: boolean;
@@ -35,35 +25,24 @@ export interface Document {
 export interface DocumentUpload {
   title: string;
   description: string;
-  type: 'logo' | 'mission' | 'vision' | 'policy' | 'form' | 'attendance' | 'language' | 'other';
+  type?: string;
   category: string;
   tags: string[];
   isPublished: boolean;
   file: File;
 }
 
-export interface DocumentResponse {
-  success: boolean;
-  data: Document | Document[];
-  count?: number;
-  message?: string;
-  error?: string;
-}
-
 //---------------------------------------------------------
 // API CONFIGURATION
 //---------------------------------------------------------
-const BASE = API_BASE_URL;
-
 const api = axios.create({
-  baseURL: BASE,
-  timeout: 30000, // 30 seconds for file uploads
+  baseURL: API_BASE_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('adminToken');
@@ -72,17 +51,13 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
       window.location.href = '/admin/login';
@@ -104,245 +79,202 @@ class DocumentService {
     return DocumentService.instance;
   }
 
-  //---------------------------------------------------------
-  // DOCUMENT CRUD OPERATIONS
-  //---------------------------------------------------------
+  //-------------------------------------------------------
+  // NORMALIZATION HELPERS
+  //-------------------------------------------------------
+  private parseTags(raw: unknown): string[] {
+    if (Array.isArray(raw)) {
+      return raw.filter((tag): tag is string => typeof tag === 'string');
+    }
 
-  /**
-   * Get all documents by category (includes static documents)
-   */
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed)
+          ? parsed.filter((tag): tag is string => typeof tag === 'string')
+          : [];
+      } catch (error) {
+        console.warn('Failed to parse document tags JSON:', error);
+      }
+    }
+
+    return [];
+  }
+
+  private normalizeDocument = (doc: any): Document => {
+    const createdAt = doc.createdAt || new Date().toISOString();
+    const updatedAt = doc.updatedAt || createdAt;
+
+    return {
+      id: doc.id,
+      title: doc.title,
+      description: doc.description || '',
+      fileName: doc.fileName || doc.title || 'document',
+      fileUrl: this.getDocumentDownloadUrl(doc.fileUrl || doc.filePath || ''),
+      fileSize: typeof doc.fileSize === 'number' ? doc.fileSize : 0,
+      mimeType: doc.mimeType || 'application/pdf',
+      type: doc.type || doc.category || 'other',
+      category: doc.category || 'general',
+      tags: this.parseTags(doc.tags),
+      isPublished: Boolean(doc.isPublished),
+      authorId: doc.authorId || '',
+      authorName: doc.authorName || '',
+      createdAt,
+      updatedAt,
+    };
+  };
+
+  private get documentsEndpoint(): string {
+    return `${API_BASE_URL_WITH_PREFIX}/documents`;
+  }
+
+  //-------------------------------------------------------
+  // READ OPERATIONS
+  //-------------------------------------------------------
+  async getAllPublishedDocuments(): Promise<Document[]> {
+    const response = await api.get(`${this.documentsEndpoint}/all`);
+    const docs = response.data?.data || [];
+    const normalized = docs.map(this.normalizeDocument);
+    return normalized.sort((a: Document, b: Document) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
   async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
-    try {
-      // Get static documents first
-      const staticDocs = getDocumentsByCategory(category);
-      
-      // Try to get API documents (fallback gracefully if API is not available)
-      let apiDocs: Document[] = [];
-      try {
-        const response = await api.get(`/api/documents/${category}?published=${published}`);
-        apiDocs = response.data.data || [];
-      } catch (apiError) {
-        console.warn('API documents not available, using static documents only:', apiError);
-      }
-      
-      // Combine and deduplicate documents
-      const allDocs = [...staticDocs, ...apiDocs];
-      const uniqueDocs = allDocs.filter((doc, index, self) => 
-        index === self.findIndex(d => d.id === doc.id)
-      );
-      
-      return uniqueDocs;
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      // Fallback to static documents only
-      return getDocumentsByCategory(category);
-    }
+    const response = await api.get(`${this.documentsEndpoint}/${category}?published=${published}`);
+    const docs = response.data?.data || [];
+    return docs.map(this.normalizeDocument);
   }
 
-  /**
-   * Get documents by type (includes static documents)
-   */
-  async getDocumentsByType(type: string, published: boolean = true): Promise<Document[]> {
-    try {
-      // Get static documents first
-      const staticDocs = getDocumentsByType(type);
-      
-      // Try to get API documents (fallback gracefully if API is not available)
-      let apiDocs: Document[] = [];
-      try {
-        const response = await api.get(`/api/documents/type/${type}?published=${published}`);
-        apiDocs = response.data.data || [];
-      } catch (apiError) {
-        console.warn('API documents not available, using static documents only:', apiError);
-      }
-      
-      // Combine and deduplicate documents
-      const allDocs = [...staticDocs, ...apiDocs];
-      const uniqueDocs = allDocs.filter((doc, index, self) => 
-        index === self.findIndex(d => d.id === doc.id)
-      );
-      
-      return uniqueDocs;
-    } catch (error) {
-      console.error('Error fetching documents by type:', error);
-      // Fallback to static documents only
-      return getDocumentsByType(type);
-    }
-  }
-
-  /**
-   * Get document by ID
-   */
   async getDocumentById(category: string, id: string): Promise<Document> {
-    try {
-      // First check static documents
-      const staticDoc = getDocumentById(id);
-      if (staticDoc) {
-        return staticDoc;
-      }
-      
-      // Then try API
-      const response = await api.get(`/api/documents/${category}/${id}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching document:', error);
-      throw new Error('Failed to fetch document');
-    }
+    const response = await api.get(`${this.documentsEndpoint}/${category}/${id}`);
+    return this.normalizeDocument(response.data?.data || {});
   }
 
-  /**
-   * Upload document
-   */
+  //-------------------------------------------------------
+  // WRITE OPERATIONS
+  //-------------------------------------------------------
   async uploadDocument(category: string, documentData: DocumentUpload): Promise<Document> {
-    try {
-      const formData = new FormData();
-      formData.append('file', documentData.file);
-      formData.append('title', documentData.title);
-      formData.append('description', documentData.description);
-      formData.append('category', category);
-      formData.append('isPublished', documentData.isPublished.toString());
-
-      const response = await api.post('/api/documents/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total || 1)
-          );
-          // You can emit progress events here if needed
-          console.log(`Upload progress: ${percentCompleted}%`);
-        },
-      });
-
-      return response.data.data;
-    } catch (error: any) {
-      console.error('Error uploading document:', error);
-      
-      // Provide more specific error messages
-      if (error.response?.status === 401) {
-        throw new Error('Authentication required. Please log in to upload documents.');
-      } else if (error.response?.status === 403) {
-        throw new Error('You do not have permission to upload documents.');
-      } else if (error.response?.data?.error) {
-        throw new Error(error.response.data.error);
-      } else if (error instanceof Error) {
-        throw error;
-      } else {
-        throw new Error('Failed to upload document. Please try again.');
-      }
+    const formData = new FormData();
+    formData.append('file', documentData.file);
+    formData.append('title', documentData.title);
+    formData.append('description', documentData.description || '');
+    formData.append('category', category);
+    if (documentData.type) {
+      formData.append('type', documentData.type);
     }
+    if (documentData.tags?.length) {
+      formData.append('tags', JSON.stringify(documentData.tags));
+    }
+    formData.append('isPublished', documentData.isPublished.toString());
+
+    const response = await api.post(`${this.documentsEndpoint}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return this.normalizeDocument(response.data?.data || {});
   }
 
-  /**
-   * Update document
-   */
   async updateDocument(category: string, id: string, updates: Partial<Document>): Promise<Document> {
-    try {
-      const response = await api.put(`/api/documents/${category}/${id}`, updates);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error updating document:', error);
-      throw new Error('Failed to update document');
-    }
+    const response = await api.put(`${this.documentsEndpoint}/${category}/${id}`, updates);
+    return this.normalizeDocument(response.data?.data || {});
   }
 
-  /**
-   * Delete document
-   */
   async deleteDocument(category: string, id: string): Promise<void> {
-    try {
-      await api.delete(`/api/documents/${category}/${id}`);
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      throw new Error('Failed to delete document');
-    }
+    await api.delete(`${this.documentsEndpoint}/${category}/${id}`);
   }
 
-  /**
-   * Publish/Unpublish document
-   */
   async togglePublishStatus(category: string, id: string, isPublished: boolean): Promise<Document> {
-    try {
-      const response = await api.patch(`/api/documents/${category}/${id}/publish`, {
-        isPublished
-      });
-      return response.data.data;
-    } catch (error) {
-      console.error('Error toggling publish status:', error);
-      throw new Error('Failed to update publish status');
-    }
+    const response = await api.put(`${this.documentsEndpoint}/${category}/${id}`, { isPublished });
+    return this.normalizeDocument(response.data?.data || {});
   }
 
-  //---------------------------------------------------------
-  // UTILITY METHODS
-  //---------------------------------------------------------
-
-  /**
-   * Get document categories
-   */
+  //-------------------------------------------------------
+  // METADATA / SEARCH (CLIENT-SIDE FALLBACKS)
+  //-------------------------------------------------------
   async getCategories(): Promise<string[]> {
     try {
-      const response = await api.get('/api/documents/categories');
-      return response.data.data;
+      const allDocs = await this.getAllPublishedDocuments();
+      const categories = Array.from(new Set(allDocs.map((doc) => doc.category)));
+      return categories.length ? categories : ['policy', 'form', 'admissions', 'fees', 'other'];
     } catch (error) {
       console.error('Error fetching categories:', error);
-      return ['logo', 'mission', 'vision', 'policy', 'form', 'other'];
+      return ['policy', 'form', 'admissions', 'fees', 'other'];
     }
   }
 
-  /**
-   * Search documents
-   */
   async searchDocuments(query: string, category?: string): Promise<Document[]> {
-    try {
-      const params = new URLSearchParams({ q: query });
-      if (category) params.append('category', category);
-      
-      const response = await api.get(`/api/documents/search?${params}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error searching documents:', error);
-      throw new Error('Failed to search documents');
+    const lower = query.trim().toLowerCase();
+    if (!lower) {
+      return category ? this.getDocumentsByCategory(category) : this.getAllPublishedDocuments();
     }
+
+    const sourceDocs = category
+      ? await this.getDocumentsByCategory(category)
+      : await this.getAllPublishedDocuments();
+
+    return sourceDocs.filter((doc) =>
+      doc.title.toLowerCase().includes(lower) ||
+      doc.description.toLowerCase().includes(lower) ||
+      doc.tags.some((tag) => tag.toLowerCase().includes(lower))
+    );
   }
 
-  /**
-   * Get document statistics
-   */
   async getDocumentStats(): Promise<{
     total: number;
     byCategory: Record<string, number>;
-    byType: Record<string, number>;
     published: number;
     unpublished: number;
   }> {
     try {
-      const response = await api.get('/api/documents/stats');
-      return response.data.data;
+      const response = await api.get(`${this.documentsEndpoint}/stats`);
+      return response.data?.data;
     } catch (error) {
       console.error('Error fetching document stats:', error);
-      throw new Error('Failed to fetch document statistics');
+      const docs = await this.getAllPublishedDocuments();
+      const total = docs.length;
+      const byCategory = docs.reduce<Record<string, number>>((acc, doc) => {
+        acc[doc.category] = (acc[doc.category] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        total,
+        byCategory,
+        published: total,
+        unpublished: 0,
+      };
     }
   }
 
-  //---------------------------------------------------------
-  // FILE VALIDATION
-  //---------------------------------------------------------
+  //-------------------------------------------------------
+  // UTILITIES
+  //-------------------------------------------------------
+  getDocumentDownloadUrl(fileUrl: string): string {
+    if (!fileUrl) {
+      return `${API_BASE_URL}/uploads/documents/placeholder.pdf`;
+    }
 
-  /**
-   * Validate file type and size
-   */
+    if (fileUrl.startsWith('http')) {
+      return fileUrl;
+    }
+
+    if (fileUrl.startsWith('/')) {
+      return `${API_BASE_URL}${fileUrl}`;
+    }
+
+    return `${API_BASE_URL}/uploads/documents/${fileUrl}`;
+  }
+
   validateFile(file: File, maxSize: number = 10 * 1024 * 1024): { valid: boolean; error?: string } {
-    // Check file size
     if (file.size > maxSize) {
       return {
         valid: false,
-        error: `File size must be less than ${Math.round(maxSize / 1024 / 1024)}MB`
+        error: `File size must be less than ${Math.round(maxSize / 1024 / 1024)}MB`,
       };
     }
 
-    // Check file type
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
@@ -354,38 +286,36 @@ class DocumentService {
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'text/plain',
-      'text/csv'
+      'text/csv',
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return {
         valid: false,
-        error: 'File type not supported. Please upload PDF, images, or document files.'
+        error: 'File type not supported. Please upload PDF, images, or document files.',
       };
     }
 
     return { valid: true };
   }
 
-  /**
-   * Get file type category
-   */
   getFileTypeCategory(mimeType: string): 'image' | 'document' | 'other' {
     if (mimeType.startsWith('image/')) return 'image';
-    if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return 'document';
+    if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) {
+      return 'document';
+    }
     return 'other';
   }
 
-  /**
-   * Format file size
-   */
   formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (!bytes) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 }
 
+const DocumentServiceInstance = DocumentService.getInstance();
 export default DocumentService;
+export { DocumentServiceInstance };

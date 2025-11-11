@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Palette, MusicNote, TheaterComedy, LocalFlorist, EmojiEvents, Groups, SentimentVerySatisfied, MonitorHeart } from '@mui/icons-material';
 import SEO from '../components/SEO';

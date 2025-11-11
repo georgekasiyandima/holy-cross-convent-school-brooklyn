@@ -145,7 +145,7 @@ describe('ApplicationProcess Component', () => {
       
       // Fill required fields for step 0
       fireEvent.change(screen.getByLabelText(/surname/i), { target: { value: 'Doe' } });
-      fireEvent.change(screen.getByLabelText(/christian name/i), { target: { value: 'John' } });
+      fireEvent.change(screen.getByLabelText(/name of learner/i), { target: { value: 'John' } });
       fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: '2015-01-15' } });
       fireEvent.change(screen.getByLabelText(/place of birth/i), { target: { value: 'Cape Town' } });
       
@@ -168,7 +168,7 @@ describe('ApplicationProcess Component', () => {
       
       // Fill required fields and move forward
       fireEvent.change(screen.getByLabelText(/surname/i), { target: { value: 'Doe' } });
-      fireEvent.change(screen.getByLabelText(/christian name/i), { target: { value: 'John' } });
+      fireEvent.change(screen.getByLabelText(/name of learner/i), { target: { value: 'John' } });
       fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: '2015-01-15' } });
       fireEvent.change(screen.getByLabelText(/place of birth/i), { target: { value: 'Cape Town' } });
       
@@ -248,7 +248,7 @@ describe('ApplicationProcess Component', () => {
       
       // Fill basic required fields
       fireEvent.change(screen.getByLabelText(/surname/i), { target: { value: 'Doe' } });
-      fireEvent.change(screen.getByLabelText(/christian name/i), { target: { value: 'John' } });
+      fireEvent.change(screen.getByLabelText(/name of learner/i), { target: { value: 'John' } });
       fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: '2015-01-15' } });
       fireEvent.change(screen.getByLabelText(/place of birth/i), { target: { value: 'Cape Town' } });
       
@@ -287,7 +287,7 @@ describe('ApplicationProcess Component', () => {
     it('should render step 0 (Student Information)', () => {
       renderWithRouter(<ApplicationProcess />);
       expect(screen.getByLabelText(/surname/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/christian name/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/name of learner/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/date of birth/i)).toBeInTheDocument();
     });
 
