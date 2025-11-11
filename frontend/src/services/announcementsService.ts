@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL_WITH_PREFIX, API_BASE_URL } from './apiConfig';
 
 export interface Announcement {
   id: string;
@@ -30,6 +29,27 @@ export interface AnnouncementsResponse {
 }
 
 class AnnouncementsService {
+  private resolveMediaUrl(url?: string | null): string | null {
+    if (!url) {
+      return null;
+    }
+
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    return `${API_BASE_URL}${normalized}`;
+  }
+
+  private normalizeAnnouncement(item: Announcement): Announcement {
+    return {
+      ...item,
+      imageUrl: this.resolveMediaUrl(item.imageUrl),
+      attachmentUrl: this.resolveMediaUrl(item.attachmentUrl),
+    };
+  }
+
   /**
    * Get all announcements (news + newsletters)
    */
@@ -47,9 +67,12 @@ class AnnouncementsService {
       if (options?.published !== undefined) params.append('published', options.published.toString());
 
       const response = await axios.get<AnnouncementsResponse>(
-        `${API_BASE_URL}/school-hub/announcements?${params.toString()}`
+        `${API_BASE_URL_WITH_PREFIX}/school-hub/announcements?${params.toString()}`
       );
-      return response.data;
+      return {
+        ...response.data,
+        data: (response.data?.data || []).map((item) => this.normalizeAnnouncement(item)),
+      };
     } catch (error) {
       console.error('Error fetching announcements:', error);
       throw error;
@@ -62,9 +85,12 @@ class AnnouncementsService {
   async getLatestAnnouncements(limit: number = 5): Promise<AnnouncementsResponse> {
     try {
       const response = await axios.get<AnnouncementsResponse>(
-        `${API_BASE_URL}/school-hub/announcements/latest?limit=${limit}`
+        `${API_BASE_URL_WITH_PREFIX}/school-hub/announcements/latest?limit=${limit}`
       );
-      return response.data;
+      return {
+        ...response.data,
+        data: (response.data?.data || []).map((item) => this.normalizeAnnouncement(item)),
+      };
     } catch (error) {
       console.error('Error fetching latest announcements:', error);
       throw error;

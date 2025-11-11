@@ -14,13 +14,7 @@ import {
   Paper,
   Stack,
 } from '@mui/material';
-import {
-  Announcement,
-  Event,
-  CalendarToday,
-  Email,
-  ArrowForward,
-} from '@mui/icons-material';
+import { Announcement, Event, CalendarToday, ArrowForward } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import AnnouncementsService, { Announcement as AnnouncementType } from '../services/announcementsService';
@@ -44,14 +38,15 @@ const AnnouncementCard = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: theme.spacing(2),
-  border: '1px solid #e0e0e0',
-  transition: 'all 0.3s ease',
+  borderRadius: theme.spacing(2.5),
+  border: '1px solid rgba(26, 35, 126, 0.08)',
+  boxShadow: '0 12px 30px rgba(26, 35, 126, 0.08)',
   overflow: 'hidden',
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  background: '#fff',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[8],
-    borderColor: '#1a237e',
+    transform: 'translateY(-6px)',
+    boxShadow: '0 22px 45px rgba(26, 35, 126, 0.12)',
   },
 }));
 
@@ -198,17 +193,47 @@ const HomeAnnouncements: React.FC<HomeAnnouncementsProps> = ({
               <Stack spacing={2}>
                 {announcements.map((item) => (
                   <AnnouncementCard key={item.id}>
-                    {item.imageUrl && (
+                    {item.imageUrl ? (
                       <CardMedia
                         component="img"
-                        height="140"
                         image={item.imageUrl}
                         alt={item.title}
-                        sx={{ objectFit: 'cover' }}
+                        sx={{
+                          width: '100%',
+                          height: { xs: 220, md: 260 },
+                          objectFit: 'cover',
+                        }}
                       />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: { xs: 220, md: 260 },
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'linear-gradient(135deg, rgba(26,35,126,0.08) 0%, rgba(26,35,126,0.16) 100%)',
+                          color: '#1a237e',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Holy Cross Convent School
+                      </Box>
                     )}
-                    <CardContent sx={{ flex: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: '#1a237e',
+                          fontWeight: 700,
+                          fontSize: { xs: '1.05rem', md: '1.15rem' },
+                        }}
+                      >
+                        {item.title}
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
                         <Chip
                           label={item.type === 'newsletter' ? 'Newsletter' : 'News'}
                           size="small"
@@ -216,54 +241,14 @@ const HomeAnnouncements: React.FC<HomeAnnouncementsProps> = ({
                             bgcolor: item.type === 'newsletter' ? '#1a237e' : '#ffd700',
                             color: '#fff',
                             fontWeight: 600,
-                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
                           }}
                         />
-                        {item.priority === 'URGENT' && (
-                          <Chip
-                            label="URGENT"
-                            size="small"
-                            sx={{
-                              bgcolor: '#d32f2f',
-                              color: '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.7rem',
-                            }}
-                          />
-                        )}
-                      </Box>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: '#1a237e',
-                          fontWeight: 700,
-                          mb: 1,
-                          fontSize: { xs: '1rem', md: '1.1rem' },
-                        }}
-                      >
-                        {item.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: '#666',
-                          mb: 2,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {item.summary || item.content.substring(0, 100) + '...'}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="caption" sx={{ color: '#999' }}>
+                        <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 600 }}>
                           {formatDate(item.publishedAt)}
                         </Typography>
-                        {item.type === 'newsletter' && (
-                          <Email sx={{ fontSize: 16, color: '#999' }} />
-                        )}
-                      </Box>
+                      </Stack>
                     </CardContent>
                   </AnnouncementCard>
                 ))}
