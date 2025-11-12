@@ -117,7 +117,9 @@ class GalleryService {
     baseUrl = baseUrl.replace(/\/$/, '');
     // Return the full URL - files are stored in uploads/gallery/ directory
     const imageUrl = `${baseUrl}/uploads/gallery/${encodeURIComponent(fileName)}`;
-    console.log('🔗 Gallery image URL:', { fileName, imageUrl, baseUrl });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔗 Gallery image URL:', { fileName, imageUrl, baseUrl });
+    }
     return imageUrl;
   }
 

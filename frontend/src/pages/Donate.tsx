@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Typography,
   Container,
   Box,
   Card,
   CardContent,
+  CardMedia,
   Button,
   TextField,
   Chip,
@@ -23,7 +24,8 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Grid
 } from '@mui/material';
 import {
   School,
@@ -199,12 +201,21 @@ const projectDonations = [
   }
 ];
 
+const collageImages = [
+  { src: '/support001.jpg', title: 'Computer and Robotics Room - Saint Carlo Acutis' },
+  { src: '/support06.jpg', title: 'Computer Lab - After Transformation' },
+  { src: '/support01.jpg', title: 'Robotics Club Activities' },
+  { src: '/support05.jpg', title: 'Computer and Robotics Room - Community Celebration' },
+  { src: '/support03.jpg', title: 'Digital Learning in Action' },
+];
+
 const Donate: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [donationType, setDonationType] = useState<'tier' | 'project' | 'custom'>('tier');
   const [selectedTier, setSelectedTier] = useState<string>('');
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [customAmount, setCustomAmount] = useState<number>(50);
+  const donationSectionRef = useRef<HTMLDivElement | null>(null);
   const [donorInfo, setDonorInfo] = useState({
     firstName: '',
     lastName: '',
@@ -225,6 +236,10 @@ const Donate: React.FC = () => {
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleScrollToDonation = () => {
+    donationSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleBack = () => {
@@ -632,7 +647,7 @@ const Donate: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'url("/edu2.jpg") center/cover no-repeat',
+          background: 'url("/ROBTX1.jpg") center/cover no-repeat',
           backgroundPosition: 'center 40%',
           textAlign: 'center',
           overflow: 'hidden',
@@ -695,6 +710,22 @@ const Donate: React.FC = () => {
           >
             Your generosity makes a difference
           </Typography>
+          <Button
+            variant="contained"
+            color="warning"
+            size="large"
+            onClick={handleScrollToDonation}
+            sx={{
+              fontWeight: 700,
+              px: 4,
+              py: 1.2,
+              bgcolor: '#ffd700',
+              color: '#1a237e',
+              '&:hover': { bgcolor: '#ffca28' }
+            }}
+          >
+            View Donation Details
+          </Button>
         </Container>
       </Box>
 
@@ -706,7 +737,137 @@ const Donate: React.FC = () => {
           </Typography>
         </Box>
 
-        <Paper sx={{ p: 4, borderRadius: 3 }}>
+        <Paper
+          sx={{
+            p: { xs: 3, md: 5 },
+            borderRadius: 3,
+            mb: 6,
+            background: 'linear-gradient(135deg, rgba(26,35,126,0.08), rgba(255,215,0,0.12))'
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 700, color: '#1a237e', textAlign: 'center', mb: 4 }}
+          >
+            Computer Lab Transformation
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 720, mx: 'auto', mb: 4 }}>
+            The generosity of families, alumni, and friends of Holy Cross Convent School has helped us turn an outdated computer lab into a bright, collaborative digital learning hub. Take a look at the journey from humble beginnings to a state-of-the-art facility.
+          </Typography>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', boxShadow: 6 }}>
+                <CardMedia
+                  component="img"
+                  image="/bfaf.jpg"
+                  alt="Computer lab before refurbishment"
+                  sx={{ height: { xs: 240, md: 320 }, objectFit: 'cover' }}
+                />
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="overline" color="error" sx={{ letterSpacing: 2 }}>
+                    Before
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
+                    Legacy Setup
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Rows of aging CRT monitors and limited workspace highlighted the need for a refreshed digital learning space.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', boxShadow: 6 }}>
+                <CardMedia
+                  component="img"
+                  image="/support06.jpg"
+                  alt="Computer lab after refurbishment"
+                  sx={{ height: { xs: 240, md: 320 }, objectFit: 'cover' }}
+                />
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="overline" color="primary" sx={{ letterSpacing: 2 }}>
+                    After
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
+                    Digital Discovery Centre
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Climate-controlled, collaborative workstations with modern devices now support coding, robotics, and digital literacy for every learner.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, mb: 6 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e', textAlign: 'center', mb: 3 }}>
+            Launch of the Computer and Robotics Room
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 720, mx: 'auto', mb: 4 }}>
+            Your generous support has enabled the launch of our flagship Computer and Robotics Room, dedicated to Saint Carlo Acutis. This state-of-the-art facility empowers students to explore coding, robotics, and digital literacy in a faith-filled learning environment. These images showcase the transformation and the vibrant learning happening within these walls.
+          </Typography>
+          <Grid container spacing={3}>
+            {collageImages.map((item, index) => {
+              // Create a more dynamic layout: first image spans 2 columns, others in 3-column grid
+              const isFirst = index === 0;
+              return (
+                <Grid 
+                  item 
+                  xs={12} 
+                  sm={isFirst ? 12 : 6} 
+                  md={isFirst ? 8 : 4} 
+                  key={item.src}
+                >
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      boxShadow: 3,
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 6,
+                      },
+                    }}
+                  >
+                    <img
+                      src={item.src}
+                      alt={item.title}
+                      loading="lazy"
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                        borderRadius: 16,
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Paper>
+
+        <Paper
+          sx={{
+            p: { xs: 3, md: 5 },
+            borderRadius: 3,
+            mb: 6,
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(26,35,126,0.12))'
+          }}
+        >
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e', textAlign: 'center', mb: 2 }}>
+            A Call to Our Alumni & Friends
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto' }}>
+            Every achievement at Holy Cross Convent School stands on the shoulders of those who came before. We invite past pupils, families, and partners to invest in the next generation by supporting our infrastructure upgrades, bursaries, and future-ready programmes.
+          </Typography>
+        </Paper>
+
+        <Paper ref={donationSectionRef} id="donation-workflow" sx={{ p: 4, borderRadius: 3 }}>
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
             {steps.map((label) => (
               <Step key={label}>

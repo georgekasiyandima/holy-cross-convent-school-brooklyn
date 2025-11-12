@@ -28,9 +28,30 @@ const AnnouncementCard = styled(Card)(({ theme }) => ({
   boxShadow: '0 18px 45px rgba(26, 35, 126, 0.08)',
   transition: 'transform 0.35s ease, box-shadow 0.35s ease',
   background: '#fff',
+  maxWidth: 920,
+  margin: '0 auto',
   '&:hover': {
     transform: 'translateY(-8px)',
     boxShadow: '0 28px 55px rgba(26, 35, 126, 0.12)',
+  },
+}));
+
+const AnnouncementMedia = styled(Box)(({ theme }) => ({
+  width: '100%',
+  backgroundColor: '#f7f8fc',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  position: 'relative',
+  borderBottom: '1px solid rgba(26,35,126,0.08)',
+  '& img': {
+    width: '100%',
+    height: 'auto',
+    maxHeight: 540,
+    objectFit: 'contain',
+    borderRadius: theme.spacing(2),
+    boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
   },
 }));
 
@@ -145,28 +166,12 @@ const News: React.FC = () => {
               {announcements.map((item) => (
                 <Grid item xs={12} key={item.id}>
                   <AnnouncementCard>
-                    <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                    <AnnouncementMedia>
                       {item.imageUrl ? (
-                        <CardMedia
-                          component="img"
-                          image={item.imageUrl}
-                          alt={item.title}
-                          sx={{
-                            width: '100%',
-                            height: { xs: 260, md: 340 },
-                            objectFit: 'cover',
-                            transform: 'scale(1.02)',
-                            transition: 'transform 0.5s ease',
-                            '&:hover': {
-                              transform: 'scale(1.05)',
-                            },
-                          }}
-                        />
+                        <CardMedia component="img" image={item.imageUrl} alt={item.title} />
                       ) : (
                         <Box
                           sx={{
-                            width: '100%',
-                            height: { xs: 260, md: 340 },
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -184,9 +189,9 @@ const News: React.FC = () => {
                       <Box
                         sx={{
                           position: 'absolute',
-                          bottom: 20,
-                          left: 20,
-                          right: 20,
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -217,7 +222,7 @@ const News: React.FC = () => {
                           {getDate(item.publishedAt)}
                         </Typography>
                       </Box>
-                    </Box>
+                    </AnnouncementMedia>
 
                     <CardContent
                       sx={{
@@ -226,6 +231,8 @@ const News: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 1.5,
+                        maxWidth: 720,
+                        mx: 'auto',
                       }}
                     >
                       <Typography

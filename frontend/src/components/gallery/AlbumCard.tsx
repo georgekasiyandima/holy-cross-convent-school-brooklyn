@@ -56,8 +56,16 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
   };
 
   const getCoverImageUrl = () => {
+    // First try coverImage
     if (album.coverImage?.fileName) {
       return GalleryService.getItemImageUrl(album.coverImage.fileName);
+    }
+    // Fallback to first item in album if available
+    if (album.items && album.items.length > 0) {
+      const firstImage = album.items.find(item => item.type === 'IMAGE');
+      if (firstImage?.fileName) {
+        return GalleryService.getItemImageUrl(firstImage.fileName);
+      }
     }
     return null;
   };
@@ -68,9 +76,23 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
 
   return (
     <AlbumCardContainer onClick={handleClick}>
-      <Box sx={{ position: 'relative', width: '100%', height: 280, overflow: 'hidden', bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ position: 'relative', width: '100%', height: 320, overflow: 'hidden', bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {coverImageUrl ? (
-          <CardMedia component="img" image={coverImageUrl} alt={album.title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <CardMedia 
+            component="img" 
+            image={coverImageUrl} 
+            alt={album.title} 
+            sx={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              transition: 'transform 0.5s ease',
+              '&:hover': {
+                transform: 'scale(1.1)',
+              }
+            }} 
+            loading="lazy"
+          />
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#999' }}>
             <PhotoLibrary sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />

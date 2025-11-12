@@ -15,7 +15,6 @@ import {
 import {
   PhotoLibrary,
   Event,
-  School,
   Collections,
   Image as ImageIcon
 } from '@mui/icons-material';
@@ -24,9 +23,9 @@ import { Fade, Slide } from '@mui/material';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
 import GalleryService, { Album, GalleryItem } from '../services/galleryService';
-import ClassPhotosSection from '../components/gallery/ClassPhotosSection';
 import AlbumCard from '../components/gallery/AlbumCard';
 import ImageGrid from '../components/gallery/ImageGrid';
+import AlbumModal from '../components/gallery/AlbumModal';
 
 // Hero Section - Showcasing HCC Story
 const HeroSection = styled(Box)(({ theme }) => ({
@@ -153,6 +152,8 @@ const Gallery: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -160,10 +161,16 @@ const Gallery: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Load events albums
-        const allPublishedAlbums = await GalleryService.getAlbums({
-          isPublished: true,
-        });
+        // Load events albums and all items in parallel for faster loading
+        const [allPublishedAlbums, response] = await Promise.all([
+          GalleryService.getAlbums({
+            isPublished: true,
+          }),
+          GalleryService.getGalleryItems({
+            isPublished: true,
+            limit: 100,
+          }),
+        ]);
 
         const generalAlbums = allPublishedAlbums.filter((album) => album.albumType === 'GENERAL');
         const generalWithChildren = generalAlbums.map((album) => ({
@@ -172,24 +179,14 @@ const Gallery: React.FC = () => {
         }));
         const topLevelGeneral = generalWithChildren.filter((album) => !album.parentAlbumId);
         setEventsAlbums(topLevelGeneral);
-
-        // Load class photos albums
-        const classAlbums = allPublishedAlbums.filter((album) => album.albumType === 'CLASS');
-
-        // Load all published items for "All Gallery" tab
-        const response = await GalleryService.getGalleryItems({
-          isPublished: true,
-          limit: 100,
-        });
-
         setAllItems(response.items);
 
         // Calculate stats
         setStats({
-          totalAlbums: generalAlbums.length + classAlbums.length,
+          totalAlbums: generalAlbums.length,
           totalPhotos: response.items.length,
           eventsCount: generalAlbums.length,
-          classPhotosCount: classAlbums.length
+          classPhotosCount: 0
         });
       } catch (err: any) {
         console.error('Error loading gallery data:', err);
@@ -207,7 +204,13 @@ const Gallery: React.FC = () => {
   };
 
   const handleAlbumClick = (album: Album) => {
-    navigate(`/gallery/album/${album.id}`);
+    setSelectedAlbum(album);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedAlbum(null);
   };
 
   if (loading && activeTab === 0) {
@@ -313,7 +316,7 @@ const Gallery: React.FC = () => {
               <Slide direction="up" in timeout={1500}>
                 <Box>
                   <Grid container spacing={3} sx={{ maxWidth: '900px', mx: 'auto', mt: 4 }}>
-                    <Grid item xs={6} sm={3}>
+                    <Grid item xs={6} sm={4}>
                       <StatsBox>
                         <Collections sx={{ fontSize: 40, mb: 1, color: '#ffd700' }} />
                         <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', mb: 0.5 }}>
@@ -324,7 +327,7 @@ const Gallery: React.FC = () => {
                         </Typography>
                       </StatsBox>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid item xs={6} sm={4}>
                       <StatsBox>
                         <ImageIcon sx={{ fontSize: 40, mb: 1, color: '#ffd700' }} />
                         <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', mb: 0.5 }}>
@@ -335,7 +338,7 @@ const Gallery: React.FC = () => {
                         </Typography>
                       </StatsBox>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid item xs={6} sm={4}>
                       <StatsBox>
                         <Event sx={{ fontSize: 40, mb: 1, color: '#ffd700' }} />
                         <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', mb: 0.5 }}>
@@ -343,17 +346,6 @@ const Gallery: React.FC = () => {
                         </Typography>
                         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>
                           Events
-                        </Typography>
-                      </StatsBox>
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <StatsBox>
-                        <School sx={{ fontSize: 40, mb: 1, color: '#ffd700' }} />
-                        <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', mb: 0.5 }}>
-                          {stats.classPhotosCount}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>
-                          Classes
                         </Typography>
                       </StatsBox>
                     </Grid>
@@ -380,12 +372,6 @@ const Gallery: React.FC = () => {
                 icon={<Event />}
                 iconPosition="start"
                 label="Events & Occasions"
-                sx={{ minWidth: { xs: 140, sm: 220 } }}
-              />
-              <Tab
-                icon={<School />}
-                iconPosition="start"
-                label="Class Photos"
                 sx={{ minWidth: { xs: 140, sm: 220 } }}
               />
               <Tab
@@ -508,13 +494,8 @@ const Gallery: React.FC = () => {
             )}
           </CustomTabPanel>
 
-          {/* Class Photos Tab */}
-          <CustomTabPanel value={activeTab} index={1}>
-            <ClassPhotosSection onAlbumClick={handleAlbumClick} />
-          </CustomTabPanel>
-
           {/* All Gallery Tab */}
-          <CustomTabPanel value={activeTab} index={2}>
+          <CustomTabPanel value={activeTab} index={1}>
             <SectionHeader>
               <Fade in timeout={800}>
                 <Box>
@@ -566,11 +547,18 @@ const Gallery: React.FC = () => {
                 No photos available yet. Photos will appear here once uploaded.
               </Alert>
             ) : (
-              <ImageGrid items={allItems} loading={false} />
+              <ImageGrid items={allItems} loading={false} plainMode={true} />
             )}
           </CustomTabPanel>
         </Container>
       </GalleryContainer>
+
+      {/* Album Modal */}
+      <AlbumModal
+        open={modalOpen}
+        album={selectedAlbum}
+        onClose={handleCloseModal}
+      />
     </>
   );
 };

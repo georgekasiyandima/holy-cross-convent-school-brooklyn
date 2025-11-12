@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -17,12 +17,18 @@ import {
   Menu,
   MenuItem,
   Fade,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   ExpandMore,
-  ChevronRight
+  ChevronRight,
+  Login,
+  Logout,
+  Dashboard,
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
 // TypeScript interfaces for type safety
@@ -196,14 +202,7 @@ const navigationItems: NavigationItem[] = [
     path: '/contact',
     type: 'single'
   },
-  {
-    name: 'Admin',
-    type: 'dropdown',
-    items: [
-      { name: 'Staff Upload', path: '/admin/staff-upload' },
-      { name: 'Document Upload', path: '/admin/document-upload' }
-    ]
-  },
+  // Admin menu will be conditionally added based on auth state
   { 
     name: 'SUPPORT US', 
     path: '/donate',
@@ -232,12 +231,16 @@ const MobileDrawer = memo(({
   currentPage, 
   handleNavigation, 
   mobileOpen, 
-  handleDrawerToggle 
+  handleDrawerToggle,
+  navigationItems: items,
+  handleLogout
 }: {
   currentPage: string;
   handleNavigation: (path: string) => void;
   mobileOpen: boolean;
   handleDrawerToggle: () => void;
+  navigationItems: NavigationItem[];
+  handleLogout: () => void;
 }) => (
       <Drawer
         variant="temporary"
@@ -266,7 +269,7 @@ const MobileDrawer = memo(({
         </Typography>
       </Box>
       <List sx={{ px: 1 }}>
-        {navigationItems.map((item, index) => (
+        {items.map((item, index) => (
           <Fade in timeout={300 + index * 100} key={item.name}>
             <span>
             {item.type === 'single' ? (
@@ -275,35 +278,42 @@ const MobileDrawer = memo(({
                 sx={{
                   backgroundColor: item.name === 'SUPPORT US' 
                     ? (currentPage === item.name ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)')
-                    : (currentPage === item.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent'),
+                    : (item.name === 'Login' 
+                      ? (currentPage === item.name ? 'rgba(26, 35, 126, 0.15)' : 'rgba(26, 35, 126, 0.08)')
+                      : (currentPage === item.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent')),
                   cursor: 'pointer',
                   borderRadius: '8px',
                   margin: '4px 8px',
                   transition: 'all 0.3s ease',
-                  border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' : 'none',
+                  border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' 
+                    : (item.name === 'Login' ? '1px solid #1a237e' : 'none'),
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   '&:hover': {
                     backgroundColor: item.name === 'SUPPORT US' 
                       ? 'rgba(211, 47, 47, 0.15)' 
-                      : 'rgba(26, 35, 126, 0.08)',
+                      : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.12)' : 'rgba(26, 35, 126, 0.08)'),
                     transform: 'translateX(4px)',
-                    borderColor: item.name === 'SUPPORT US' ? '#d32f2f' : 'transparent',
+                    borderColor: item.name === 'SUPPORT US' ? '#d32f2f' 
+                      : (item.name === 'Login' ? '#1a237e' : 'transparent'),
                   },
                 }}
                   aria-label={`Navigate to ${item.name}`}
               >
-                <ListItemText 
-                  primary={item.name} 
-                  sx={{
-                    '& .MuiTypography-root': {
-                      fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' ? 600 : 500),
-                      color: '#1a237e',
-                      fontSize: '0.95rem',
-                    }
-                  }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {item.name === 'Login' && <Login sx={{ fontSize: '1.2rem', color: '#1a237e' }} />}
+                  <ListItemText 
+                    primary={item.name} 
+                    sx={{
+                      '& .MuiTypography-root': {
+                        fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' || item.name === 'Login' ? 600 : 500),
+                        color: '#1a237e',
+                        fontSize: '0.95rem',
+                      }
+                    }}
+                  />
+                </Box>
                 {item.path && (
                   <ChevronRight sx={{ color: '#9e9e9e', fontSize: '1.2rem' }} />
                 )}
@@ -378,6 +388,43 @@ const MobileDrawer = memo(({
                     />
                   </ListItem>
                 ))}
+                {item.name === 'Admin' && (
+                  <>
+                    <Divider sx={{ my: 1, mx: 2 }} />
+                    <ListItem 
+                      onClick={handleLogout}
+                      sx={{
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        margin: '2px 8px 2px 24px',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        borderLeft: '3px solid transparent',
+                        '&:hover': {
+                          backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                          transform: 'translateX(4px)',
+                          borderLeftColor: '#d32f2f',
+                        },
+                      }}
+                      aria-label="Logout"
+                    >
+                      <Logout sx={{ fontSize: '1.2rem', color: '#d32f2f' }} />
+                      <ListItemText 
+                        primary="Logout" 
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontWeight: 600,
+                            color: '#d32f2f',
+                            fontSize: '0.95rem',
+                          }
+                        }}
+                      />
+                    </ListItem>
+                  </>
+                )}
               </>
             )}
           </span>
@@ -396,6 +443,53 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
   const [scrolled, setScrolled] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Build navigation items based on authentication state
+  const filteredNavigationItems = useMemo(() => {
+    const baseItems = [...navigationItems];
+    
+    // Add admin menu for authenticated users
+    if (isAuthenticated) {
+      const adminMenuIndex = baseItems.findIndex(item => item.name === 'SUPPORT US');
+      const adminMenu: NavigationItem = {
+        name: 'Admin',
+        type: 'dropdown',
+        items: [
+          { name: 'Dashboard', path: '/admin/dashboard' },
+          { name: 'Applications', path: '/admin/applications' },
+          { name: 'Staff Management', path: '/admin/staff' },
+          { name: 'Documents', path: '/admin/documents' },
+          { name: 'Gallery', path: '/admin/gallery' },
+          { name: 'Announcements', path: '/admin/announcements' },
+          { name: 'Newsletters', path: '/admin/newsletters' },
+          { name: 'Calendar & Events', path: '/admin/calendar' },
+          { name: 'Governing Body', path: '/admin/governing-body' },
+          { name: 'Vacancies', path: '/admin/vacancies' },
+          { name: 'School Stats', path: '/admin/stats' },
+        ]
+      };
+      baseItems.splice(adminMenuIndex, 0, adminMenu);
+    } else {
+      // Add login link for non-authenticated users
+      const loginItem: NavigationItem = {
+        name: 'Login',
+        path: '/admin/login',
+        type: 'single'
+      };
+      const supportUsIndex = baseItems.findIndex(item => item.name === 'SUPPORT US');
+      baseItems.splice(supportUsIndex, 0, loginItem);
+    }
+    
+    return baseItems;
+  }, [isAuthenticated]);
+
+  const handleLogout = () => {
+    logout();
+    handleNavigation('/');
+    handleDropdownClose();
+  };
 
   // Handle scroll effect
   useEffect(() => {
@@ -445,7 +539,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
             {/* Desktop Navigation */}
             {!isMobile && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
-                {navigationItems.map((item, index) => (
+                {filteredNavigationItems.map((item, index) => (
                   <Box key={index} sx={{ position: 'relative' }}>
                   <NavButton
                       onClick={(e) => {
@@ -455,22 +549,26 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                           handleNavigation(item.path);
                         }
                       }}
+                      startIcon={item.name === 'Login' ? <Login sx={{ fontSize: '1rem' }} /> : undefined}
                       endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
                       scrolled={scrolled}
                     sx={{
                       backgroundColor: currentPage === item.name 
                         ? 'rgba(26, 35, 126, 0.1)' 
-                        : (item.name === 'SUPPORT US' ? 'rgba(211, 47, 47, 0.1)' : 'transparent'),
+                        : (item.name === 'SUPPORT US' ? 'rgba(211, 47, 47, 0.1)' 
+                        : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.08)' : 'transparent')),
                       color: scrolled ? '#1a237e' : '#1a237e',
                       fontWeight: 600,
-                      border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' : 'none',
+                      border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' 
+                        : (item.name === 'Login' ? '1px solid #1a237e' : 'none'),
                       '&:hover': {
                         backgroundColor: item.name === 'SUPPORT US' 
                           ? 'rgba(211, 47, 47, 0.15)' 
-                          : 'rgba(26, 35, 126, 0.08)',
+                          : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.12)' : 'rgba(26, 35, 126, 0.08)'),
                         transform: 'translateY(-2px)',
                         color: '#1a237e',
-                        borderColor: item.name === 'SUPPORT US' ? '#d32f2f' : 'transparent',
+                        borderColor: item.name === 'SUPPORT US' ? '#d32f2f' 
+                          : (item.name === 'Login' ? '#1a237e' : 'transparent'),
                       }
                     }}
                   >
@@ -568,6 +666,33 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                             />
                           </MenuItem>
                         ))}
+                        {item.name === 'Admin' && (
+                          <>
+                            <Divider sx={{ my: 0.5 }} />
+                            <MenuItem
+                              onClick={handleLogout}
+                              sx={{
+                                py: 1.75,
+                                px: 2.5,
+                                color: '#d32f2f',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                transition: 'all 0.2s ease',
+                                borderLeft: '3px solid transparent',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(211, 47, 47, 0.05)',
+                                  borderLeftColor: '#d32f2f',
+                                },
+                              }}
+                            >
+                              <Logout sx={{ fontSize: '1rem' }} />
+                              <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                                Logout
+                              </Typography>
+                            </MenuItem>
+                          </>
+                        )}
                       </Menu>
                     )}
                   </Box>
@@ -601,11 +726,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
       </StyledAppBar>
 
       {/* Mobile Navigation Drawer */}
-      <MobileDrawer 
+      <MobileDrawer
         currentPage={currentPage}
         handleNavigation={handleNavigation}
         mobileOpen={mobileOpen}
         handleDrawerToggle={handleDrawerToggle}
+        navigationItems={filteredNavigationItems}
+        handleLogout={handleLogout}
       />
     </>
   );

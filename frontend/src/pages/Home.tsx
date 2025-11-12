@@ -222,7 +222,7 @@ const Home: React.FC = () => {
   };
 
   const handleVirtualTour = () => {
-    navigate('/gallery');
+    navigate('/virtual-tour');
   };
 
   // Removed unused handleDownloadProspectus function

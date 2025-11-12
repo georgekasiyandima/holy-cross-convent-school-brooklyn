@@ -1,56 +1,56 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress, Typography } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Analytics from './components/Analytics';
-import Home from './pages/Home';
-import Gallery from './pages/Gallery';
-import History from './pages/History';
-import Spiritual from './pages/Spiritual';
-import Info from './pages/Info';
-import Events from './pages/Events';
-import SchoolBoard from './pages/SchoolBoard';
-import Staff from './pages/Staff';
-import Links from './pages/Links';
-import ExtraMural from './pages/ExtraMural';
-import FormsFees from './pages/FormsFees';
-import News from './pages/News';
-import Music from './pages/Music';
-import ContactForm from './components/ContactForm';
-import Donate from './pages/Donate';
-import AdminDocumentUpload from './pages/AdminDocumentUpload';
-import AdminDocumentManagement from './pages/AdminDocumentManagement';
-import AdminStaffUploadPage from './pages/AdminStaffUploadPage';
-import AdminLoginPage from './pages/AdminLoginPage';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminApplicationManagement from './pages/AdminApplicationManagement';
-import SchoolStatsManagement from './pages/SchoolStatsManagement';
 import ProtectedRoute from './components/ProtectedRoute';
-import SchoolDocuments from './pages/SchoolDocuments';
-import LogoSymbolismPage from './pages/LogoSymbolism';
-import MissionVision from './pages/MissionVision';
-import FamilyStatementPage from './pages/FamilyStatement';
-// import Academics from './pages/Academics'; // File doesn't exist
-// import Robotics from './pages/Robotics'; // File doesn't exist  
-// import ICTHub from './pages/ICTHub'; // File doesn't exist
-import Calendar from './pages/Calendar';
-import SchoolHub from './pages/SchoolHub';
-import CalendarManagement from './pages/CalendarManagement';
-import GalleryManagement from './pages/GalleryManagement';
-import NewsletterManagement from './pages/NewsletterManagement';
-import AdminGoverningBody from './pages/AdminGoverningBody';
-import AdminAnnouncements from './pages/AdminAnnouncements';
-import Academic from './pages/Academic';
-import Robotics from './pages/Robotics';
-import Sport from './pages/Sport';
-import Cultural from './pages/Cultural';
-import ServiceEthos from './pages/ServiceEthos';
-import AfterSchoolProgram from './pages/AfterSchoolProgram';
-import Vacancies from './pages/Vacancies';
-import VacancyManagement from './pages/VacancyManagement';
-import ApplicationProcess from './pages/ApplicationProcess';
+
+const Home = lazy(() => import('./pages/Home'));
+const Gallery = lazy(() => import('./pages/Gallery'));
+const History = lazy(() => import('./pages/History'));
+const Spiritual = lazy(() => import('./pages/Spiritual'));
+const Info = lazy(() => import('./pages/Info'));
+const Events = lazy(() => import('./pages/Events'));
+const SchoolBoard = lazy(() => import('./pages/SchoolBoard'));
+const Staff = lazy(() => import('./pages/Staff'));
+const Links = lazy(() => import('./pages/Links'));
+const ExtraMural = lazy(() => import('./pages/ExtraMural'));
+const FormsFees = lazy(() => import('./pages/FormsFees'));
+const News = lazy(() => import('./pages/News'));
+const Music = lazy(() => import('./pages/Music'));
+const ContactForm = lazy(() => import('./components/ContactForm'));
+const Donate = lazy(() => import('./pages/Donate'));
+const AdminDocumentUpload = lazy(() => import('./pages/AdminDocumentUpload'));
+const AdminDocumentManagement = lazy(() => import('./pages/AdminDocumentManagement'));
+const AdminStaffUploadPage = lazy(() => import('./pages/AdminStaffUploadPage'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminApplicationManagement = lazy(() => import('./pages/AdminApplicationManagement'));
+const SchoolStatsManagement = lazy(() => import('./pages/SchoolStatsManagement'));
+const SchoolDocuments = lazy(() => import('./pages/SchoolDocuments'));
+const LogoSymbolismPage = lazy(() => import('./pages/LogoSymbolism'));
+const MissionVision = lazy(() => import('./pages/MissionVision'));
+const FamilyStatementPage = lazy(() => import('./pages/FamilyStatement'));
+const Calendar = lazy(() => import('./pages/Calendar'));
+const SchoolHub = lazy(() => import('./pages/SchoolHub'));
+const CalendarManagement = lazy(() => import('./pages/CalendarManagement'));
+const GalleryManagement = lazy(() => import('./pages/GalleryManagement'));
+const NewsletterManagement = lazy(() => import('./pages/NewsletterManagement'));
+const AdminGoverningBody = lazy(() => import('./pages/AdminGoverningBody'));
+const AdminAnnouncements = lazy(() => import('./pages/AdminAnnouncements'));
+const Academic = lazy(() => import('./pages/Academic'));
+const Robotics = lazy(() => import('./pages/Robotics'));
+const Sport = lazy(() => import('./pages/Sport'));
+const Cultural = lazy(() => import('./pages/Cultural'));
+const ServiceEthos = lazy(() => import('./pages/ServiceEthos'));
+const AfterSchoolProgram = lazy(() => import('./pages/AfterSchoolProgram'));
+const Aftercare = lazy(() => import('./pages/Aftercare'));
+const VirtualTour = lazy(() => import('./pages/VirtualTour'));
+const Vacancies = lazy(() => import('./pages/Vacancies'));
+const VacancyManagement = lazy(() => import('./pages/VacancyManagement'));
+const ApplicationProcess = lazy(() => import('./pages/ApplicationProcess'));
 
 // Extend Material-UI theme to include custom school colors
 declare module '@mui/material/styles' {
@@ -249,174 +249,206 @@ const NavigationWrapper: React.FC = () => {
   // Admin routes - NO public Layout (Header/Footer)
   if (isAdminRoute) {
     return (
-      <Routes>
-        <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/dashboard" 
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/applications" 
-          element={
-            <ProtectedRoute>
-              <AdminApplicationManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/staff-upload" 
-          element={
-            <ProtectedRoute>
-              <AdminStaffUploadPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/document-upload" 
-          element={
-            <ProtectedRoute>
-              <AdminDocumentUpload />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/document-management" 
-          element={
-            <ProtectedRoute>
-              <AdminDocumentManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/school-stats" 
-          element={
-            <ProtectedRoute>
-              <SchoolStatsManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/calendar" 
-          element={
-            <ProtectedRoute>
-              <CalendarManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/gallery" 
-          element={
-            <ProtectedRoute>
-              <GalleryManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/announcements" 
-          element={
-            <ProtectedRoute>
-              <AdminAnnouncements />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin/newsletters" 
-          element={
-            <ProtectedRoute>
-              <NewsletterManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route
-          path="/admin/governing-body"
-          element={
-            <ProtectedRoute>
-              <AdminGoverningBody />
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/admin/vacancies" 
-          element={
-            <ProtectedRoute>
-              <VacancyManagement />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
+      <Suspense fallback={<SuspenseFallback />}>
+        <Routes>
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/applications" 
+            element={
+              <ProtectedRoute>
+                <AdminApplicationManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/staff-upload" 
+            element={
+              <ProtectedRoute>
+                <AdminStaffUploadPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/document-upload" 
+            element={
+              <ProtectedRoute>
+                <AdminDocumentUpload />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/document-management" 
+            element={
+              <ProtectedRoute>
+                <AdminDocumentManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/school-stats" 
+            element={
+              <ProtectedRoute>
+                <SchoolStatsManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/calendar" 
+            element={
+              <ProtectedRoute>
+                <CalendarManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/gallery" 
+            element={
+              <ProtectedRoute>
+                <GalleryManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/announcements" 
+            element={
+              <ProtectedRoute>
+                <AdminAnnouncements />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/newsletters" 
+            element={
+              <ProtectedRoute>
+                <NewsletterManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/admin/governing-body"
+            element={
+              <ProtectedRoute>
+                <AdminGoverningBody />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/vacancies" 
+            element={
+              <ProtectedRoute>
+                <VacancyManagement />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Suspense>
     );
   }
 
   // Public routes - WITH Layout (Header/Footer)
   return (
     <Layout currentPage={getCurrentPage()} onNavigate={handleNavigation}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/school-hub" element={<SchoolHub />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/spiritual" element={<Spiritual />} />
-        <Route path="/info" element={<Info />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/school-board" element={<SchoolBoard />} />
-        <Route path="/staff" element={<Staff />} />
-        <Route path="/links" element={<Links />} />
-        <Route path="/forms" element={<FormsFees />} />
-        <Route path="/extra-mural" element={<ExtraMural />} />
-        <Route path="/music" element={<Music />} />
-        <Route path="/donate" element={<Donate />} />
-        <Route path="/contact" element={<ContactForm />} />
-        <Route path="/documents" element={<SchoolDocuments />} />
-        <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
-        <Route path="/mission-vision" element={<MissionVision />} />
-        <Route path="/family-statement" element={<FamilyStatementPage />} />
-        {/* Pillars Section */}
-        <Route path="/academic" element={<Academic />} />
-        <Route path="/robotics" element={<Robotics />} />
-        <Route path="/sport" element={<Sport />} />
-        <Route path="/cultural" element={<Cultural />} />
-        <Route path="/service-ethos" element={<ServiceEthos />} />
-        {/* Our School Section */}
-        <Route path="/after-school-programme" element={<AfterSchoolProgram />} />
-        <Route path="/aftercare" element={<AfterSchoolProgram />} />
-        <Route path="/vacancies" element={<Vacancies />} />
-        {/* Admissions Section */}
-        <Route path="/admissions" element={<ApplicationProcess />} />
-        {/* Add more routes as we create more pages */}
-        <Route path="*" element={<Home />} />
-      </Routes>
+      <Suspense fallback={<SuspenseFallback />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/school-hub" element={<SchoolHub />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/virtual-tour" element={<VirtualTour />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/spiritual" element={<Spiritual />} />
+          <Route path="/info" element={<Info />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/school-board" element={<SchoolBoard />} />
+          <Route path="/staff" element={<Staff />} />
+          <Route path="/links" element={<Links />} />
+          <Route path="/forms" element={<FormsFees />} />
+          <Route path="/extra-mural" element={<ExtraMural />} />
+          <Route path="/music" element={<Music />} />
+          <Route path="/donate" element={<Donate />} />
+          <Route path="/contact" element={<ContactForm />} />
+          <Route path="/documents" element={<SchoolDocuments />} />
+          <Route path="/logo-symbolism" element={<LogoSymbolismPage />} />
+          <Route path="/mission-vision" element={<MissionVision />} />
+          <Route path="/family-statement" element={<FamilyStatementPage />} />
+          {/* Pillars Section */}
+          <Route path="/academic" element={<Academic />} />
+          <Route path="/robotics" element={<Robotics />} />
+          <Route path="/sport" element={<Sport />} />
+          <Route path="/cultural" element={<Cultural />} />
+          <Route path="/service-ethos" element={<ServiceEthos />} />
+          {/* Our School Section */}
+          <Route path="/after-school-programme" element={<AfterSchoolProgram />} />
+          <Route path="/aftercare" element={<Aftercare />} />
+          <Route path="/vacancies" element={<Vacancies />} />
+          {/* Admissions Section */}
+          <Route path="/admissions" element={<ApplicationProcess />} />
+          {/* Add more routes as we create more pages */}
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 };
+
+const SuspenseFallback: React.FC = () => (
+  <Box
+    sx={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+      background: 'linear-gradient(135deg, rgba(26,35,126,0.08), rgba(255,215,0,0.12))'
+    }}
+  >
+    <CircularProgress size={56} sx={{ color: '#1a237e' }} />
+    <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>
+      Loading content...
+    </Typography>
+  </Box>
+);
 
 function App() {
   // Register service worker for offline functionality
   React.useEffect(() => {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+      const handleLoad = () => {
         navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
-            console.log('SW registered: ', registration);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('SW registered: ', registration);
+            }
           })
           .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('SW registration failed: ', registrationError);
+            }
           });
-      });
+      };
+
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
     }
+    return undefined;
   }, []);
 
   return (

@@ -31,6 +31,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
+  Backdrop,
 } from '@mui/material';
 import {
   School,
@@ -118,6 +120,7 @@ const ApplicationProcess: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [feesDocument, setFeesDocument] = useState<ResourceDocument | null>(null);
   const [agreementDocument, setAgreementDocument] = useState<ResourceDocument | null>(null);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [formData, setFormData] = useState({
     // Learner Information
     surname: '',
@@ -210,6 +213,7 @@ const ApplicationProcess: React.FC = () => {
 
     const fetchSupportingDocuments = async () => {
       try {
+        setLoadingDocuments(true);
         const admissionsDocs = await documentService.getDocumentsByCategory('admissions', true).catch(() => []);
         const formsDocs = await documentService.getDocumentsByCategory('form', true).catch(() => []);
         const feesDocs = await documentService.getDocumentsByCategory('fees', true).catch(() => []);
@@ -231,7 +235,14 @@ const ApplicationProcess: React.FC = () => {
         if (feesDoc) setFeesDocument(feesDoc);
         if (agreementDoc) setAgreementDocument(agreementDoc);
       } catch (error) {
-        console.error('Failed to load admissions resources:', error);
+        // Error handling - keep console.error for production debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to load admissions resources:', error);
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingDocuments(false);
+        }
       }
     };
 
@@ -1465,8 +1476,9 @@ const ApplicationProcess: React.FC = () => {
               <ApplicationDocumentUpload 
                 applicationId={applicationId}
                 onDocumentsChange={(documents) => {
-                  // Optional: Handle document changes
-                  console.log('Documents updated:', documents);
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('Documents updated:', documents);
+                  }
                 }}
               />
             )}
@@ -1524,6 +1536,21 @@ const ApplicationProcess: React.FC = () => {
 
   return (
     <>
+      <Backdrop
+        open={loadingDocuments}
+        sx={{
+          color: '#fff',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <CircularProgress color="inherit" size={60} />
+          <Typography variant="h6" sx={{ color: '#fff' }}>
+            Loading application resources...
+          </Typography>
+        </Box>
+      </Backdrop>
       <SEO
         title="Application Process - Holy Cross Convent School"
         description="Apply to Holy Cross Convent School Brooklyn. Complete our online application process for Grade R to Grade 7. Join our Catholic educational community."
@@ -1865,9 +1892,13 @@ const ApplicationProcess: React.FC = () => {
                 px: 4,
                 py: 1.5,
               }}
-              disabled={submitting}
+              disabled={submitting || loadingDocuments}
+              startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : null}
             >
-              {activeStep === steps.length - 1 ? (applicationId ? 'Complete Application' : 'Create Application') : 'Next'}
+              {submitting 
+                ? (activeStep === steps.length - 1 ? 'Submitting...' : 'Processing...')
+                : (activeStep === steps.length - 1 ? (applicationId ? 'Complete Application' : 'Create Application') : 'Next')
+              }
             </Button>
           </Box>
         </Paper>

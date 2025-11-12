@@ -50,6 +50,23 @@ const AnnouncementCard = styled(Card)(({ theme }) => ({
   },
 }));
 
+const AnnouncementMedia = styled(Box)(({ theme }) => ({
+  width: '100%',
+  backgroundColor: '#f5f5f5',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(2),
+  '& img': {
+    width: '100%',
+    height: 'auto',
+    maxHeight: 360,
+    objectFit: 'contain',
+    borderRadius: theme.spacing(1.5),
+    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+  },
+}));
+
 const EventCard = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
@@ -194,33 +211,31 @@ const HomeAnnouncements: React.FC<HomeAnnouncementsProps> = ({
                 {announcements.map((item) => (
                   <AnnouncementCard key={item.id}>
                     {item.imageUrl ? (
-                      <CardMedia
-                        component="img"
-                        image={item.imageUrl}
-                        alt={item.title}
-                        sx={{
-                          width: '100%',
-                          height: { xs: 220, md: 260 },
-                          objectFit: 'cover',
-                        }}
-                      />
+                      <AnnouncementMedia>
+                        <CardMedia
+                          component="img"
+                          image={item.imageUrl}
+                          alt={item.title}
+                        />
+                      </AnnouncementMedia>
                     ) : (
-                      <Box
+                      <AnnouncementMedia
                         sx={{
-                          width: '100%',
-                          height: { xs: 220, md: 260 },
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
                           background: 'linear-gradient(135deg, rgba(26,35,126,0.08) 0%, rgba(26,35,126,0.16) 100%)',
-                          color: '#1a237e',
-                          fontWeight: 600,
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
                         }}
                       >
-                        Holy Cross Convent School
-                      </Box>
+                        <Box
+                          sx={{
+                            color: '#1a237e',
+                            fontWeight: 600,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            textAlign: 'center',
+                          }}
+                        >
+                          Holy Cross Convent School
+                        </Box>
+                      </AnnouncementMedia>
                     )}
                     <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       <Typography
