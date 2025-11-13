@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Container,
   Typography,
   Tabs,
   Tab,
-  CircularProgress,
   Alert,
   Grid,
   Chip,
-  Paper
+  Paper,
+  Skeleton
 } from '@mui/material';
 import {
   PhotoLibrary,
@@ -26,6 +25,8 @@ import GalleryService, { Album, GalleryItem } from '../services/galleryService';
 import AlbumCard from '../components/gallery/AlbumCard';
 import ImageGrid from '../components/gallery/ImageGrid';
 import AlbumModal from '../components/gallery/AlbumModal';
+import { getBackgroundImageUrl } from '../utils/staticFiles';
+import { Helmet } from 'react-helmet-async';
 
 // Hero Section - Showcasing HCC Story
 const HeroSection = styled(Box)(({ theme }) => ({
@@ -35,7 +36,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: 'url("/MUSIC03.jpg")',
+  backgroundImage: getBackgroundImageUrl('MUSIC03.jpg'),
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
@@ -114,9 +115,9 @@ const StatsBox = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
   borderRadius: theme.spacing(2),
   border: '1px solid rgba(255, 255, 255, 0.2)',
-  transition: 'all 0.3s ease',
+  transition: 'box-shadow 0.3s ease, background-color 0.3s ease',
   '&:hover': {
-    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
     backgroundColor: 'rgba(255, 255, 255, 0.25)'
   }
 }));
@@ -140,72 +141,124 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 }));
 
 const Gallery: React.FC = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
-  const [eventsAlbums, setEventsAlbums] = useState<Album[]>([]);
+  const [allPublishedAlbums, setAllPublishedAlbums] = useState<Album[]>([]);
   const [allItems, setAllItems] = useState<GalleryItem[]>([]);
-  const [stats, setStats] = useState({
-    totalAlbums: 0,
-    totalPhotos: 0,
-    eventsCount: 0,
-    classPhotosCount: 0
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  // AbortController ref for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
 
         // Load events albums and all items in parallel for faster loading
-        const [allPublishedAlbums, response] = await Promise.all([
+        // TODO: Implement pagination/infinite scroll for >100 items
+        const [albumsResponse, itemsResponse] = await Promise.all([
           GalleryService.getAlbums({
             isPublished: true,
           }),
           GalleryService.getGalleryItems({
             isPublished: true,
-            limit: 100,
+            limit: 100, // Hard-coded limit - consider pagination for production
           }),
         ]);
 
-        const generalAlbums = allPublishedAlbums.filter((album) => album.albumType === 'GENERAL');
-        const generalWithChildren = generalAlbums.map((album) => ({
-          ...album,
-          subAlbums: generalAlbums.filter((child) => child.parentAlbumId === album.id),
-        }));
-        const topLevelGeneral = generalWithChildren.filter((album) => !album.parentAlbumId);
-        setEventsAlbums(topLevelGeneral);
-        setAllItems(response.items);
+        // Check if request was aborted
+        if (controller.signal.aborted) {
+          return;
+        }
 
-        // Calculate stats
-        setStats({
-          totalAlbums: generalAlbums.length,
-          totalPhotos: response.items.length,
-          eventsCount: generalAlbums.length,
-          classPhotosCount: 0
-        });
+        setAllPublishedAlbums(albumsResponse);
+        setAllItems(itemsResponse.items);
       } catch (err: any) {
+        // Don't set error if request was aborted
+        if (err.name === 'AbortError' || controller.signal.aborted) {
+          return;
+        }
         console.error('Error loading gallery data:', err);
         setError(err.message || 'Failed to load gallery');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     loadData();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
+
+  // Memoize filtered albums and stats for performance
+  const eventsAlbums = useMemo(() => {
+    const generalAlbums = allPublishedAlbums.filter((album) => album.albumType === 'GENERAL');
+    
+    // Pre-group sub-albums using Map for O(n) instead of O(n²)
+    const subAlbumsMap = new Map<string, Album[]>();
+    generalAlbums.forEach((album) => {
+      if (album.parentAlbumId) {
+        const parentId = album.parentAlbumId;
+        if (!subAlbumsMap.has(parentId)) {
+          subAlbumsMap.set(parentId, []);
+        }
+        subAlbumsMap.get(parentId)!.push(album);
+      }
+    });
+
+    const generalWithChildren = generalAlbums.map((album) => ({
+      ...album,
+      subAlbums: subAlbumsMap.get(album.id) || [],
+    }));
+    
+    return generalWithChildren.filter((album) => !album.parentAlbumId);
+  }, [allPublishedAlbums]);
+
+  // Memoize stats calculation
+  const stats = useMemo(() => {
+    const generalAlbums = allPublishedAlbums.filter((album) => album.albumType === 'GENERAL');
+    // Event albums are GENERAL albums with category 'EVENTS' or title containing 'event'
+    const eventAlbums = generalAlbums.filter((album) => 
+      album.title.toLowerCase().includes('event') || 
+      album.description?.toLowerCase().includes('event')
+    );
+    const classPhotos = allItems.filter((item) => item.category === 'CLASS' || item.category === 'ACADEMIC');
+    
+    return {
+      totalAlbums: generalAlbums.length,
+      totalPhotos: allItems.length,
+      eventsCount: eventAlbums.length, // Fixed: count event-related albums
+      classPhotosCount: classPhotos.length
+    };
+  }, [allPublishedAlbums, allItems]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
-  const handleAlbumClick = (album: Album) => {
-    setSelectedAlbum(album);
-    setModalOpen(true);
+  const handleAlbumClick = (album: Album | null) => {
+    if (!album) {
+      console.warn('Attempted to open modal with null album');
+      return;
+    }
+    try {
+      setSelectedAlbum(album);
+      setModalOpen(true);
+    } catch (err) {
+      console.error('Error opening album modal:', err);
+      setError('Failed to open album');
+    }
   };
 
   const handleCloseModal = () => {
@@ -213,16 +266,39 @@ const Gallery: React.FC = () => {
     setSelectedAlbum(null);
   };
 
+  // Generate JSON-LD structured data for gallery
+  const galleryStructuredData = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'ImageGallery',
+    name: 'Holy Cross Convent School Brooklyn Gallery',
+    description: 'School gallery showcasing class photos, events, celebrations, and community moments',
+    image: [
+      ...allItems.slice(0, 10).map((item) => ({
+        '@type': 'ImageObject',
+        contentUrl: item.type === 'IMAGE' ? GalleryService.getItemImageUrl(item.fileName) : undefined,
+        name: item.title,
+        description: item.description
+      })).filter((img) => img.contentUrl)
+    ],
+    numberOfItems: stats.totalPhotos
+  }), [allItems, stats.totalPhotos]);
+
   if (loading && activeTab === 0) {
     return (
       <>
         <HeroSection>
           <Container maxWidth="lg">
             <Box sx={{ textAlign: 'center', py: 8 }}>
-              <CircularProgress size={60} sx={{ color: '#ffd700', mb: 2 }} />
-              <Typography variant="h6" sx={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                Loading Gallery...
-              </Typography>
+              <Skeleton variant="rectangular" width="100%" height={200} sx={{ mb: 3, borderRadius: 2 }} />
+              <Skeleton variant="text" width="60%" height={40} sx={{ mx: 'auto', mb: 2 }} />
+              <Skeleton variant="text" width="80%" height={30} sx={{ mx: 'auto', mb: 4 }} />
+              <Grid container spacing={3} sx={{ maxWidth: '900px', mx: 'auto', mt: 4 }}>
+                {[1, 2, 3].map((i) => (
+                  <Grid item xs={6} sm={4} key={i}>
+                    <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
           </Container>
         </HeroSection>
@@ -237,15 +313,23 @@ const Gallery: React.FC = () => {
         description="Explore the vibrant life of Holy Cross Convent School Brooklyn through our gallery. Discover class photos, events, celebrations, and the daily moments that make our school community special."
         keywords="school gallery, class photos, school events, Holy Cross Convent School, Brooklyn, Cape Town, Catholic school gallery"
       />
+      
+      {/* Preload hero image and JSON-LD */}
+      <Helmet>
+        <link rel="preload" as="image" href="/MUSIC03.jpg" />
+        <script type="application/ld+json">
+          {JSON.stringify(galleryStructuredData)}
+        </script>
+      </Helmet>
 
       {/* Hero Section - Showcasing HCC Story */}
       <HeroSection>
         {/* Return to Home - positioned outside hero to avoid clash */}
         <Box sx={{ 
           position: 'fixed', 
-          top: { xs: 80, sm: 100 }, 
+          top: { xs: 100, sm: 100 }, 
           left: 16, 
-          zIndex: 1000,
+          zIndex: 1300,
           '& .MuiTypography-root': {
             color: 'white !important',
             textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
@@ -265,7 +349,7 @@ const Gallery: React.FC = () => {
         </Box>
 
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 }, py: 8 }}>
-          <Fade in timeout={1000}>
+          <Fade in timeout={1000} appear={false}>
             <Box>
               <Typography
                 variant="h1"
@@ -274,7 +358,7 @@ const Gallery: React.FC = () => {
                   fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
                   mb: 3,
                   color: '#ffd700',
-                  textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)',
                   letterSpacing: '0.5px'
                 }}
               >
@@ -285,7 +369,7 @@ const Gallery: React.FC = () => {
                 sx={{
                   color: '#ffffff',
                   fontWeight: 600,
-                  textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.6)',
                   fontSize: { xs: '1.5rem', md: '2rem' },
                   maxWidth: '900px',
                   mx: 'auto',
@@ -300,7 +384,7 @@ const Gallery: React.FC = () => {
                 sx={{
                   color: '#ffffff',
                   fontWeight: 400,
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
                   fontSize: { xs: '1rem', sm: '1.2rem' },
                   maxWidth: '800px',
                   mx: 'auto',
@@ -313,7 +397,7 @@ const Gallery: React.FC = () => {
               </Typography>
 
               {/* Stats Section */}
-              <Slide direction="up" in timeout={1500}>
+              <Slide direction="up" in timeout={1500} appear={false}>
                 <Box>
                   <Grid container spacing={3} sx={{ maxWidth: '900px', mx: 'auto', mt: 4 }}>
                     <Grid item xs={6} sm={4}>
@@ -367,6 +451,8 @@ const Gallery: React.FC = () => {
               aria-label="gallery navigation tabs"
               variant="scrollable"
               scrollButtons="auto"
+              role="tablist"
+              data-testid="gallery-tabs"
             >
               <Tab
                 icon={<Event />}
@@ -427,12 +513,13 @@ const Gallery: React.FC = () => {
                       backgroundColor: '#d32f2f',
                       color: '#ffffff',
                       fontWeight: 600,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
                       px: 2,
                       py: 2,
                       mt: 2,
                       fontFamily: '"Poppins", sans-serif'
                     }}
+                    data-testid="events-count-chip"
                   />
                 </Box>
               </Fade>
@@ -443,10 +530,10 @@ const Gallery: React.FC = () => {
                 No event albums available yet. Event albums will appear here once uploaded.
               </Alert>
             ) : (
-              <Grid container spacing={4}>
+              <Grid container spacing={4} data-testid="events-albums-grid">
                 {eventsAlbums.map((album, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={album.id}>
-                    <Fade in timeout={600 + (index * 100)}>
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={album.id || `album-${album.title}-${index}`}>
+                    <Fade in timeout={600 + Math.min(index * 100, 1000)} appear={false}>
                       <Box>
                         <AlbumCard album={album} onClick={handleAlbumClick} />
                         {album.subAlbums && album.subAlbums.length > 0 && (
@@ -468,7 +555,7 @@ const Gallery: React.FC = () => {
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                               {album.subAlbums.map((sub) => (
                                 <Chip
-                                  key={sub.id}
+                                  key={sub.id || `sub-${sub.title}`}
                                   label={sub.title}
                                   onClick={() => handleAlbumClick(sub)}
                                   clickable
@@ -477,8 +564,10 @@ const Gallery: React.FC = () => {
                                     border: '1px solid rgba(26,35,126,0.2)',
                                     fontWeight: 600,
                                     fontFamily: '"Poppins", sans-serif',
+                                    transition: 'all 0.2s ease',
                                     '&:hover': {
                                       bgcolor: '#e8eaf6',
+                                      transform: 'scale(1.05)',
                                     },
                                   }}
                                 />
@@ -497,7 +586,7 @@ const Gallery: React.FC = () => {
           {/* All Gallery Tab */}
           <CustomTabPanel value={activeTab} index={1}>
             <SectionHeader>
-              <Fade in timeout={800}>
+              <Fade in timeout={800} appear={false}>
                 <Box>
                   <PhotoLibrary sx={{ fontSize: 60, color: '#1a237e', mb: 2 }} />
                   <Typography
@@ -547,18 +636,26 @@ const Gallery: React.FC = () => {
                 No photos available yet. Photos will appear here once uploaded.
               </Alert>
             ) : (
-              <ImageGrid items={allItems} loading={false} plainMode={true} />
+              <Box data-testid="all-gallery-grid">
+                <ImageGrid 
+                  items={allItems} 
+                  loading={false} 
+                  plainMode={true}
+                />
+              </Box>
             )}
           </CustomTabPanel>
         </Container>
       </GalleryContainer>
 
       {/* Album Modal */}
-      <AlbumModal
-        open={modalOpen}
-        album={selectedAlbum}
-        onClose={handleCloseModal}
-      />
+      {selectedAlbum && (
+        <AlbumModal
+          open={modalOpen}
+          album={selectedAlbum}
+          onClose={handleCloseModal}
+        />
+      )}
     </>
   );
 };

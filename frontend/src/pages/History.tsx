@@ -1,9 +1,14 @@
 import React from 'react';
-import { Container, Typography, Box, Card, CardMedia, CardContent, Chip, useTheme } from '@mui/material';
+import { Container, Typography, Box, Card, CardMedia, CardContent, Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { History as HistoryIcon, School as SchoolIcon, Church as ChurchIcon } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
+
+// Import images - fallback to public paths if imports fail
+const frTheodosiusImage = '/Fr Theodosius.jpg';
+const bernardaImage = '/Bernarda BG.jpg';
+const philomenaImage = '/Philomena.jpg';
 
 // Hero Section
 const Hero = styled(Box)(({ theme }) => ({
@@ -13,8 +18,10 @@ const Hero = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'url("/Philomena.jpg") center/cover no-repeat',
-  backgroundPosition: 'center 40%',
+  backgroundImage: `url("${philomenaImage}")`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center 30%',
+  backgroundRepeat: 'no-repeat',
   textAlign: 'center',
   overflow: 'hidden',
   '&::before': {
@@ -32,21 +39,11 @@ const HistorySection = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(8),
   padding: theme.spacing(4, 0),
   position: 'relative',
+  marginTop: theme.spacing(8),
   '&:nth-of-type(even)': {
     backgroundColor: 'rgba(26, 35, 126, 0.02)',
     borderRadius: theme.spacing(2),
     padding: theme.spacing(4),
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '60px',
-    height: '3px',
-    backgroundColor: '#ffd700',
-    borderRadius: '2px',
   },
 }));
 
@@ -57,6 +54,10 @@ const HistoricalCard = styled(Card)(({ theme }) => ({
     transform: 'translateY(-4px)',
     boxShadow: '0 8px 25px rgba(26, 35, 126, 0.15)',
   },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: '4px',
+  },
 }));
 
 const QuoteBox = styled(Box)(({ theme }) => ({
@@ -66,16 +67,6 @@ const QuoteBox = styled(Box)(({ theme }) => ({
   margin: theme.spacing(3, 0),
   borderRadius: theme.spacing(1),
   position: 'relative',
-  '&::before': {
-    content: '"\\201C"', // Left double quotation mark (Unicode)
-    fontSize: '3rem',
-    color: '#ffd700',
-    position: 'absolute',
-    top: '-10px',
-    left: '20px',
-    fontFamily: 'serif',
-    lineHeight: 1,
-  },
 }));
 
 const TimelineItem = styled(Box)(({ theme }) => ({
@@ -92,37 +83,26 @@ const TimelineItem = styled(Box)(({ theme }) => ({
     backgroundColor: '#ffd700',
     borderRadius: '50%',
     border: '3px solid #1a237e',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    left: '5px',
-    top: '20px',
-    width: '2px',
-    height: 'calc(100% + 20px)',
-    backgroundColor: '#1a237e',
-  },
-  '&:last-child::after': {
-    display: 'none',
+    zIndex: 2,
   },
 }));
 
 const History: React.FC = () => {
-  const theme = useTheme();
-
   return (
     <>
       <SEO 
         title="School History - Holy Cross Convent School Brooklyn" 
-        description="Discover the rich history of Holy Cross Convent School Brooklyn, from our founding in 1959 to today." 
+        description="Discover the rich history of Holy Cross Convent School Brooklyn, from our founding in 1959 to today."
+        image={philomenaImage}
+        type="article"
       />
       
-      {/* Return to Home - positioned to avoid header clash */}
+      {/* Return to Home - positioned above hero to avoid blocking content */}
       <Box sx={{ 
-        position: 'fixed', 
+        position: 'absolute', 
         top: { xs: 80, sm: 100 }, 
         left: 16, 
-        zIndex: 1000,
+        zIndex: 1001,
         '& .MuiTypography-root': {
           color: 'white !important',
           textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
@@ -146,14 +126,17 @@ const History: React.FC = () => {
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
           <Typography 
             variant="h1" 
+            component="h2"
+            aria-label="Our Rich History"
             sx={{ 
               fontWeight: 900,
               fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
               mb: 2,
               color: '#ffd700',
-              textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)',
               letterSpacing: '0.5px'
             }}
+            data-testid="hero-title"
           >
             Our Rich History
           </Typography>
@@ -162,15 +145,17 @@ const History: React.FC = () => {
             sx={{ 
               color: '#ffffff',
               fontWeight: 600,
-              textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.6)',
               fontSize: { xs: '1.5rem', md: '2rem' },
               mb: 2
             }}
+            data-testid="hero-subtitle"
           >
             A Legacy of Faith, Education, and Service
           </Typography>
           <Chip 
             label="Established 1959" 
+            aria-label="Established 1959"
             sx={{ 
               fontWeight: 600,
               backgroundColor: 'rgba(255, 215, 0, 0.9)',
@@ -180,11 +165,12 @@ const History: React.FC = () => {
               py: 2.5,
               px: 1
             }}
+            data-testid="established-chip"
           />
         </Container>
       </Hero>
 
-      <Container maxWidth="xl" sx={{ py: 6, mt: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 6, mt: 4 }} data-testid="history-content">
         {/* Page Header - with proper spacing from hero */}
         <Box sx={{ textAlign: 'center', mb: 8, mt: 4 }}>
         <Typography 
@@ -218,6 +204,7 @@ const History: React.FC = () => {
 
       {/* Founding Figures Section */}
       <HistorySection>
+        <Box sx={{ width: 60, height: 3, bgcolor: '#ffd700', borderRadius: 1, mx: 'auto', mb: 4 }} data-testid="section-divider" />
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
             variant="h3" 
@@ -228,6 +215,7 @@ const History: React.FC = () => {
               fontWeight: 700,
               fontSize: { xs: '1.75rem', md: '2.5rem' },
             }}
+            data-testid="founding-figures-title"
           >
             <ChurchIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
             Our Founding Figures
@@ -252,17 +240,18 @@ const History: React.FC = () => {
           gap: 4 
         }}>
           {/* Fr Theodosius Fiorentini */}
-          <HistoricalCard>
+          <HistoricalCard data-testid="founding-card-theodosius">
               <CardMedia
                 component="img"
+                loading="lazy"
                 sx={{ 
                   objectFit: 'cover',
-                  height: { xs: 300, sm: 350, md: 400 },
+                  aspectRatio: '3/4',
                   width: '100%',
                   display: 'block'
                 }}
-                image="/Fr Theodosius.jpg"
-                alt="Fr Theodosius Fiorentini"
+                image={frTheodosiusImage}
+                alt="Fr Theodosius Fiorentini, O.F.M. Capuchin (1808-1865)"
               />
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
@@ -277,26 +266,53 @@ const History: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Notwithstanding the obstacles, attacks and failures, and convinced about his mission in the church, he was determined to take the wheel of time into his own hands.
               </Typography>
-              <QuoteBox sx={{ mt: 3 }}>
-                <Typography variant="body1" sx={{ pl: 2 }}>
-                    &quot;The need of the time is the will of God&quot;
+              <QuoteBox sx={{ mt: 3 }} data-testid="quote-box">
+                <Typography variant="body1" sx={{ pl: 5, position: 'relative' }}>
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: -10, 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1
+                    }}
+                  >
+                    &quot;
+                  </Box>
+                  The need of the time is the will of God
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1,
+                      ml: 0.5
+                    }}
+                  >
+                    &quot;
+                  </Box>
                 </Typography>
               </QuoteBox>
             </CardContent>
           </HistoricalCard>
 
           {/* Mother Bernarda */}
-          <HistoricalCard>
+          <HistoricalCard data-testid="founding-card-bernarda">
               <CardMedia
                 component="img"
+                loading="lazy"
                 sx={{ 
                   objectFit: 'cover',
-                  height: { xs: 300, sm: 350, md: 400 },
+                  aspectRatio: '3/4',
                   width: '100%',
                   display: 'block'
                 }}
-                image="/Bernarda BG.jpg"
-                alt="Mother Bernarda Heimgartner"
+                image={bernardaImage}
+                alt="Mother Bernarda Heimgartner, Founder of the Sisters of the Holy Cross (1822-1863)"
               />
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
@@ -311,26 +327,53 @@ const History: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 People of her time should receive a clear orientation built on faith.
               </Typography>
-              <QuoteBox sx={{ mt: 3 }}>
-                <Typography variant="body1" sx={{ pl: 2 }}>
-                    &quot;Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit.&quot;
+              <QuoteBox sx={{ mt: 3 }} data-testid="quote-box">
+                <Typography variant="body1" sx={{ pl: 5, position: 'relative' }}>
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: -10, 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1
+                    }}
+                  >
+                    &quot;
+                  </Box>
+                  Be brave and every day begin anew to love God. Leave the worry of your school in the hands of the good Lord. Do what you can, give glory to God, be humble and ask for His blessing, without which our labours will bear no fruit.
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1,
+                      ml: 0.5
+                    }}
+                  >
+                    &quot;
+                  </Box>
                 </Typography>
               </QuoteBox>
             </CardContent>
           </HistoricalCard>
 
           {/* Sister Philomena */}
-          <HistoricalCard>
+          <HistoricalCard data-testid="founding-card-philomena">
             <CardMedia
               component="img"
-                sx={{ 
-                  objectFit: 'cover',
-                  height: { xs: 300, sm: 350, md: 400 },
-                  width: '100%',
-                  display: 'block'
-                }}
-              image="/Philomena.jpg"
-              alt="Sister Philomena Burgess"
+              loading="lazy"
+              sx={{ 
+                objectFit: 'cover',
+                aspectRatio: '3/4',
+                width: '100%',
+                display: 'block'
+              }}
+              image={philomenaImage}
+              alt="Sister Philomena Burgess, first teacher and principal of Holy Cross Convent School Brooklyn"
             />
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" component="h3" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
@@ -345,9 +388,35 @@ const History: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Her dedication and vision continue to inspire our school community today.
               </Typography>
-              <QuoteBox sx={{ mt: 3 }}>
-                <Typography variant="body1" sx={{ pl: 2 }}>
-                    &quot;May Jesus live in our hearts.&quot; (Mother Bernarda)
+              <QuoteBox sx={{ mt: 3 }} data-testid="quote-box">
+                <Typography variant="body1" sx={{ pl: 5, position: 'relative' }}>
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: -10, 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1
+                    }}
+                  >
+                    &quot;
+                  </Box>
+                  May Jesus live in our hearts. (Mother Bernarda)
+                  <Box 
+                    component="span" 
+                    sx={{ 
+                      fontSize: '3rem', 
+                      color: '#ffd700', 
+                      fontFamily: 'serif',
+                      lineHeight: 1,
+                      ml: 0.5
+                    }}
+                  >
+                    &quot;
+                  </Box>
                 </Typography>
               </QuoteBox>
             </CardContent>
@@ -357,6 +426,7 @@ const History: React.FC = () => {
 
       {/* Congregation History Section */}
       <HistorySection>
+        <Box sx={{ width: 60, height: 3, bgcolor: '#ffd700', borderRadius: 1, mx: 'auto', mb: 4 }} data-testid="section-divider" />
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
             variant="h3" 
@@ -367,6 +437,7 @@ const History: React.FC = () => {
               fontWeight: 700,
               fontSize: { xs: '1.75rem', md: '2.5rem' },
             }}
+            data-testid="congregation-title"
           >
             <SchoolIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
             Our Congregation
@@ -386,6 +457,7 @@ const History: React.FC = () => {
 
       {/* School Timeline Section */}
       <HistorySection>
+        <Box sx={{ width: 60, height: 3, bgcolor: '#ffd700', borderRadius: 1, mx: 'auto', mb: 4 }} data-testid="section-divider" />
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
             variant="h3" 
@@ -396,14 +468,27 @@ const History: React.FC = () => {
               fontWeight: 700,
               fontSize: { xs: '1.75rem', md: '2.5rem' },
             }}
+            data-testid="timeline-title"
           >
             <HistoryIcon sx={{ mr: 2, verticalAlign: 'middle', color: '#ffd700' }} />
             Our School's Journey
           </Typography>
         </Box>
 
-        <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-          <TimelineItem>
+        <Box sx={{ maxWidth: '800px', mx: 'auto', position: 'relative' }} data-testid="timeline-container">
+          {/* Timeline line */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: '5px',
+              top: '20px',
+              bottom: 0,
+              width: '2px',
+              backgroundColor: '#1a237e',
+              zIndex: 1,
+            }}
+          />
+          <TimelineItem data-testid="timeline-item">
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               1959 - The Beginning
             </Typography>
@@ -412,7 +497,7 @@ const History: React.FC = () => {
             </Typography>
           </TimelineItem>
 
-          <TimelineItem>
+          <TimelineItem data-testid="timeline-item">
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               1959 - Expansion
             </Typography>
@@ -421,7 +506,7 @@ const History: React.FC = () => {
             </Typography>
           </TimelineItem>
 
-          <TimelineItem>
+          <TimelineItem data-testid="timeline-item">
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               April 3, 1960 - Blessing
             </Typography>
@@ -430,7 +515,7 @@ const History: React.FC = () => {
             </Typography>
           </TimelineItem>
 
-          <TimelineItem>
+          <TimelineItem data-testid="timeline-item">
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               October 1961 - First Communion
             </Typography>
@@ -439,7 +524,7 @@ const History: React.FC = () => {
             </Typography>
           </TimelineItem>
 
-          <TimelineItem>
+          <TimelineItem data-testid="timeline-item">
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 1 }}>
               Today - Continuing the Legacy
             </Typography>
@@ -455,9 +540,11 @@ const History: React.FC = () => {
         textAlign: 'center', 
         py: 6, 
         backgroundColor: 'rgba(26, 35, 126, 0.05)',
-        borderRadius: theme.spacing(2),
+        borderRadius: 2,
         mt: 4
-      }}>
+      }}
+      data-testid="legacy-section"
+      >
         <Typography 
           variant="h4" 
           component="h2" 

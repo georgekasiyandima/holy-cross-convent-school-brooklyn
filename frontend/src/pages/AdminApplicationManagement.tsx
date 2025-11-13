@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -34,7 +34,8 @@ import {
   Breadcrumbs,
   ListItemAvatar,
   Paper,
-  Stack
+  Stack,
+  Snackbar
 } from '@mui/material';
 import {
   Visibility,
@@ -46,7 +47,6 @@ import {
   Refresh,
   Assignment,
   People,
-  ExpandMore,
   AttachFile,
   Warning,
   Timeline,
@@ -61,6 +61,14 @@ import { useAuth } from '../contexts/AuthContext';
 // ========================================
 // TYPE DEFINITIONS
 // ========================================
+
+export enum ApplicationStatus {
+  PENDING = 'PENDING',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  ENROLLED = 'ENROLLED'
+}
 
 interface Application {
   id: number;
@@ -146,7 +154,7 @@ interface Application {
   paymentMethod?: string;
   
   // Application Status
-  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'ENROLLED';
+  status: ApplicationStatus;
   notes?: string;
   currentStageKey?: string;
   currentStageStatus?: string;
@@ -242,14 +250,14 @@ const StatCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const StatusChip = styled(Chip)<{ status: string }>(({ status }) => {
-  const getStatusColor = (status: string) => {
+const StatusChip = styled(Chip)<{ status: ApplicationStatus }>(({ status }) => {
+  const getStatusColor = (status: ApplicationStatus) => {
     switch (status) {
-      case 'PENDING': return { bg: '#fff3cd', color: '#856404', border: '#ffeaa7' };
-      case 'UNDER_REVIEW': return { bg: '#d1ecf1', color: '#0c5460', border: '#bee5eb' };
-      case 'APPROVED': return { bg: '#d4edda', color: '#155724', border: '#c3e6cb' };
-      case 'REJECTED': return { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' };
-      case 'ENROLLED': return { bg: '#e2e3e5', color: '#383d41', border: '#d6d8db' };
+      case ApplicationStatus.PENDING: return { bg: '#fff3cd', color: '#856404', border: '#ffeaa7' };
+      case ApplicationStatus.UNDER_REVIEW: return { bg: '#d1ecf1', color: '#0c5460', border: '#bee5eb' };
+      case ApplicationStatus.APPROVED: return { bg: '#d4edda', color: '#155724', border: '#c3e6cb' };
+      case ApplicationStatus.REJECTED: return { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' };
+      case ApplicationStatus.ENROLLED: return { bg: '#e2e3e5', color: '#383d41', border: '#d6d8db' };
       default: return { bg: '#f8f9fa', color: '#6c757d', border: '#dee2e6' };
     }
   };
@@ -273,7 +281,6 @@ const StatusChip = styled(Chip)<{ status: string }>(({ status }) => {
 const AdminApplicationManagement: React.FC = () => {
   const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
-  const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
   const [stats, setStats] = useState<ApplicationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -296,6 +303,7 @@ const AdminApplicationManagement: React.FC = () => {
   const [documentUploadFile, setDocumentUploadFile] = useState<File | null>(null);
   const [documentUploading, setDocumentUploading] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
 
@@ -303,10 +311,10 @@ const AdminApplicationManagement: React.FC = () => {
   // HELPER FUNCTIONS
   // ========================================
 
-  const filterApplications = useCallback(() => {
+  // Memoized filtered applications to prevent unnecessary recalculations
+  const filteredApplications = useMemo(() => {
     if (!Array.isArray(applications)) {
-      setFilteredApplications([]);
-      return;
+      return [];
     }
 
     let filtered = applications;
@@ -333,7 +341,7 @@ const AdminApplicationManagement: React.FC = () => {
       filtered = filtered.filter(app => app.gradeApplying === gradeFilter);
     }
 
-    setFilteredApplications(filtered);
+    return filtered;
   }, [applications, searchTerm, statusFilter, gradeFilter]);
 
   // ========================================
@@ -341,20 +349,33 @@ const AdminApplicationManagement: React.FC = () => {
   // ========================================
 
   useEffect(() => {
-    fetchApplications();
-    fetchStats();
+    const controller = new AbortController();
+    
+    const loadData = async () => {
+      await fetchApplications(true, controller.signal);
+      await fetchStats(controller.signal);
+    };
+    
+    loadData();
+    
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
-    filterApplications();
-  }, [filterApplications]);
-
-  useEffect(() => {
-    if (viewDialogOpen && selectedApplication) {
-      loadDocumentTypes();
-      loadWorkflowSummary(selectedApplication.id);
-      loadApplicationDocuments(selectedApplication.id);
+    if (!viewDialogOpen || !selectedApplication) {
+      return;
     }
+    
+    const controller = new AbortController();
+    loadDocumentTypes();
+    loadWorkflowSummary(selectedApplication.id, controller.signal);
+    loadApplicationDocuments(selectedApplication.id, controller.signal);
+    
+    return () => {
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewDialogOpen, selectedApplication?.id]);
 
@@ -373,7 +394,7 @@ const AdminApplicationManagement: React.FC = () => {
   // API FUNCTIONS
   // ========================================
 
-  const fetchApplications = async (showLoader: boolean = true): Promise<Application[]> => {
+  const fetchApplications = async (showLoader: boolean = true, signal?: AbortSignal): Promise<Application[]> => {
     try {
       if (showLoader) {
         setLoading(true);
@@ -383,7 +404,8 @@ const AdminApplicationManagement: React.FC = () => {
       const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined
-        }
+        },
+        signal
       });
       if (response.data.success && Array.isArray(response.data.applications)) {
         setApplications(response.data.applications);
@@ -398,6 +420,9 @@ const AdminApplicationManagement: React.FC = () => {
       setError('Invalid response format from server');
       return [];
     } catch (err: any) {
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return [];
+      }
       console.error('Error fetching applications:', err);
       setError(err.response?.data?.message || 'Failed to load applications. Please check your connection and try again.');
       setApplications([]);
@@ -409,13 +434,14 @@ const AdminApplicationManagement: React.FC = () => {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = async (signal?: AbortSignal) => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/statistics`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined
-        }
+        },
+        signal
       });
       
       // Backend returns { success: true, statistics: {...} }
@@ -427,12 +453,33 @@ const AdminApplicationManagement: React.FC = () => {
         console.error('Unexpected stats response format:', response.data);
       }
     } catch (err: any) {
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error fetching stats:', err);
       // Stats are not critical, so we don't show error to user
     }
   };
 
   const updateApplicationStatus = async (applicationId: number, status: string, notes?: string) => {
+    // Find the original application for rollback
+    const originalApplication = applications.find(app => app.id === applicationId);
+    if (!originalApplication) {
+      setError('Application not found');
+      return;
+    }
+
+    // Optimistic update
+    const optimisticApp = { ...originalApplication, status: status as ApplicationStatus, notes: notes || originalApplication.notes };
+    setApplications(prev => prev.map(app => 
+      app.id === applicationId ? optimisticApp : app
+    ));
+    
+    // Update selected application if it's the one being updated
+    if (selectedApplication?.id === applicationId) {
+      setSelectedApplication(optimisticApp);
+    }
+
     try {
       const token = localStorage.getItem('adminToken');
       await axios.patch(`${API_BASE_URL_WITH_PREFIX}/admissions/applications/${applicationId}`, {
@@ -444,49 +491,49 @@ const AdminApplicationManagement: React.FC = () => {
         }
       });
       
-      // Update local state
-      setApplications(prev => prev.map(app => 
-        app.id === applicationId 
-          ? { ...app, status: status as any, notes: notes || app.notes }
-          : app
-      ));
-      
       setStatusDialogOpen(false);
       setSelectedApplication(null);
       setNewStatus('');
       setNotes('');
-    } catch (err) {
+      setSnackbar({ open: true, message: 'Application status updated successfully', severity: 'success' });
+    } catch (err: any) {
       console.error('Error updating application status:', err);
-      setError('Failed to update application status');
+      // Rollback optimistic update
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? originalApplication : app
+      ));
+      if (selectedApplication?.id === applicationId) {
+        setSelectedApplication(originalApplication);
+      }
+      setError(err.response?.data?.message || 'Failed to update application status');
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Failed to update application status', severity: 'error' });
     }
   };
 
   const mergeApplicationWithSummary = useCallback(
     (application: Application, summary: WorkflowSummary, overrideDocs?: ApplicationDocument[]): Application => {
+      // Deep clone to avoid mutation
+      const merged = JSON.parse(JSON.stringify(application));
       const stages = summary.stages;
       if (!stages.length) {
-        return {
-          ...application,
-          stages,
-          documents: overrideDocs ?? application.documents,
-        };
+        merged.stages = stages;
+        merged.documents = overrideDocs ?? application.documents;
+        return merged;
       }
       const activeStage = stages.find((stage) => stage.status !== 'COMPLETED');
       const referenceStage = activeStage ?? stages[stages.length - 1];
-      return {
-        ...application,
-        currentStageKey: referenceStage?.stageKey ?? application.currentStageKey,
-        currentStageStatus: referenceStage?.status ?? application.currentStageStatus,
-        currentAssigneeRole: activeStage ? activeStage.assignedRole : null,
-        nextActionDue: activeStage ? activeStage.dueDate ?? null : null,
-        stages,
-        documents: overrideDocs ?? application.documents,
-      };
+      merged.currentStageKey = referenceStage?.stageKey ?? application.currentStageKey;
+      merged.currentStageStatus = referenceStage?.status ?? application.currentStageStatus;
+      merged.currentAssigneeRole = activeStage ? activeStage.assignedRole : null;
+      merged.nextActionDue = activeStage ? activeStage.dueDate ?? null : null;
+      merged.stages = stages;
+      merged.documents = overrideDocs ?? application.documents;
+      return merged;
     },
     []
   );
 
-  const loadWorkflowSummary = async (applicationId: number) => {
+  const loadWorkflowSummary = async (applicationId: number, signal?: AbortSignal) => {
     setWorkflowLoading(true);
     setWorkflowError(null);
     try {
@@ -497,6 +544,7 @@ const AdminApplicationManagement: React.FC = () => {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
+          signal
         }
       );
 
@@ -525,17 +573,20 @@ const AdminApplicationManagement: React.FC = () => {
       setWorkflowSummary(null);
       setWorkflowError('No workflow details found for this application.');
       return null;
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return null;
+      }
       console.error('Error loading workflow summary:', err);
       setWorkflowSummary(null);
-      setWorkflowError('Failed to load workflow details. Please try again.');
+      setWorkflowError(err.response?.data?.message || 'Failed to load workflow details. Please try again.');
       return null;
     } finally {
       setWorkflowLoading(false);
     }
   };
 
-  const loadApplicationDocuments = async (applicationId: number) => {
+  const loadApplicationDocuments = async (applicationId: number, signal?: AbortSignal) => {
     setDocumentsLoading(true);
     setDocumentsError(null);
     try {
@@ -546,6 +597,7 @@ const AdminApplicationManagement: React.FC = () => {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
+          signal
         }
       );
       if (response.data.success && Array.isArray(response.data.data)) {
@@ -560,9 +612,12 @@ const AdminApplicationManagement: React.FC = () => {
         setDocuments(selectedApplication?.documents || []);
         setDocumentsError('Unexpected response while loading documents.');
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error loading application documents:', err);
-      setDocumentsError('Failed to load documents. Please try again.');
+      setDocumentsError(err.response?.data?.message || 'Failed to load documents. Please try again.');
     } finally {
       setDocumentsLoading(false);
     }
@@ -635,6 +690,21 @@ const AdminApplicationManagement: React.FC = () => {
       return;
     }
 
+    // File size validation (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (documentUploadFile.size > maxSize) {
+      setDocumentUploadError('File size must be less than 10MB. Please choose a smaller file.');
+      return;
+    }
+
+    // File type validation
+    const allowedTypes = ['image/', 'application/pdf'];
+    const isValidType = allowedTypes.some(type => documentUploadFile.type.startsWith(type));
+    if (!isValidType) {
+      setDocumentUploadError('Only images and PDF files are allowed.');
+      return;
+    }
+
     setDocumentUploadError(null);
     setDocumentUploading(true);
 
@@ -657,11 +727,12 @@ const AdminApplicationManagement: React.FC = () => {
         fileInputRef.current.value = '';
       }
       await loadApplicationDocuments(selectedApplication.id);
+      setSnackbar({ open: true, message: 'Document uploaded successfully', severity: 'success' });
     } catch (err: any) {
       console.error('Failed to upload document:', err);
-      setDocumentUploadError(
-        err?.response?.data?.message || 'Failed to upload document. Please try again.'
-      );
+      const errorMessage = err?.response?.data?.message || 'Failed to upload document. Please try again.';
+      setDocumentUploadError(errorMessage);
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setDocumentUploading(false);
     }
@@ -681,9 +752,12 @@ const AdminApplicationManagement: React.FC = () => {
         },
       });
       await loadApplicationDocuments(selectedApplication.id);
-    } catch (err) {
+      setSnackbar({ open: true, message: 'Document deleted successfully', severity: 'success' });
+    } catch (err: any) {
       console.error('Failed to delete document:', err);
-      setDocumentsError('Unable to delete document. Please try again.');
+      const errorMessage = err?.response?.data?.message || 'Unable to delete document. Please try again.';
+      setDocumentsError(errorMessage);
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setActionId(null);
     }
@@ -712,6 +786,7 @@ const AdminApplicationManagement: React.FC = () => {
     setDocumentUploadError(null);
     setDocumentUploadType('');
     setDocumentUploadFile(null);
+    // Reset file input using state instead of direct DOM manipulation
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -726,12 +801,16 @@ const AdminApplicationManagement: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-ZA', {
+    // Handle timezone properly - assume UTC if no timezone info
+    const date = new Date(dateString);
+    // Convert to local timezone for display
+    return date.toLocaleDateString('en-ZA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
     });
   };
 
@@ -866,7 +945,10 @@ const AdminApplicationManagement: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<Refresh />}
-            onClick={() => fetchApplications()}
+            onClick={() => {
+              const controller = new AbortController();
+              fetchApplications(true, controller.signal);
+            }}
             sx={{ ml: 'auto' }}
           >
             Refresh
@@ -1156,8 +1238,9 @@ const AdminApplicationManagement: React.FC = () => {
         onClose={() => setViewDialogOpen(false)}
         maxWidth="lg"
         fullWidth
+        aria-labelledby="application-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="application-dialog-title">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Person sx={{ color: '#1a237e' }} />
             <Box>
@@ -1617,6 +1700,22 @@ const AdminApplicationManagement: React.FC = () => {
         {/* Dialogs */}
         {renderApplicationDetails()}
         {renderStatusDialog()}
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={() => setSnackbar({ ...snackbar, open: false })} 
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </AdminLayout>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Container,
   Typography,
@@ -17,14 +17,17 @@ import governingBodyService, { GoverningBodyMember } from '../services/governing
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 
+// Image path - using constant for better production handling
+const heroImage = '/schoolb.jpg';
+
 const HeroSection = styled(Box)(() => ({
   position: 'relative',
-  minHeight: '500px',
+  minHeight: '70vh',
   color: '#fff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: 'url("/schoolb.jpg")',
+  backgroundImage: `url("${heroImage}")`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
@@ -34,7 +37,7 @@ const HeroSection = styled(Box)(() => ({
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(135deg, rgba(26,35,126,.80), rgba(211,47,47,.60))',
+    background: 'linear-gradient(135deg, rgba(26,35,126,0.8), rgba(211,47,47,0.6))',
     zIndex: 0,
   },
   '& > *': { position: 'relative', zIndex: 1 },
@@ -52,98 +55,85 @@ const MemberCard = styled(Card)(() => ({
     boxShadow: '0 16px 32px rgba(26, 35, 126, 0.12)',
     borderColor: '#1a237e',
   },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-8px)',
+    boxShadow: '0 16px 32px rgba(26, 35, 126, 0.12)',
+    borderColor: '#1a237e',
+  },
 }));
 
 const SectionHeader = styled(Box)(() => ({
   marginBottom: 32,
   paddingBottom: 16,
-  borderBottom: `3px solid #ffd700`,
+  borderBottom: `2px solid #ffd700`,
 }));
 
 const SchoolBoard: React.FC = () => {
   const [members, setMembers] = useState<GoverningBodyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Memoized sorting function
+  const sortMembers = useMemo(() => {
+    return (data: GoverningBodyMember[]) => {
+      return [...data].sort((a, b) => {
+        if (a.order !== b.order) return a.order - b.order;
+        return a.name.localeCompare(b.name);
+      });
+    };
+  }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const fetchMembers = async () => {
       try {
         setLoading(true);
+        // Note: governingBodyService.getMembers may not support signal, but we track it for cleanup
         const data = await governingBodyService.getMembers();
-        setMembers(
-          data.sort((a, b) => {
-            if (a.order !== b.order) return a.order - b.order;
-            return a.name.localeCompare(b.name);
-          })
-        );
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching governing body members:', err);
-        setError('Failed to load governing body members. Please try again later.');
+        
+        if (isMounted && !controller.signal.aborted) {
+          const sortedData = sortMembers(data);
+          setMembers(sortedData);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (isMounted && !controller.signal.aborted) {
+          console.error('Error fetching governing body members:', err);
+          setError('Failed to load governing body members. Please try again later.');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchMembers();
-  }, []);
 
-  const renderHeroContent = () => {
-    if (loading) {
-      return (
-        <Box sx={{ textAlign: 'center' }}>
-          <CircularProgress size={60} sx={{ color: '#ffd700', mb: 2 }} />
-          <Typography variant="h6" sx={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-            Loading Governing Body...
-          </Typography>
-        </Box>
-      );
-    }
+    return () => {
+      isMounted = false;
+      controller.abort();
+      abortControllerRef.current = null;
+    };
+  }, [sortMembers]);
 
-    return (
-      <>
-        <Typography
-          variant="h1"
-          sx={{
-            fontWeight: 900,
-            fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
-            mb: 2,
-            color: '#ffd700',
-            textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
-          }}
-        >
-          Governing Body
-        </Typography>
-        <Typography
-          variant="h4"
-          sx={{
-            color: '#ffffff',
-            fontWeight: 600,
-            textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
-            fontSize: { xs: '1.5rem', md: '2rem' },
-            maxWidth: '900px',
-            mx: 'auto',
-          }}
-        >
-          Meet the dedicated individuals who provide oversight, direction, and support to our school community.
-        </Typography>
-      </>
-    );
-  };
 
   return (
     <>
       <SEO
         title="Governing Body - Holy Cross Convent School Brooklyn"
         description="Meet the dedicated members of the Governing Body who provide governance, accountability, and strategic guidance for our school."
+        image="/schoolb.jpg"
+        type="website"
       />
 
-      <HeroSection>
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
-          {renderHeroContent()}
-        </Container>
-      </HeroSection>
-
+      {/* Return to Home - moved outside hero to avoid blocking content */}
       <Box
         sx={{
           position: 'fixed',
@@ -169,7 +159,53 @@ const SchoolBoard: React.FC = () => {
         <ReturnToHome />
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: 6, mt: 4 }}>
+      <HeroSection>
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4 } }}>
+          {loading ? (
+            <Box sx={{ textAlign: 'center' }}>
+              <CircularProgress 
+                size={60} 
+                aria-label="Loading governing body members"
+                sx={{ color: '#ffd700', mb: 2 }} 
+              />
+              <Typography variant="h6" sx={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                Loading Governing Body...
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              <Typography
+                variant="h1"
+                component="h1"
+                sx={{
+                  fontWeight: 900,
+                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                  mb: 2,
+                  color: '#ffd700',
+                  textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+                }}
+              >
+                Governing Body
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+                  fontSize: { xs: '1.5rem', md: '2rem' },
+                  maxWidth: '900px',
+                  mx: 'auto',
+                }}
+              >
+                Meet the dedicated individuals who provide oversight, direction, and support to our school community.
+              </Typography>
+            </>
+          )}
+        </Container>
+      </HeroSection>
+
+      <Container maxWidth="xl" sx={{ py: 6, mt: 4, position: 'relative' }}>
         {error && (
           <Alert severity="error" sx={{ mb: 4 }}>
             {error}
@@ -198,11 +234,11 @@ const SchoolBoard: React.FC = () => {
                 </Typography>
               </SectionHeader>
 
-              <Grid container spacing={4}>
+              <Grid container spacing={3}>
                 {members.map((member) => (
                   <Grid item xs={12} sm={6} md={4} key={member.id}>
                     <MemberCard elevation={3}>
-                      <CardContent sx={{ p: 4 }}>
+                      <CardContent sx={{ p: 3 }}>
                         <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
                           {member.name}
                         </Typography>
@@ -214,6 +250,7 @@ const SchoolBoard: React.FC = () => {
                         {member.sector && (
                           <Chip
                             label={member.sector}
+                            aria-label={`Sector: ${member.sector}`}
                             size="small"
                             sx={{
                               bgcolor: '#1a237e15',
@@ -263,7 +300,7 @@ const SchoolBoard: React.FC = () => {
               }}
             >
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
                   Our Commitment
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.7 }}>

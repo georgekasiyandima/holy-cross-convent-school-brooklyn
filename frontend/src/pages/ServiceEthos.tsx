@@ -3,16 +3,39 @@ import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Stac
 import { styled } from '@mui/material/styles';
 import { VolunteerActivism, Groups, EmojiEvents, Favorite, SelfImprovement, Accessible, School } from '@mui/icons-material';
 import SEO from '../components/SEO';
+import ReturnToHome from '../components/ReturnToHome';
+
+// Image paths - using constants for better production handling
+const heroImage = '/ethomain.png';
+const img1 = '/ethos005.jpg';
+const img2 = '/etho009.jpg';
+const img3 = '/etho007.jpg';
+const img4 = '/etho002.jpg';
+const img5 = '/ETHOS1.jpg';
+const img6 = '/ETHOS2.jpg';
+const img7 = '/ETHOS4.jpg';
+const img8 = '/ethos001.jpg';
+const img9 = '/ethos003.jpg';
 
 const Hero = styled(Box)(({ theme }) => ({
   position: 'relative',
-  minHeight: '600px',
+  minHeight: '80vh',
   color: '#fff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'url("/ethomain.png") center/cover no-repeat',
+  background: `url("${heroImage}") center/cover no-repeat`,
   textAlign: 'center',
+  [theme.breakpoints.up('md')]: {
+    minHeight: '600px',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    background: 'linear-gradient(135deg, rgba(26,35,126,0.8), rgba(211,47,47,0.6))',
+    zIndex: 0
+  },
   '& > *': { position: 'relative', zIndex: 1 }
 }));
 
@@ -21,6 +44,12 @@ const FeatureCard = styled(Card)(({ theme }) => ({
   borderTop: '4px solid #d32f2f',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(211,47,47,0.2)'
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 40px rgba(211,47,47,0.2)'
   }
@@ -34,34 +63,34 @@ const IconBox = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   margin: '0 auto 16px',
-  background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
+  background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.light} 100%)`,
   color: '#fff',
   boxShadow: '0 8px 24px rgba(211,47,47,0.3)'
 }));
 
 const ServiceEthos: React.FC = () => {
   const servicePrograms = [
-    { name: 'Community Outreach', icon: <Groups sx={{ fontSize: 40 }} /> },
-    { name: 'Volunteer Programs', icon: <VolunteerActivism sx={{ fontSize: 40 }} /> },
-    { name: 'Religious Education', icon: <School sx={{ fontSize: 40 }} /> },
-    { name: 'Service Learning', icon: <SelfImprovement sx={{ fontSize: 40 }} /> },
+    { name: 'Community Outreach', icon: <Groups sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Volunteer Programs', icon: <VolunteerActivism sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Religious Education', icon: <School sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Service Learning', icon: <SelfImprovement sx={{ fontSize: 40 }} aria-hidden="true" /> },
   ];
 
   const coreValues = [
     { 
       title: 'Compassion', 
       description: 'Developing empathy and understanding for others in our community and beyond.',
-      icon: <Favorite sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} />
+      icon: <Favorite sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} aria-hidden="true" />
     },
     { 
       title: 'Responsibility', 
       description: 'Taking ownership of our actions and their impact on the world around us.',
-      icon: <EmojiEvents sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} />
+      icon: <EmojiEvents sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} aria-hidden="true" />
     },
     { 
       title: 'Service to Others', 
       description: 'Actively engaging in helping those in need and making a positive difference.',
-      icon: <Accessible sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} />
+      icon: <Accessible sx={{ fontSize: 60, color: '#d32f2f', mb: 2 }} aria-hidden="true" />
     },
   ];
 
@@ -71,11 +100,37 @@ const ServiceEthos: React.FC = () => {
         title="Service & Ethos - Holy Cross Convent School"
         description="Learn about our commitment to service learning, community outreach, and Catholic values. Building character through serving others."
         keywords="service learning, community outreach, Catholic values, volunteer programs, Holy Cross Convent School"
+        image="/ethomain.png"
+        type="website"
       />
+
+      {/* Return to Home - positioned to avoid header clash */}
+      <Box sx={{
+        position: 'fixed',
+        top: { xs: 80, sm: 100 },
+        left: 16,
+        zIndex: 1000,
+        '& .MuiTypography-root': {
+          color: 'white !important',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+          backgroundColor: 'rgba(26, 35, 126, 0.7)',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          display: 'inline-block',
+          backdropFilter: 'blur(4px)',
+          '&:hover': {
+            transform: 'translateX(-2px)',
+            backgroundColor: 'rgba(26, 35, 126, 0.9)',
+          },
+          transition: 'all 0.3s ease'
+        }
+      }}>
+        <ReturnToHome />
+      </Box>
       
       {/* Hero Section */}
       <Hero>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h1" 
             sx={{ 
@@ -128,7 +183,8 @@ const ServiceEthos: React.FC = () => {
             justifyContent="center"
           >
             <Chip 
-              label="Faith in Action" 
+              label="Faith in Action"
+              aria-label="Faith in Action program"
               sx={{ 
                 backgroundColor: '#d32f2f', 
                 color: 'white',
@@ -156,14 +212,14 @@ const ServiceEthos: React.FC = () => {
       </Hero>
 
       {/* Mission Statement */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Paper 
           elevation={0}
           sx={{
             background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
             p: 6,
             borderRadius: 4,
-            border: '3px solid #d32f2f',
+            border: '2px solid #d32f2f',
             textAlign: 'center'
           }}
         >
@@ -213,7 +269,7 @@ const ServiceEthos: React.FC = () => {
 
       {/* Service Programs List */}
       <Box sx={{ backgroundColor: '#f5f5f5', py: 8 }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h3" 
             sx={{ 
@@ -226,7 +282,7 @@ const ServiceEthos: React.FC = () => {
             Our Service Programs
           </Typography>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {servicePrograms.map((program, index) => (
               <Grid item xs={6} md={3} key={index}>
                 <FeatureCard>
@@ -246,7 +302,7 @@ const ServiceEthos: React.FC = () => {
       </Box>
 
       {/* Solidarity with Rural Children Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
           sx={{ 
@@ -295,12 +351,13 @@ const ServiceEthos: React.FC = () => {
           </Typography>
         </Paper>
 
-        <Grid container spacing={3} justifyContent="center">
+        <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/ethos005.jpg"
-              alt="Supporting Rural Children"
+              src={img1}
+              alt="Learners distributing shoes to rural children in need"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -317,8 +374,9 @@ const ServiceEthos: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/etho009.jpg"
-              alt="Community Support"
+              src={img2}
+              alt="Students organizing donations for rural school children"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -335,8 +393,9 @@ const ServiceEthos: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/etho007.jpg"
-              alt="Rural School Support"
+              src={img3}
+              alt="Grade 5 learners packing food parcels for church outreach"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -353,8 +412,9 @@ const ServiceEthos: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/etho002.jpg"
-              alt="Barefoot School Initiative"
+              src={img4}
+              alt="Barefoot school children receiving donated shoes and supplies"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -372,7 +432,7 @@ const ServiceEthos: React.FC = () => {
 
       {/* Outreach Programs Section */}
       <Box sx={{ backgroundColor: '#f5f5f5', py: 8 }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h3" 
             sx={{ 
@@ -421,12 +481,13 @@ const ServiceEthos: React.FC = () => {
             </Typography>
           </Paper>
 
-          <Grid container spacing={3} justifyContent="center">
+          <Grid container spacing={4} justifyContent="center">
             <Grid item xs={12} md={6}>
               <Box
                 component="img"
-                src="/ETHOS1.jpg"
-                alt="Community Outreach"
+                src={img5}
+                alt="Students preparing food parcels for church community outreach program"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: 400,
@@ -443,8 +504,9 @@ const ServiceEthos: React.FC = () => {
             <Grid item xs={12} md={6}>
               <Box
                 component="img"
-                src="/ETHOS2.jpg"
-                alt="Food Distribution"
+                src={img6}
+                alt="Food distribution event serving meals to community members in need"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: 400,
@@ -461,8 +523,9 @@ const ServiceEthos: React.FC = () => {
             <Grid item xs={12} md={4}>
               <Box
                 component="img"
-                src="/ETHOS4.jpg"
-                alt="Community Support"
+                src={img7}
+                alt="Community members receiving support during church outreach event"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: 300,
@@ -479,8 +542,9 @@ const ServiceEthos: React.FC = () => {
             <Grid item xs={12} md={4}>
               <Box
                 component="img"
-                src="/ethos001.jpg"
-                alt="Church Outreach"
+                src={img8}
+                alt="Seniors Christmas Party with elderly community members"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: 300,
@@ -497,8 +561,9 @@ const ServiceEthos: React.FC = () => {
             <Grid item xs={12} md={4}>
               <Box
                 component="img"
-                src="/ethos003.jpg"
-                alt="Church Service"
+                src={img9}
+                alt="Students volunteering at church service event helping community members"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: 300,
@@ -516,7 +581,7 @@ const ServiceEthos: React.FC = () => {
       </Box>
 
       {/* Core Values Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
           sx={{ 

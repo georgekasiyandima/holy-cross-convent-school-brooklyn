@@ -1,79 +1,119 @@
-import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React, { memo } from 'react';
+import { Box, Typography, Button, useTheme, alpha } from '@mui/material';
+import { Link } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import type { SxProps, Theme } from '@mui/material/styles';
 
 interface ReturnToHomeProps {
   variant?: 'text' | 'button';
   showIcon?: boolean;
-  sx?: any;
+  to?: string;
+  sx?: SxProps<Theme>;
+  'data-testid'?: string;
 }
 
 const ReturnToHome: React.FC<ReturnToHomeProps> = ({ 
   variant = 'text', 
   showIcon = false,
-  sx = {} 
+  to = '/',
+  sx = {},
+  'data-testid': testId = 'return-to-home'
 }) => {
-  const navigate = useNavigate();
+  const theme = useTheme();
 
-  const handleReturnHome = () => {
-    navigate('/');
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Link component handles navigation, but we need to trigger it programmatically for keyboard
+      const link = e.currentTarget as HTMLElement;
+      link.click();
+    }
+  };
+
+  const commonSx: SxProps<Theme> = {
+    mb: 3,
+    ...sx
   };
 
   if (variant === 'button') {
     return (
-      <Box sx={{ mb: 3, ...sx }}>
+      <Box sx={commonSx}>
         <Button
-          onClick={handleReturnHome}
+          component={Link}
+          to={to}
+          startIcon={showIcon ? <HomeIcon sx={{ fontSize: '1.2em' }} /> : undefined}
+          aria-label="Return to homepage"
+          data-testid={testId}
           sx={{
-            color: '#1a237e',
-            backgroundColor: 'rgba(26, 35, 126, 0.1)',
+            color: 'primary.main',
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
             borderRadius: '8px',
-            padding: '8px 16px',
-            border: '2px solid rgba(26, 35, 126, 0.3)',
+            padding: { xs: '10px 18px', sm: '12px 20px' },
+            border: '2px solid',
+            borderColor: alpha(theme.palette.primary.main, 0.3),
             transition: 'all 0.3s ease',
             textTransform: 'none',
             fontWeight: 600,
-            fontSize: '0.9rem',
+            fontSize: { xs: '0.95rem', sm: '1rem' },
             '&:hover': {
-              backgroundColor: 'rgba(26, 35, 126, 0.2)',
-              transform: 'translateX(-2px)',
-              boxShadow: '0 4px 12px rgba(26, 35, 126, 0.3)',
+              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+              marginLeft: '-2px',
+              boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`,
             },
             '&:active': {
-              transform: 'translateX(0px)',
+              marginLeft: '0px',
+            },
+            '&:focus-visible': {
+              outline: `2px solid ${theme.palette.primary.main}`,
+              outlineOffset: '2px',
             }
           }}
         >
-          {showIcon && '🏠 '}Return to Home
+          Return to Home
         </Button>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ mb: 3, ...sx }}>
+    <Box sx={commonSx}>
       <Typography
+        component={Link}
+        to={to}
         variant="body1"
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        aria-label="Return to homepage"
+        data-testid={testId}
         sx={{
-          color: '#1a237e',
+          color: 'primary.main',
           cursor: 'pointer',
           fontWeight: 600,
-          fontSize: '1rem',
+          fontSize: { xs: '1rem', sm: '1.05rem' },
           textDecoration: 'underline',
-          textDecorationColor: 'rgba(26, 35, 126, 0.3)',
+          textDecorationColor: alpha(theme.palette.primary.main, 0.4),
           transition: 'all 0.3s ease',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
           '&:hover': {
-            color: '#0d1421',
-            textDecorationColor: '#1a237e',
-            transform: 'translateX(-2px)',
+            color: 'primary.dark',
+            textDecorationColor: 'primary.main',
+            marginLeft: '-2px',
+          },
+          '&:focus-visible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: '2px',
+            borderRadius: '2px',
           }
         }}
-        onClick={handleReturnHome}
       >
-        {showIcon && '🏠 '}Return to Home
+        {showIcon && <HomeIcon sx={{ fontSize: '1.2em', verticalAlign: 'middle' }} />}
+        Return to Home
       </Typography>
     </Box>
   );
 };
 
-export default ReturnToHome;
+export default memo(ReturnToHome);

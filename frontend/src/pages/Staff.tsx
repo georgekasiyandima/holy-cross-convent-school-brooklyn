@@ -23,6 +23,9 @@ import axios from "axios";
 import { API_BASE_URL_WITH_PREFIX } from "../services/apiConfig";
 import { getStaffImageUrl, preloadStaffImages } from "../utils/imageUtils";
 import { StaffAvatar } from "../components/OptimizedImage";
+import { getBackgroundImageUrl } from "../utils/staticFiles";
+import SEO from "../components/SEO";
+import { Helmet } from "react-helmet-async";
 
 /**
  * ========================================
@@ -57,6 +60,8 @@ interface GroupedStaff {
   support: StaffMember[];
 }
 
+type StaffCategory = 'leadership' | 'teaching' | 'administrative' | 'support';
+
 /**
  * ========================================
  * STYLED COMPONENTS
@@ -84,7 +89,7 @@ const StaffCard = styled(Card)(({ theme }) => ({
     transition: "transform 0.4s ease",
   },
   "&:hover": {
-    transform: "translateY(-12px) scale(1.02)",
+    transform: "translateY(-8px)",
     boxShadow: "0 24px 48px rgba(211, 47, 47, 0.2)",
     "&::before": {
       transform: "scaleX(1)",
@@ -113,7 +118,7 @@ const LeadershipCard = styled(Card)(({ theme }) => ({
     transition: "transform 0.4s ease",
   },
   "&:hover": {
-    transform: "translateY(-12px) scale(1.02)",
+    transform: "translateY(-8px)",
     boxShadow: "0 28px 56px rgba(211, 47, 47, 0.25)",
     "&::before": {
       transform: "scaleX(1.1)",
@@ -132,11 +137,16 @@ const LoadingSkeleton = styled(Skeleton)(({ theme }) => ({
  * ========================================
  */
 
+/**
+ * Parse subjects JSON string with type guard
+ * @param subjects - JSON string of array or null/undefined
+ * @returns Parsed string array or null if invalid/empty
+ */
 const parseSubjects = (subjects?: string | null): string[] | null => {
   if (!subjects) return null;
   try {
     const parsed = JSON.parse(subjects);
-    if (Array.isArray(parsed) && parsed.length > 0) {
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(item => typeof item === 'string')) {
       return parsed;
     }
   } catch (error) {
@@ -193,11 +203,15 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
   );
 };
 
-const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = false }) => {
+const StaffCardComponent: React.FC<StaffCardProps> = React.memo(({ member, isLeadership = false }) => {
   const subjects = parseSubjects(member.subjects);
   const CardComponent = isLeadership ? LeadershipCard : StaffCard;
 
-  // Filter subjects based on staff member name
+  /**
+   * Filter subjects based on staff member name
+   * TODO: Move this logic to backend - add excludeSubjects field to StaffMember model
+   * This hard-coded approach is brittle and not scalable
+   */
   const getFilteredSubjects = (): string[] | null => {
     if (!subjects) return null;
     
@@ -296,13 +310,19 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
           </Typography>
         )}
 
-        {/* Grade - Only show for teaching staff, keep grade button in red */}
+        {/* Grade - Only show for teaching staff, improved contrast */}
         {member.grade && member.grade !== 'All' && member.grade !== 'All Grades' && (
           <Chip
             label={member.grade}
             variant="outlined"
             size="small"
-            sx={{ mb: 2, borderColor: "#d32f2f", color: "#d32f2f", fontWeight: 600 }}
+            sx={{ 
+              mb: 2, 
+              borderColor: "#d32f2f", 
+              color: "#b71c1c", 
+              fontWeight: 600,
+              backgroundColor: "rgba(211, 47, 47, 0.05)"
+            }}
           />
         )}
 
@@ -320,7 +340,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
         {member.favoriteQuote && (
           <Box
             sx={{
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               mb: 2,
               bgcolor: "#f8f9fa",
               borderRadius: 2,
@@ -334,7 +354,8 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
                 color: "#1a237e",
                 fontSize: "0.875rem",
                 lineHeight: 1.6,
-                textAlign: "center"
+                textAlign: "center",
+                wordBreak: "break-word"
               }}
             >
               "{member.favoriteQuote}"
@@ -367,7 +388,7 @@ const StaffCardComponent: React.FC<StaffCardProps> = ({ member, isLeadership = f
       </CardContent>
     </CardComponent>
   );
-};
+});
 
 const StaffLoadingSkeleton: React.FC = () => {
   return (
@@ -393,13 +414,15 @@ const StaffLoadingSkeleton: React.FC = () => {
   );
 };
 
-const EmptyState: React.FC<{ category: string }> = ({ category }) => {
-  const getEmptyMessage = (category: string) => {
+const EmptyState: React.FC<{ category: StaffCategory }> = ({ category }) => {
+  const getEmptyMessage = (category: StaffCategory) => {
     switch (category) {
       case "leadership":
         return "No leadership staff available";
       case "teaching":
         return "No teaching staff available";
+      case "administrative":
+        return "No administrative staff available";
       case "support":
         return "No support staff available";
       default:
@@ -437,57 +460,63 @@ const Staff: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
 
-  const allStaffMembers = useMemo(
-    () => [
+  // Combined useMemo for all filtering logic - more efficient than multiple memos
+  const {
+    allStaffMembers,
+    leadershipHighlights,
+    principalMember,
+    filteredTeachingStaff,
+    filteredAdminStaff,
+    filteredSupportStaff,
+  } = useMemo(() => {
+    const allStaff = [
       ...groupedStaff.leadership,
       ...groupedStaff.teaching,
       ...groupedStaff.admin,
       ...groupedStaff.support,
-    ],
-    [groupedStaff]
-  );
+    ];
 
-  const selectPreferredMember = React.useCallback((candidates: StaffMember[]) => {
-    if (candidates.length === 0) return undefined;
+    const selectPreferredMember = (candidates: StaffMember[]) => {
+      if (candidates.length === 0) return undefined;
 
-    const scoreMember = (member: StaffMember) => {
-      let score = 0;
-      if (member.imageUrl) score += 2;
-      if (member.favoriteQuote && member.favoriteQuote.trim().length > 0) score += 2;
-      if (member.grade && member.grade.trim().length > 0) score += 1;
-      if (member.bio && member.bio.trim().length > 0) score += 1;
-      return score;
+      const scoreMember = (member: StaffMember) => {
+        let score = 0;
+        if (member.imageUrl) score += 2;
+        if (member.favoriteQuote && member.favoriteQuote.trim().length > 0) score += 2;
+        if (member.grade && member.grade.trim().length > 0) score += 1;
+        if (member.bio && member.bio.trim().length > 0) score += 1;
+        return score;
+      };
+
+      return [...candidates].sort((a, b) => scoreMember(b) - scoreMember(a))[0];
     };
 
-    return [...candidates].sort((a, b) => scoreMember(b) - scoreMember(a))[0];
-  }, []);
+    const principalMember = (() => {
+      const principalCandidates = allStaff.filter((member) => {
+        const role = member.role?.toLowerCase() ?? "";
+        return role.includes("principal") && !role.includes("deputy");
+      });
+      return selectPreferredMember(principalCandidates);
+    })();
 
-  const principalMember = useMemo(() => {
-    const principalCandidates = allStaffMembers.filter((member) => {
-      const role = member.role?.toLowerCase() ?? "";
-      return role.includes("principal") && !role.includes("deputy");
-    });
-    return selectPreferredMember(principalCandidates);
-  }, [allStaffMembers, selectPreferredMember]);
+    const duPlessisMember = (() => {
+      const duPlessisCandidates = allStaff.filter((member) => {
+        const name = member.name?.toLowerCase() ?? "";
+        const role = member.role?.toLowerCase() ?? "";
 
-  const duPlessisMember = useMemo(() => {
-    const duPlessisCandidates = allStaffMembers.filter((member) => {
-      const name = member.name?.toLowerCase() ?? "";
-      const role = member.role?.toLowerCase() ?? "";
+        const matchesName =
+          name.includes("du plessis") ||
+          name.includes("duplessis") ||
+          name.includes("du-plessis");
 
-      const matchesName =
-        name.includes("du plessis") ||
-        name.includes("duplessis") ||
-        name.includes("du-plessis");
+        const matchesRole = role.includes("principal") || role.includes("leadership");
 
-      const matchesRole = role.includes("principal") || role.includes("leadership");
+        return matchesName || matchesRole;
+      });
+      return selectPreferredMember(duPlessisCandidates);
+    })();
 
-      return matchesName || matchesRole;
-    });
-    return selectPreferredMember(duPlessisCandidates);
-  }, [allStaffMembers, selectPreferredMember]);
-
-  const leadershipHighlights = useMemo(() => {
+    // Prevent duplicate leadership highlights
     const highlights: StaffMember[] = [];
     if (principalMember) {
       highlights.push(principalMember);
@@ -498,70 +527,45 @@ const Staff: React.FC = () => {
     ) {
       highlights.push(duPlessisMember);
     }
-    return highlights;
-  }, [principalMember, duPlessisMember]);
 
-  const highlightIds = useMemo(
-    () => new Set(leadershipHighlights.map((member) => member.id)),
-    [leadershipHighlights]
-  );
+    const highlightIds = new Set(highlights.map((member) => member.id));
+    const highlightNameKeys = new Set(
+      highlights
+        .map((member) => member.name?.trim().toLowerCase())
+        .filter((name): name is string => !!name)
+    );
 
-  const highlightNameKeys = useMemo(
-    () =>
-      new Set(
-        leadershipHighlights
-          .map((member) => member.name?.trim().toLowerCase())
-          .filter((name): name is string => !!name)
-      ),
-    [leadershipHighlights]
-  );
-
-  const filteredTeachingStaff = useMemo(
-    () =>
-      groupedStaff.teaching.filter(
+    const filterStaff = (staffList: StaffMember[]) =>
+      staffList.filter(
         (member) =>
           !highlightIds.has(member.id) &&
           (() => {
             const nameKey = member.name?.trim().toLowerCase();
             return nameKey ? !highlightNameKeys.has(nameKey) : true;
           })()
-      ),
-    [groupedStaff.teaching, highlightIds, highlightNameKeys]
-  );
+      );
 
-  const filteredAdminStaff = useMemo(
-    () =>
-      groupedStaff.admin.filter(
-        (member) =>
-          !highlightIds.has(member.id) &&
-          (() => {
-            const nameKey = member.name?.trim().toLowerCase();
-            return nameKey ? !highlightNameKeys.has(nameKey) : true;
-          })()
-      ),
-    [groupedStaff.admin, highlightIds, highlightNameKeys]
-  );
-
-  const filteredSupportStaff = useMemo(
-    () =>
-      groupedStaff.support.filter(
-        (member) =>
-          !highlightIds.has(member.id) &&
-          (() => {
-            const nameKey = member.name?.trim().toLowerCase();
-            return nameKey ? !highlightNameKeys.has(nameKey) : true;
-          })()
-      ),
-    [groupedStaff.support, highlightIds, highlightNameKeys]
-  );
+    return {
+      allStaffMembers: allStaff,
+      leadershipHighlights: highlights,
+      principalMember: principalMember || undefined,
+      filteredTeachingStaff: filterStaff(groupedStaff.teaching),
+      filteredAdminStaff: filterStaff(groupedStaff.admin),
+      filteredSupportStaff: filterStaff(groupedStaff.support),
+    };
+  }, [groupedStaff]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchStaff = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`);
+        const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`, {
+          signal: controller.signal,
+        });
 
         // Support both shapes:
         // 1) { success: true, data: { groupedStaff } }
@@ -615,9 +619,15 @@ const Staff: React.FC = () => {
             .filter((url): url is string => !!url);
           
           if (imageUrls.length > 0) {
-            preloadStaffImages(imageUrls).catch(console.warn);
+            preloadStaffImages(imageUrls).catch((err) => {
+              console.error('Failed to preload staff images:', err);
+            });
           }
       } catch (err) {
+        // Don't set error if request was aborted
+        if (axios.isCancel(err) || (err instanceof Error && err.name === 'AbortError')) {
+          return;
+        }
         const message = axios.isAxiosError(err) ? err.message : "Unknown error";
         console.error("Failed to fetch staff:", err);
         setError(`Failed to load staff information: ${message}. Please check if the backend is running.`);
@@ -627,11 +637,44 @@ const Staff: React.FC = () => {
     };
 
     fetchStaff();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  // Generate JSON-LD structured data for staff members
+  const staffStructuredData = useMemo(() => {
+    const staffPersons = allStaffMembers.map((member) => ({
+      '@type': 'Person',
+      name: member.name,
+      jobTitle: member.role,
+      ...(member.email && { email: member.email }),
+      ...(member.phone && { telephone: member.phone }),
+      ...(member.imageUrl && { image: getStaffImageUrl(member.imageUrl) }),
+      ...(member.bio && { description: member.bio }),
+      worksFor: {
+        '@type': 'EducationalOrganization',
+        name: 'Holy Cross Convent School Brooklyn',
+      },
+    }));
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Staff Directory - Holy Cross Convent School Brooklyn',
+      description: 'Meet the dedicated educators and support staff committed to nurturing excellence.',
+      itemListElement: staffPersons.map((person, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: person,
+      })),
+    };
+  }, [allStaffMembers]);
 
   const renderStaffGrid = (staffList: StaffMember[], isLeadership = false) => (
     <Box
@@ -640,9 +683,14 @@ const Staff: React.FC = () => {
         gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
         gap: 3,
       }}
+      data-testid={isLeadership ? "leadership-grid" : "staff-grid"}
     >
       {staffList.map((member) => (
-        <StaffCardComponent key={member.id} member={member} isLeadership={isLeadership} />
+        <StaffCardComponent 
+          key={member.id || `staff-${member.name}-${member.role}`} 
+          member={member} 
+          isLeadership={isLeadership} 
+        />
       ))}
     </Box>
   );
@@ -655,7 +703,11 @@ const Staff: React.FC = () => {
             Our Staff
           </Typography>
           <Divider sx={{ bgcolor: "#ffd700", height: 4, width: 80, mx: "auto", mb: 3 }} />
-          <CircularProgress size={60} sx={{ color: "#1a237e" }} />
+          <CircularProgress 
+            size={60} 
+            sx={{ color: "#1a237e" }} 
+            aria-label="Loading staff data"
+          />
           <Typography variant="h6" sx={{ color: "#666", mt: 2 }}>
             Loading staff information...
           </Typography>
@@ -692,9 +744,22 @@ const Staff: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+      <SEO
+        title="Our Staff - Holy Cross Convent School Brooklyn"
+        description="Meet the dedicated educators and support staff who are committed to nurturing excellence, building character, and inspiring faith in our students."
+        url="https://holycrossbrooklyn.edu.za/staff"
+      />
+      
+      {/* JSON-LD Structured Data for Staff */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(staffStructuredData)}
+        </script>
+      </Helmet>
+
       {/* Modern Header Section with Background Image */}
       <Box sx={{ 
-        backgroundImage: 'url("/HCCS25.jpeg")',
+        backgroundImage: getBackgroundImageUrl('HCCS25.jpeg'),
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -705,7 +770,10 @@ const Staff: React.FC = () => {
         minHeight: '400px',
         display: 'flex',
         alignItems: 'center'
-      }}>
+      }}
+      role="img"
+      aria-label="Holy Cross Convent School Brooklyn - Our Staff"
+      >
         {/* Dark Overlay for Text Readability */}
         <Box sx={{
           position: 'absolute',
@@ -798,10 +866,11 @@ const Staff: React.FC = () => {
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
-                md: `repeat(${Math.min(leadershipHighlights.length, 2)}, minmax(0, 1fr))`,
+                md: `repeat(${Math.min(leadershipHighlights.length, 2)}, minmax(280px, 1fr))`,
               },
               gap: 3,
             }}
+            data-testid="leadership-highlights"
           >
             {leadershipHighlights.map((member) => {
               const isPrincipal =
@@ -909,6 +978,8 @@ const Staff: React.FC = () => {
                               fontSize: "1.05rem",
                               mb: member.favoriteQuote ? 3 : 0,
                               textAlign: { xs: "center", md: "left" },
+                              wordBreak: "break-word",
+                              overflowWrap: "break-word"
                             }}
                           >
                             {member.bio}
@@ -955,7 +1026,8 @@ const Staff: React.FC = () => {
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
-            aria-label="staff tabs"
+            aria-label="staff category tabs"
+            role="tablist"
             centered
             sx={{
               "& .MuiTab-root": {
@@ -968,13 +1040,28 @@ const Staff: React.FC = () => {
               },
               "& .MuiTabs-indicator": {
                 backgroundColor: "#ffd700",
-                height: 3,
+                height: 4,
               },
             }}
           >
-            <Tab label="Teaching Staff" id="staff-tab-0" aria-controls="staff-tabpanel-0" />
-            <Tab label="Administrative Staff" id="staff-tab-1" aria-controls="staff-tabpanel-1" />
-            <Tab label="Support Staff" id="staff-tab-2" aria-controls="staff-tabpanel-2" />
+            <Tab 
+              label="Teaching Staff" 
+              id="staff-tab-0" 
+              aria-controls="staff-tabpanel-0"
+              data-testid="tab-teaching"
+            />
+            <Tab 
+              label="Administrative Staff" 
+              id="staff-tab-1" 
+              aria-controls="staff-tabpanel-1"
+              data-testid="tab-admin"
+            />
+            <Tab 
+              label="Support Staff" 
+              id="staff-tab-2" 
+              aria-controls="staff-tabpanel-2"
+              data-testid="tab-support"
+            />
           </Tabs>
         </Box>
 

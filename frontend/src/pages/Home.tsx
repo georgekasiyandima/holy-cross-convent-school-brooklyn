@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Typography,
@@ -35,14 +35,14 @@ import GradeRSpotlight from '../components/home/GradeRSpotlight';
 import QuickStatsBanner from '../components/home/QuickStatsBanner';
 import WhyChooseSection from '../components/home/WhyChooseSection';
 import CTASection from '../components/home/CTASection';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { holyCrossBrand } from '../theme/branding';
-import { getBackgroundImageUrl } from '../utils/staticFiles';
+import { getBackgroundImageUrl, getStaticFileUrl } from '../utils/staticFiles';
 
 const VideoContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
-  height: 0,
-  paddingBottom: '56.25%', // 16:9 aspect ratio
+  aspectRatio: '16 / 9', // Modern CSS aspect-ratio instead of padding-bottom hack
   borderRadius: theme.spacing(1),
   overflow: 'hidden',
   boxShadow: theme.shadows[4],
@@ -73,7 +73,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     right: 0,
     bottom: 0,
     background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(57, 73, 171, 0.4) 50%, rgba(92, 107, 192, 0.4) 100%)',
-    zIndex: 1
+    zIndex: 1 // Overlay layer
   },
   '&::after': {
     content: '""',
@@ -85,7 +85,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     background: 'radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)',
     borderRadius: '50%',
     animation: 'pulse 4s ease-in-out infinite',
-    zIndex: 1
+    zIndex: 1 // Decorative element layer
   },
   '@keyframes pulse': {
     '0%, 100%': { transform: 'scale(1)', opacity: 0.3 },
@@ -119,7 +119,7 @@ const HeroBackground = styled(Box)({
 
 const HeroContent = styled(Box)(({ theme }) => ({
   position: 'relative',
-  zIndex: 2,
+  zIndex: 2, // Content layer above overlay and decorative elements
   padding: theme.spacing(8, 0),
   maxWidth: '1200px',
   margin: '0 auto',
@@ -138,7 +138,7 @@ const HeritageSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '4px',
-    background: 'linear-gradient(90deg, #1a237e 0%, #ffd700 50%, #1a237e 100%)'
+    background: `linear-gradient(90deg, ${holyCrossBrand.signatureBlue} 0%, ${holyCrossBrand.signatureGold} 50%, ${holyCrossBrand.signatureBlue} 100%)`
   }
 }));
 
@@ -148,51 +148,109 @@ const TimelineCard = styled(Card)(({ theme }) => ({
   borderRadius: theme.spacing(2),
   padding: theme.spacing(3),
   position: 'relative',
-  marginLeft: theme.spacing(4),
+  [theme.breakpoints.down('md')]: {
+    marginLeft: 0, // Remove left margin on mobile
+  },
+  [theme.breakpoints.up('md')]: {
+    marginLeft: theme.spacing(4),
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
-    left: '-20px',
-    top: '50%',
-    transform: 'translateY(-50%)',
     width: '12px',
     height: '12px',
-    background: '#ffd700',
+    background: holyCrossBrand.signatureGold,
     borderRadius: '50%',
-    border: '3px solid #1a237e'
+    border: `3px solid ${holyCrossBrand.signatureBlue}`,
+    zIndex: 1,
+    [theme.breakpoints.down('md')]: {
+      left: '50%',
+      top: '-12px',
+      transform: 'translateX(-50%)',
+    },
+    [theme.breakpoints.up('md')]: {
+      left: '-20px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+    },
   },
   '&::after': {
     content: '""',
     position: 'absolute',
-    left: '-14px',
-    top: '0',
-    bottom: '0',
     width: '2px',
-    background: 'linear-gradient(180deg, #1a237e 0%, #ffd700 100%)'
-  }
+    background: `linear-gradient(180deg, ${holyCrossBrand.signatureBlue} 0%, ${holyCrossBrand.signatureGold} 100%)`,
+    display: 'block',
+    [theme.breakpoints.down('md')]: {
+      left: '50%',
+      top: 0,
+      height: '12px',
+      transform: 'translateX(-50%)',
+    },
+    [theme.breakpoints.up('md')]: {
+      left: '-14px',
+      top: '50%',
+      bottom: '50%',
+      height: 'auto',
+    },
+  },
+  '&:first-of-type::after': {
+    [theme.breakpoints.down('md')]: {
+      top: 0,
+      height: '12px',
+    },
+    [theme.breakpoints.up('md')]: {
+      top: '50%',
+      bottom: '50%',
+      height: 'auto',
+    },
+  },
+  '&:last-of-type::after': {
+    [theme.breakpoints.down('md')]: {
+      top: 0,
+      height: '12px',
+    },
+    [theme.breakpoints.up('md')]: {
+      bottom: '50%',
+      top: '50%',
+      height: 'auto',
+    },
+  },
+  '&:not(:first-of-type):not(:last-of-type)::after': {
+    [theme.breakpoints.down('md')]: {
+      top: 0,
+      bottom: 'auto',
+      height: '12px',
+    },
+    [theme.breakpoints.up('md')]: {
+      top: 0,
+      bottom: 0,
+      height: 'auto',
+    },
+  },
 }));
 
 
 
 // Hero images - including Robotics showcase
+// Using getStaticFileUrl for consistent path handling and URL encoding
 const heroImages = [
   {
-    src: '/HCCS25.jpeg',
+    src: getStaticFileUrl('HCCS25.jpeg'),
     title: 'Welcome to Holy Cross',
     description: 'Where faith, learning, and community unite'
   },
   {
-    src: '/ROBTX1.jpg',
+    src: getStaticFileUrl('ROBTX1.jpg'),
     title: 'Robotics Excellence',
     description: 'Innovation, creativity, and future-ready learning'
   },
   {
-    src: '/SCIENCEEXPO24.jpg',
+    src: getStaticFileUrl('SCIENCEEXPO24.jpg'),
     title: 'Excellence in Education',
     description: 'Nurturing minds and hearts for tomorrow'
   },
   {
-    src: '/sports1.jpg',
+    src: getStaticFileUrl('sports1.jpg'),
     title: 'Holistic Development',
     description: 'Academics, sports, arts, and service'
   }
@@ -202,19 +260,41 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const [animateStats, setAnimateStats] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [, startTransition] = useTransition(); // Use transition for smooth image changes
 
   // Get learner videos
   const learnerVideos = videoManager.getVideosByCategory('students');
 
-  // Hero image carousel effect
+  // Hero image carousel effect - using ref for proper cleanup and transition for smooth fade
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
-        (prevIndex + 1) % heroImages.length
-      );
+    intervalRef.current = setInterval(() => {
+      startTransition(() => {
+        setCurrentImageIndex((prevIndex) => 
+          (prevIndex + 1) % heroImages.length
+        );
+      });
     }, 5000); // Change image every 5 seconds
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [startTransition]);
+
+  // Preload first hero image for better LCP
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = heroImages[0].src;
+    document.head.appendChild(link);
+    
+    return () => {
+      document.head.removeChild(link);
+    };
   }, []);
 
   const handleScheduleVisit = () => {
@@ -233,13 +313,13 @@ const Home: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Heritage timeline data
-  const heritageTimeline = [
+  // Heritage timeline data - memoized for performance
+  const heritageTimeline = useMemo(() => [
     { year: '1959', title: 'Foundation', description: 'Holy Cross Convent School established in Brooklyn' },
     { year: '1980s', title: 'Expansion', description: 'New facilities and programs added' },
     { year: '2000s', title: 'Modernization', description: 'Digital learning and technology integration' },
     { year: '2025', title: 'Today', description: 'Continuing legacy of excellence and innovation' }
-  ];
+  ], []);
 
 
   return (
@@ -247,7 +327,6 @@ const Home: React.FC = () => {
       <SEO
         title="Holy Cross Convent School - Brooklyn, Cape Town"
         description="Holy Cross Convent School is a prestigious Catholic school in Brooklyn, Cape Town, offering quality education, character development, and spiritual growth."
-        keywords="Holy Cross Convent School, Brooklyn, Cape Town, Catholic school, education, character development, spiritual growth"
       />
       {/* Enhanced Hero Section with Dynamic Images */}
       <HeroSection>
@@ -260,6 +339,8 @@ const Home: React.FC = () => {
               opacity: index === currentImageIndex ? 1 : 0,
               zIndex: index === currentImageIndex ? 0 : -1
             }}
+            role="img"
+            aria-label={`${image.title}: ${image.description}`}
           />
         ))}
         
@@ -276,7 +357,7 @@ const Home: React.FC = () => {
                         width: 8,
                         height: 8,
                         borderRadius: '50%',
-                        backgroundColor: index === currentImageIndex ? '#ffd700' : 'rgba(255, 255, 255, 0.3)',
+                        backgroundColor: index === currentImageIndex ? holyCrossBrand.signatureGold : 'rgba(255, 255, 255, 0.3)',
                         transition: 'all 0.3s ease'
                       }}
                     />
@@ -317,7 +398,7 @@ const Home: React.FC = () => {
                 label="Catholic Education Since 1959"
                 sx={{
                   backgroundColor: 'rgba(255, 215, 0, 0.9)',
-                  color: '#1a237e',
+                  color: holyCrossBrand.signatureBlue,
                   fontWeight: 600,
                   mb: 3,
                   px: 2,
@@ -419,6 +500,7 @@ const Home: React.FC = () => {
                   size="large"
                   onClick={handleScheduleVisit}
                   startIcon={<Schedule />}
+                  aria-label="Schedule a visit to Holy Cross Convent School"
                   sx={{
                     background: holyCrossBrand.primaryGradient,
                     color: '#ffffff',
@@ -443,6 +525,7 @@ const Home: React.FC = () => {
                   size="large"
                   onClick={handleVirtualTour}
                   startIcon={<Visibility />}
+                  aria-label="Take a virtual tour of Holy Cross Convent School"
                   sx={{
                     borderColor: 'white',
                     color: 'white',
@@ -470,7 +553,14 @@ const Home: React.FC = () => {
                 <Typography variant="caption" sx={{ color: 'white', opacity: 0.8 }}>
                   Scroll to explore
                     </Typography>
-                <Box sx={{ mt: 1 }}>
+                <Box sx={{ 
+                  mt: 1,
+                  '@keyframes bounce': {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(8px)' }
+                  },
+                  animation: 'bounce 2s ease-in-out infinite'
+                }}>
                   <ExpandMore sx={{ color: 'white', opacity: 0.8, fontSize: 32 }} />
                   </Box>
               </Box>
@@ -496,14 +586,16 @@ const Home: React.FC = () => {
             <Chip
               icon={<AutoAwesome />}
               label="Five Pillars of Excellence"
+              variant="outlined"
               sx={{
-                backgroundColor: holyCrossBrand.signatureBlue,
-                color: 'white',
+                borderColor: holyCrossBrand.signatureBlue,
+                color: holyCrossBrand.signatureBlue,
+                backgroundColor: 'transparent',
                 fontWeight: 600,
                 mb: 3,
                 px: 2,
                 py: 3,
-                fontSize: '1rem'
+                fontSize: { xs: '0.875rem', md: '1rem' }
               }}
             />
             <Typography 
@@ -543,54 +635,60 @@ const Home: React.FC = () => {
 
       {/* Learner Showcase Section - Single Featured Video */}
       {learnerVideos.length > 0 && (
-        <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
-          <Container maxWidth="lg">
-            <Box sx={{ textAlign: 'center', mb: 6 }}>
-              <Typography variant="h3" component="h2" gutterBottom sx={{ color: '#1a237e', fontWeight: 700 }}>
-                Learner Achievements
-              </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                Watch our learners showcase their talents and achievements
-              </Typography>
-            </Box>
+        <ErrorBoundary>
+          <Box sx={{ py: 8, background: 'linear-gradient(135deg, #fffde7 0%, #e3eafc 100%)' }}>
+            <Container maxWidth="lg">
+              <Box sx={{ textAlign: 'center', mb: 6 }}>
+                <Typography variant="h3" component="h2" gutterBottom sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 700 }}>
+                  Learner Achievements
+                </Typography>
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+                  Watch our learners showcase their talents and achievements
+                </Typography>
+              </Box>
 
-            {/* Featured Video - Single Video Only */}
-            <Card sx={{ maxWidth: '900px', mx: 'auto', boxShadow: 3, background: 'linear-gradient(135deg, #e3eafc 0%, #fffde7 100%)' }}>
-              <CardContent>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 2, textAlign: 'center' }}>
-                  {learnerVideos[0].title}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#555', mb: 3, textAlign: 'center' }}>
-                  {learnerVideos[0].description}
-                </Typography>
-                
-                <VideoContainer>
-                  <div dangerouslySetInnerHTML={{ __html: learnerVideos[0].embedCode }} />
-                </VideoContainer>
-                
-                <Box sx={{ textAlign: 'center', mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Facebook />}
-                    href={learnerVideos[0].facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      borderColor: '#1a237e',
-                      color: '#1a237e',
-                      '&:hover': {
-                        borderColor: '#ffd700',
-                        backgroundColor: '#fffde7'
-                      }
-                    }}
-                  >
-                    View on Facebook
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Container>
-        </Box>
+              {/* Featured Video - Single Video Only */}
+              {/* Note: videoManager returns trusted Facebook embed codes, but sanitization recommended for production */}
+              {learnerVideos.length > 0 && learnerVideos[0] && (
+                <Card sx={{ maxWidth: '900px', mx: 'auto', boxShadow: 3, background: 'linear-gradient(135deg, #e3eafc 0%, #fffde7 100%)' }}>
+                  <CardContent>
+                    <Typography variant="h5" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 600, mb: 2, textAlign: 'center' }}>
+                      {learnerVideos[0].title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#555', mb: 3, textAlign: 'center' }}>
+                      {learnerVideos[0].description}
+                    </Typography>
+                    
+                    <VideoContainer>
+                      {/* videoManager returns trusted Facebook embed codes - consider adding DOMPurify.sanitize() for production */}
+                      <div dangerouslySetInnerHTML={{ __html: learnerVideos[0].embedCode }} />
+                    </VideoContainer>
+                    
+                    <Box sx={{ textAlign: 'center', mt: 2 }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<Facebook />}
+                        href={learnerVideos[0].facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          borderColor: holyCrossBrand.signatureBlue,
+                          color: holyCrossBrand.signatureBlue,
+                          '&:hover': {
+                            borderColor: holyCrossBrand.signatureGold,
+                            backgroundColor: '#fffde7'
+                          }
+                        }}
+                      >
+                        View on Facebook
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
+            </Container>
+          </Box>
+        </ErrorBoundary>
       )}
 
       {/* Heritage Section - Condensed */}
@@ -601,7 +699,7 @@ const Home: React.FC = () => {
               icon={<History />}
               label="Our Heritage"
               sx={{
-                backgroundColor: '#1a237e',
+                backgroundColor: holyCrossBrand.signatureBlue,
                 color: 'white',
                 fontWeight: 600,
                 mb: 3,
@@ -609,7 +707,7 @@ const Home: React.FC = () => {
                 py: 1
               }}
             />
-            <Typography variant="h3" component="h2" sx={{ color: '#1a237e', fontWeight: 700, mb: 2 }}>
+            <Typography variant="h3" component="h2" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 700, mb: 2 }}>
               A Legacy of Excellence Since 1959
             </Typography>
             <Typography variant="h6" sx={{ color: '#666', maxWidth: '700px', mx: 'auto', lineHeight: 1.7 }}>
@@ -624,7 +722,7 @@ const Home: React.FC = () => {
               variant="h4" 
               component="h3" 
               sx={{ 
-                color: '#1a237e', 
+                color: holyCrossBrand.signatureBlue, 
                 fontWeight: 700, 
                 mb: 3, 
                 textAlign: 'center' 
@@ -652,7 +750,7 @@ const Home: React.FC = () => {
                   sx={{
                     height: '100%',
                     background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                    border: '2px solid #1a237e',
+                    border: `2px solid ${holyCrossBrand.signatureBlue}`,
                     borderRadius: 3,
                     overflow: 'hidden',
                     transition: 'all 0.3s ease',
@@ -669,6 +767,8 @@ const Home: React.FC = () => {
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       position: 'relative',
+                      role: 'img',
+                      'aria-label': 'Holy Cross Convent School foundation photo from 1959',
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -707,13 +807,13 @@ const Home: React.FC = () => {
                   sx={{
                     height: '100%',
                     background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-                    border: '2px solid #ffd700',
+                    border: `2px solid ${holyCrossBrand.signatureGold}`,
                     borderRadius: 3,
                     overflow: 'hidden',
                     transition: 'all 0.3s ease',
                     '&:hover': {
                       transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 40px rgba(255, 215, 0, 0.3)',
+                      boxShadow: `0 12px 40px ${holyCrossBrand.wisdomGold.replace('0.15', '0.3')}`,
                     }
                   }}
                 >
@@ -724,6 +824,8 @@ const Home: React.FC = () => {
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       position: 'relative',
+                      role: 'img',
+                      'aria-label': 'Holy Cross Convent School teachers and staff in 2025',
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -758,7 +860,7 @@ const Home: React.FC = () => {
             </Box>
             
             <Box sx={{ mt: 4, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 2 }}>
+              <Typography variant="h6" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 600, mb: 2 }}>
                 Our Unchanging Commitment
               </Typography>
               <Typography variant="body1" sx={{ color: '#666', maxWidth: '800px', mx: 'auto' }}>
@@ -772,7 +874,7 @@ const Home: React.FC = () => {
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
               <Box sx={{ pr: { md: 4 } }}>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
+                <Typography variant="h5" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 600, mb: 3 }}>
                   Our Catholic Foundation
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
@@ -790,16 +892,16 @@ const Home: React.FC = () => {
             
             <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)' } }}>
               <Box>
-                <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 600, mb: 3 }}>
+                <Typography variant="h5" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 600, mb: 3 }}>
                   Our Journey Through Time
                 </Typography>
                 {heritageTimeline.map((item, index) => (
                   <TimelineCard key={index} sx={{ mb: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" sx={{ color: '#ffd700', fontWeight: 600 }}>
+                      <Typography variant="h6" sx={{ color: holyCrossBrand.signatureGold, fontWeight: 600 }}>
                         {item.year}
                       </Typography>
-                      <Typography variant="subtitle1" sx={{ color: '#1a237e', fontWeight: 600 }}>
+                      <Typography variant="subtitle1" sx={{ color: holyCrossBrand.signatureBlue, fontWeight: 600 }}>
                         {item.title}
                       </Typography>
                     </Box>

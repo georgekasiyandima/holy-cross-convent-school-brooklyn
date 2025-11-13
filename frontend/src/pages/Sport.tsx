@@ -1,23 +1,37 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { SportsSoccer, Groups, EmojiEvents, DirectionsRun, SentimentVerySatisfied, LocalPlay } from '@mui/icons-material';
+import { SportsSoccer, Groups, EmojiEvents, DirectionsRun, SentimentVerySatisfied, SportsTennis, SportsBaseball } from '@mui/icons-material';
 import SEO from '../components/SEO';
+
+// Image paths - using string paths for styled components compatibility
+const heroImage = '/sports9.jpg';
+const img1 = '/sports1.jpg';
+const img2 = '/sports2.jpg';
+const img3 = '/sports3.jpg';
+const img6 = '/sports6.jpg';
+const img8 = '/sports8.jpg';
 
 const Hero = styled(Box)(({ theme }) => ({
   position: 'relative',
-  minHeight: '600px',
+  minHeight: '80vh',
   color: '#fff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'url("/sports9.jpg") center/cover no-repeat',
+  backgroundImage: `url("${heroImage}")`,
+  backgroundPosition: 'center',
+  backgroundSize: 'cover',
+  backgroundRepeat: 'no-repeat',
   textAlign: 'center',
+  [theme.breakpoints.up('md')]: {
+    minHeight: '600px'
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
     inset: 0,
-    backdropFilter: 'blur(8px)',
+    background: 'linear-gradient(135deg, rgba(26,35,126,0.8), rgba(76,175,80,0.6))',
     zIndex: 0
   },
   '& > *': { position: 'relative', zIndex: 1 }
@@ -28,6 +42,11 @@ const FeatureCard = styled(Card)(({ theme }) => ({
   borderTop: '4px solid #4caf50',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
   }
@@ -41,33 +60,51 @@ const IconBox = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   margin: '0 auto 16px',
-  background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.light} 100%)`,
   color: '#fff',
   boxShadow: '0 8px 24px rgba(76,175,80,0.3)'
 }));
 
+// SportCard component for reusability
+const SportCard: React.FC<{ name: string; icon: React.ReactNode }> = ({ name, icon }) => {
+  return (
+    <FeatureCard>
+      <CardContent sx={{ textAlign: 'center', py: 4 }}>
+        <IconBox>
+          {icon}
+        </IconBox>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          {name}
+        </Typography>
+      </CardContent>
+    </FeatureCard>
+  );
+};
+
 const Sport: React.FC = () => {
   const sports = [
-    { name: 'Soccer', icon: <SportsSoccer sx={{ fontSize: 40 }} /> },
-    { name: 'Netball', icon: <Groups sx={{ fontSize: 40 }} /> },
-    { name: 'Tennis', icon: <LocalPlay sx={{ fontSize: 40 }} /> },
-    { name: 'Mini-Tennis', icon: <LocalPlay sx={{ fontSize: 40 }} /> },
-    { name: 'Ball Skills', icon: <SportsSoccer sx={{ fontSize: 40 }} /> },
-    { name: 'Karate', icon: <DirectionsRun sx={{ fontSize: 40 }} /> },
-    { name: 'Athletics', icon: <EmojiEvents sx={{ fontSize: 40 }} /> },
-    { name: 'Dance', icon: <SentimentVerySatisfied sx={{ fontSize: 40 }} /> },
+    { name: 'Soccer', icon: <SportsSoccer sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Netball', icon: <Groups sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Tennis', icon: <SportsTennis sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Mini-Tennis', icon: <SportsBaseball sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Ball Skills', icon: <SportsSoccer sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Karate', icon: <DirectionsRun sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Athletics', icon: <EmojiEvents sx={{ fontSize: 40 }} aria-hidden="true" /> },
+    { name: 'Dance', icon: <SentimentVerySatisfied sx={{ fontSize: 40 }} aria-hidden="true" /> },
   ];
 
   return (
     <>
       <SEO 
         title="Sport - Holy Cross Convent School" 
-        description="Our learners discover their strengths through a wide range of sporting activities including soccer, netball, tennis, mini-tennis, ball skills, karate, athletics, and dance." 
+        description="Our learners discover their strengths through a wide range of sporting activities including soccer, netball, tennis, mini-tennis, ball skills, karate, athletics, and dance."
+        image="/sports9.jpg"
+        type="website"
       />
       
       {/* Hero Section */}
       <Hero>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h1" 
             sx={{ 
@@ -119,7 +156,8 @@ const Sport: React.FC = () => {
             justifyContent="center"
           >
             <Chip 
-              label="Daily Activities" 
+              label="Daily Activities"
+              aria-label="Daily Activities"
               sx={{ 
                 backgroundColor: '#4caf50', 
                 color: 'white',
@@ -147,14 +185,14 @@ const Sport: React.FC = () => {
       </Hero>
 
       {/* Mission Statement */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Paper 
           elevation={0}
           sx={{
             background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
             p: 6,
             borderRadius: 4,
-            border: '3px solid #4caf50',
+            border: '2px solid #4caf50',
             textAlign: 'center'
           }}
         >
@@ -204,7 +242,7 @@ const Sport: React.FC = () => {
 
       {/* Sports List */}
       <Box sx={{ backgroundColor: '#f5f5f5', py: 8 }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h3" 
             sx={{ 
@@ -217,19 +255,10 @@ const Sport: React.FC = () => {
             Our Sporting Activities
           </Typography>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {sports.map((sport, index) => (
               <Grid item xs={6} md={3} key={index}>
-                <FeatureCard>
-                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                    <IconBox>
-                      {sport.icon}
-                    </IconBox>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a237e' }}>
-                      {sport.name}
-                    </Typography>
-                  </CardContent>
-                </FeatureCard>
+                <SportCard name={sport.name} icon={sport.icon} />
               </Grid>
             ))}
           </Grid>
@@ -237,7 +266,7 @@ const Sport: React.FC = () => {
       </Box>
 
       {/* Gallery Section - Images Only */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
           sx={{ 
@@ -250,12 +279,13 @@ const Sport: React.FC = () => {
           Sport in Action
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/sports1.jpg"
-              alt="Sports Activity"
+              src={img1}
+              alt="Students playing soccer during afternoon sports activities"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -269,8 +299,9 @@ const Sport: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/sports2.jpg"
-              alt="Sports Activity"
+              src={img2}
+              alt="Netball players practicing drills and teamwork exercises"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -284,8 +315,9 @@ const Sport: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/sports3.jpg"
-              alt="Sports Activity"
+              src={img3}
+              alt="Grade 3 students practicing netball drills and coordination"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -299,8 +331,9 @@ const Sport: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/sports6.jpg"
-              alt="Sports Activity"
+              src={img6}
+              alt="Karate class demonstrating self-defense techniques and discipline"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -314,8 +347,9 @@ const Sport: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Box
               component="img"
-              src="/sports8.jpg"
-              alt="Sports Activity"
+              src={img8}
+              alt="Athletics training session with students running and exercising"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,

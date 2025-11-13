@@ -32,7 +32,14 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
-  Backdrop,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   School,
@@ -51,10 +58,77 @@ import {
   Schedule,
   Phone,
 } from '@mui/icons-material';
+import { SelectChangeEvent } from '@mui/material';
+import { Skeleton } from '@mui/material';
+import InputMask from 'react-input-mask';
 import SEO from '../components/SEO';
 import admissionsService, { ApplicationData } from '../services/admissionsService';
 import ApplicationDocumentUpload from '../components/ApplicationDocumentUpload';
 import DocumentService, { Document as ResourceDocument } from '../services/documentService';
+import { ApplicationDocument } from '../services/applicationDocumentsService';
+
+// Phone Input Component with mask for SA numbers
+interface PhoneInputProps {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  label: string;
+  required?: boolean;
+  error?: boolean;
+  helperText?: string;
+  id?: string;
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean;
+}
+
+const PhoneInput: React.FC<PhoneInputProps> = ({ 
+  value, 
+  onChange, 
+  label, 
+  required, 
+  error, 
+  helperText,
+  id,
+  'aria-describedby': ariaDescribedBy,
+  'aria-invalid': ariaInvalid
+}) => {
+  // SA phone format: +27 XX XXX XXXX or 0XX XXX XXXX
+  // Use flexible mask that accepts both formats
+  // Default to local format, switch to international if user types +
+  const mask = value && value.startsWith('+27') 
+    ? '+27 99 999 9999' 
+    : value && value.startsWith('+')
+    ? '+99 999 999 9999' // Flexible international format
+    : '099 999 9999'; // Default SA local format
+
+  return (
+    <InputMask
+      mask={mask}
+      value={value}
+      onChange={onChange}
+      maskChar={null}
+    >
+      {(inputProps: any) => (
+        <TextField
+          {...inputProps}
+          fullWidth
+          label={label}
+          required={required}
+          error={error}
+          helperText={helperText}
+          id={id}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
+          placeholder="+27 12 345 6789 or 012 345 6789"
+        />
+      )}
+    </InputMask>
+  );
+};
+
+// Required Asterisk Component
+const RequiredAsterisk: React.FC = () => (
+  <span style={{ color: '#d32f2f' }} aria-label="required">*</span>
+);
 
 // Styled components for better visual appeal
 const HeroSection = styled(Box)(({ theme }) => ({
@@ -68,8 +142,6 @@ const HeroSection = styled(Box)(({ theme }) => ({
   minHeight: '400px',
   display: 'flex',
   alignItems: 'center',
-  filter: 'none !important',
-  WebkitFilter: 'none !important',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -79,9 +151,6 @@ const HeroSection = styled(Box)(({ theme }) => ({
     bottom: 0,
     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%)',
     zIndex: 0,
-    backdropFilter: 'none !important',
-    WebkitBackdropFilter: 'none !important',
-    filter: 'none !important',
   },
   '& > *': {
     position: 'relative',
@@ -108,9 +177,11 @@ const GradeRCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const documentService = DocumentService.getInstance();
-
 const ApplicationProcess: React.FC = () => {
+  const theme = useTheme();
+  // Use 'sm' breakpoint (600px) for mobile vertical stepper orientation (<768px requirement)
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [activeStep, setActiveStep] = useState(0);
   const [applicationId, setApplicationId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -121,6 +192,11 @@ const ApplicationProcess: React.FC = () => {
   const [feesDocument, setFeesDocument] = useState<ResourceDocument | null>(null);
   const [agreementDocument, setAgreementDocument] = useState<ResourceDocument | null>(null);
   const [loadingDocuments, setLoadingDocuments] = useState(true);
+  const [uploadedDocuments, setUploadedDocuments] = useState<ApplicationDocument[]>([]);
+  const [isApplicationCompleted, setIsApplicationCompleted] = useState(false);
+  
+  // Move documentService instantiation inside component
+  const documentService = DocumentService.getInstance();
   const [formData, setFormData] = useState({
     // Learner Information
     surname: '',
@@ -148,6 +224,7 @@ const ApplicationProcess: React.FC = () => {
     fatherCellPhone: '',
     
     // Responsible Party (if not parents)
+    isNotParents: false, // Progressive disclosure checkbox
     responsiblePartyName: '',
     responsiblePartyAddress: '',
     responsiblePartyRelationship: '',
@@ -209,14 +286,20 @@ const ApplicationProcess: React.FC = () => {
   });
 
   useEffect(() => {
+    const controller = new AbortController();
     let isMounted = true;
 
     const fetchSupportingDocuments = async () => {
       try {
+        if (!isMounted) return;
         setLoadingDocuments(true);
-        const admissionsDocs = await documentService.getDocumentsByCategory('admissions', true).catch(() => []);
-        const formsDocs = await documentService.getDocumentsByCategory('form', true).catch(() => []);
-        const feesDocs = await documentService.getDocumentsByCategory('fees', true).catch(() => []);
+        const [admissionsDocs, formsDocs, feesDocs] = await Promise.all([
+          documentService.getDocumentsByCategory('admissions', true).catch(() => []),
+          documentService.getDocumentsByCategory('form', true).catch(() => []),
+          documentService.getDocumentsByCategory('fees', true).catch(() => []),
+        ]);
+
+        if (controller.signal.aborted || !isMounted) return;
 
         const allDocs = [...admissionsDocs, ...formsDocs, ...feesDocs];
 
@@ -232,15 +315,14 @@ const ApplicationProcess: React.FC = () => {
 
         if (!isMounted) return;
 
-        if (feesDoc) setFeesDocument(feesDoc);
-        if (agreementDoc) setAgreementDocument(agreementDoc);
+        if (feesDoc && isMounted) setFeesDocument(feesDoc);
+        if (agreementDoc && isMounted) setAgreementDocument(agreementDoc);
       } catch (error) {
-        // Error handling - keep console.error for production debugging
-        if (process.env.NODE_ENV === 'development') {
+        if (!controller.signal.aborted && isMounted && process.env.NODE_ENV === 'development') {
           console.error('Failed to load admissions resources:', error);
         }
       } finally {
-        if (isMounted) {
+        if (!controller.signal.aborted && isMounted) {
           setLoadingDocuments(false);
         }
       }
@@ -250,11 +332,13 @@ const ApplicationProcess: React.FC = () => {
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
-  }, []);
+  }, [documentService]);
 
-  const feesDocumentUrl = feesDocument ? documentService.getDocumentDownloadUrl(feesDocument.fileUrl) : null;
-  const agreementDocumentUrl = agreementDocument ? documentService.getDocumentDownloadUrl(agreementDocument.fileUrl) : null;
+  // Ensure proper URL handling for document downloads
+  const feesDocumentUrl = feesDocument ? documentService.getDocumentDownloadUrl(feesDocument.fileUrl || '') : null;
+  const agreementDocumentUrl = agreementDocument ? documentService.getDocumentDownloadUrl(agreementDocument.fileUrl || '') : null;
 
   const steps = [
     'Learner Information',
@@ -267,40 +351,170 @@ const ApplicationProcess: React.FC = () => {
     'Review & Submit'
   ];
 
-  const validateStep = (step: number): boolean => {
-    const errors: Record<string, string> = {};
-    const missing: string[] = [];
+  // Get field names for each step (for error clearing)
+  const getStepFields = (step: number): string[] => {
+    switch (step) {
+      case 0:
+        return ['surname', 'learnerName', 'dateOfBirth', 'placeOfBirth', 'gradeApplying', 'year', 'repeatedGrade'];
+      case 1:
+        return ['motherFullName', 'motherAddress', 'motherHomePhone', 'motherWorkPhone', 'motherCellPhone', 
+                'fatherFullName', 'fatherAddress', 'fatherHomePhone', 'fatherWorkPhone', 'fatherCellPhone',
+                'responsiblePartyName', 'responsiblePartyAddress', 'responsiblePartyHomePhone', 
+                'responsiblePartyWorkPhone', 'responsiblePartyCellPhone', 'learnerAddress'];
+      case 2:
+        return ['religiousDenomination', 'isBaptised', 'parishChurch', 'refugeeStatus', 'homeLanguage',
+                'numberOfChildren', 'childrenAges', 'siblingsAtHolyCross', 'siblingName', 'siblingGrade'];
+      case 3:
+        return ['motherOccupation', 'motherPlaceOfEmployment', 'motherWorkTel', 'motherWorkCell', 'motherEmail',
+                'fatherOccupation', 'fatherPlaceOfEmployment', 'fatherWorkTel', 'fatherWorkCell', 'fatherEmail',
+                'responsiblePartyOccupation', 'responsiblePartyPlaceOfEmployment', 'responsiblePartyWorkTel',
+                'responsiblePartyWorkCell', 'responsiblePartyEmail', 'selfEmployedDetails', 'maritalStatus'];
+      case 4:
+        return ['currentSchool', 'currentSchoolAddress', 'currentSchoolTel', 'currentSchoolContact'];
+      case 5:
+        return ['paymentMethod', 'agreeToTerms', 'agreeToPrivacy'];
+      case 6:
+        return ['documents'];
+      default:
+        return [];
+    }
+  };
+
+  // Clear errors for a specific step
+  const clearStepErrors = (step: number) => {
+    const stepFields = getStepFields(step);
+    setFieldErrors(prev => {
+      const newErrors = { ...prev };
+      stepFields.forEach(field => {
+        delete newErrors[field];
+      });
+      return newErrors;
+    });
+  };
+
+  // Validate all form steps (0-5) before creating application
+  const validateFormSteps = (): boolean => {
+    const allErrors: Record<string, string> = {};
+    const allMissing: string[] = [];
+
+    // Clear previous errors
+    setFieldErrors({});
+
+    // Validate all form steps (0-5) - aggregate errors properly
+    for (let i = 0; i < steps.length - 2; i++) {
+      const stepErrors: Record<string, string> = {};
+      const stepMissing: string[] = [];
+      const stepValid = validateStep(i, stepErrors, stepMissing);
+      
+      // Aggregate errors and missing fields
+      Object.assign(allErrors, stepErrors);
+      allMissing.push(...stepMissing);
+      
+      if (!stepValid) {
+        // Continue collecting errors from all steps
+      }
+    }
+
+    setFieldErrors(allErrors);
+
+    if (allMissing.length > 0) {
+      setValidationError(`Please complete the following before submitting: ${allMissing.join(', ')}`);
+      return false;
+    }
+
+    setValidationError(null);
+    return true;
+  };
+
+  // Validate all steps including documents before final submission
+  const validateAllSteps = (): boolean => {
+    const allErrors: Record<string, string> = {};
+    const allMissing: string[] = [];
+
+    // Clear previous errors
+    setFieldErrors({});
+
+    // Validate all form steps (0-5) - aggregate errors properly
+    for (let i = 0; i < steps.length - 2; i++) {
+      const stepErrors: Record<string, string> = {};
+      const stepMissing: string[] = [];
+      const stepValid = validateStep(i, stepErrors, stepMissing);
+      
+      // Aggregate errors and missing fields
+      Object.assign(allErrors, stepErrors);
+      allMissing.push(...stepMissing);
+      
+      if (!stepValid) {
+        // Continue collecting errors from all steps
+      }
+    }
+
+    // Validate step 6 (Upload Documents) - require at least one document
+    if (applicationId && uploadedDocuments.length === 0) {
+      allErrors.documents = 'At least one supporting document is required';
+      allMissing.push('Supporting Documents');
+    }
+
+    setFieldErrors(allErrors);
+
+    if (allMissing.length > 0) {
+      setValidationError(`Please complete the following before submitting: ${allMissing.join(', ')}`);
+      return false;
+    }
+
+    setValidationError(null);
+    return true;
+  };
+
+  const validateStep = (step: number, errors?: Record<string, string>, missing?: string[]): boolean => {
+    // Clone objects to prevent mutation issues when called from validateAllSteps
+    const stepErrors: Record<string, string> = errors ? { ...errors } : {};
+    const stepMissing: string[] = missing ? [...missing] : [];
 
     const isEmpty = (v: any) => v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
+    
+    // Phone number validation helper - flexible for international numbers
+    const isValidPhone = (phone: string, required: boolean = false): boolean => {
+      if (isEmpty(phone)) return !required; // Empty is valid if not required
+      // Allow various formats: international (+country), SA format (0XXXXXXXXX), or basic digits
+      const cleaned = phone.replace(/\s+/g, '').replace(/[-()]/g, '');
+      // South African format: +27XXXXXXXXX or 0XXXXXXXXX (10 digits after country code or 0)
+      if (/^(\+27|0)[1-9]\d{8}$/.test(cleaned)) return true;
+      // International format: + followed by country code and number (at least 7 digits total)
+      if (/^\+\d{1,3}\d{7,}$/.test(cleaned)) return true;
+      // Basic format: at least 7 digits (for flexibility)
+      if (/^\d{7,}$/.test(cleaned)) return true;
+      return false;
+    };
 
     if (step === 0) {
       if (isEmpty(formData.surname)) {
-        errors.surname = 'Surname is required';
-        missing.push('Surname');
+        stepErrors.surname = 'Surname is required';
+        stepMissing.push('Surname');
       }
       if (isEmpty(formData.learnerName)) {
-        errors.learnerName = 'Name is required';
-        missing.push('Name');
+        stepErrors.learnerName = 'Name is required';
+        stepMissing.push('Name');
       }
       if (isEmpty(formData.dateOfBirth)) {
-        errors.dateOfBirth = 'Date of Birth is required';
-        missing.push('Date of Birth');
+        stepErrors.dateOfBirth = 'Date of Birth is required';
+        stepMissing.push('Date of Birth');
       }
       if (isEmpty(formData.placeOfBirth)) {
-        errors.placeOfBirth = 'Place of Birth is required';
-        missing.push('Place of Birth');
+        stepErrors.placeOfBirth = 'Place of Birth is required';
+        stepMissing.push('Place of Birth');
       }
       if (isEmpty(formData.gradeApplying)) {
-        errors.gradeApplying = 'Grade Applying is required';
-        missing.push('Grade Applying');
+        stepErrors.gradeApplying = 'Grade Applying is required';
+        stepMissing.push('Grade Applying');
       }
       if (isEmpty(formData.year)) {
-        errors.year = 'Year is required';
-        missing.push('Year');
+        stepErrors.year = 'Year is required';
+        stepMissing.push('Year');
       }
       if (formData.hasRepeated && isEmpty(formData.repeatedGrade)) {
-        errors.repeatedGrade = 'Repeated Grade is required when learner has repeated';
-        missing.push('Repeated Grade');
+        stepErrors.repeatedGrade = 'Repeated Grade is required when learner has repeated';
+        stepMissing.push('Repeated Grade');
       }
     } else if (step === 1) {
       // Require at least one primary contact reachable by cell phone
@@ -309,50 +523,50 @@ const ApplicationProcess: React.FC = () => {
       const responsibleOk = !isEmpty(formData.responsiblePartyName) && !isEmpty(formData.responsiblePartyCellPhone);
       
       if (!motherOk && !fatherOk && !responsibleOk) {
-        if (isEmpty(formData.motherFullName)) errors.motherFullName = 'Mother\'s Full Name is required';
-        if (isEmpty(formData.motherCellPhone)) errors.motherCellPhone = 'Mother\'s Cell Phone is required';
-        if (isEmpty(formData.fatherFullName)) errors.fatherFullName = 'Father\'s Full Name is required';
-        if (isEmpty(formData.fatherCellPhone)) errors.fatherCellPhone = 'Father\'s Cell Phone is required';
-        if (isEmpty(formData.responsiblePartyName)) errors.responsiblePartyName = 'Responsible Party Name is required';
-        if (isEmpty(formData.responsiblePartyCellPhone)) errors.responsiblePartyCellPhone = 'Responsible Party Cell Phone is required';
-        missing.push('At least one contact with Full Name and Cell Phone (Mother/Father/Responsible Party)');
+        if (isEmpty(formData.motherFullName)) stepErrors.motherFullName = 'Mother\'s Full Name is required';
+        if (isEmpty(formData.motherCellPhone)) stepErrors.motherCellPhone = 'Mother\'s Cell Phone is required';
+        if (isEmpty(formData.fatherFullName)) stepErrors.fatherFullName = 'Father\'s Full Name is required';
+        if (isEmpty(formData.fatherCellPhone)) stepErrors.fatherCellPhone = 'Father\'s Cell Phone is required';
+        if (isEmpty(formData.responsiblePartyName)) stepErrors.responsiblePartyName = 'Responsible Party Name is required';
+        if (isEmpty(formData.responsiblePartyCellPhone)) stepErrors.responsiblePartyCellPhone = 'Responsible Party Cell Phone is required';
+        stepMissing.push('At least one contact with Full Name and Cell Phone (Mother/Father/Responsible Party)');
       }
       
       if (isEmpty(formData.motherAddress) && isEmpty(formData.fatherAddress) && isEmpty(formData.responsiblePartyAddress)) {
-        errors.motherAddress = 'At least one address is required';
-        errors.fatherAddress = 'At least one address is required';
-        errors.responsiblePartyAddress = 'At least one address is required';
-        missing.push('An address for at least one contact (Mother/Father/Responsible Party)');
+        stepErrors.motherAddress = 'At least one address is required';
+        stepErrors.fatherAddress = 'At least one address is required';
+        stepErrors.responsiblePartyAddress = 'At least one address is required';
+        stepMissing.push('An address for at least one contact (Mother/Father/Responsible Party)');
       }
     } else if (step === 4) {
       // Enforce contact number and name for previous school/creche for background checks
       if (isEmpty(formData.currentSchoolTel)) {
-        errors.currentSchoolTel = 'Telephone number is required for background checks';
-        missing.push('Telephone Number of School/Creche');
+        stepErrors.currentSchoolTel = 'Telephone number is required for background checks';
+        stepMissing.push('Telephone Number of School/Creche');
       }
       if (isEmpty(formData.currentSchoolContact)) {
-        errors.currentSchoolContact = 'Contact name is required for background checks';
-        missing.push('Contact Name of School/Creche');
+        stepErrors.currentSchoolContact = 'Contact name is required for background checks';
+        stepMissing.push('Contact Name of School/Creche');
       }
     } else if (step === 5) {
       if (isEmpty(formData.paymentMethod)) {
-        errors.paymentMethod = 'Payment Method is required';
-        missing.push('Payment Method');
+        stepErrors.paymentMethod = 'Payment Method is required';
+        stepMissing.push('Payment Method');
       }
       if (!formData.agreeToTerms) {
-        errors.agreeToTerms = 'You must agree to the terms and conditions';
-        missing.push('Agreement to Terms');
+        stepErrors.agreeToTerms = 'You must agree to the terms and conditions';
+        stepMissing.push('Agreement to Terms');
       }
       if (!formData.agreeToPrivacy) {
-        errors.agreeToPrivacy = 'You must agree to the privacy policy';
-        missing.push('Privacy Policy Consent');
+        stepErrors.agreeToPrivacy = 'You must agree to the privacy policy';
+        stepMissing.push('Privacy Policy Consent');
       }
     }
 
-    setFieldErrors(errors);
+    setFieldErrors(stepErrors);
 
-    if (missing.length > 0) {
-      setValidationError(`Please complete the following before continuing: ${missing.join(', ')}`);
+    if (stepMissing.length > 0) {
+      setValidationError(`Please complete the following before continuing: ${stepMissing.join(', ')}`);
       return false;
     }
     setValidationError(null);
@@ -374,7 +588,7 @@ const ApplicationProcess: React.FC = () => {
     }
   };
 
-  const handleSelectChange = (field: string) => (event: any) => {
+  const handleSelectChange = (field: string) => (event: SelectChangeEvent<string>) => {
     setFormData({
       ...formData,
       [field]: event.target.value,
@@ -390,9 +604,10 @@ const ApplicationProcess: React.FC = () => {
   };
 
   const handleCheckboxChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.checked;
     setFormData({
       ...formData,
-      [field]: event.target.checked,
+      [field]: newValue,
     });
     // Clear field error when user checks/unchecks
     if (fieldErrors[field]) {
@@ -402,10 +617,30 @@ const ApplicationProcess: React.FC = () => {
         return newErrors;
       });
     }
+    // For conditional fields, clear related step errors
+    // e.g., if hasRepeated changes, clear repeatedGrade error
+    if (field === 'hasRepeated' && !newValue) {
+      // If hasRepeated is unchecked, clear repeatedGrade error
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.repeatedGrade;
+        return newErrors;
+      });
+    }
+    // Clear step errors for the step containing this field
+    const stepIndex = steps.findIndex((_, idx) => {
+      const stepFields = getStepFields(idx);
+      return stepFields.includes(field);
+    });
+    if (stepIndex >= 0) {
+      clearStepErrors(stepIndex);
+    }
   };
 
   const handleNext = () => {
     if (!validateStep(activeStep)) return;
+    // Clear errors for the current step after successful validation
+    clearStepErrors(activeStep);
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
@@ -413,116 +648,13 @@ const ApplicationProcess: React.FC = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleFinalSubmit = async () => {
-    if (applicationId) {
-      // Application already created, just show success message
-      setSuccessMessage(
-        `Application submitted successfully!\n\n` +
-        `Application ID: ${applicationId}\n\n` +
-        `Our admissions team will review your application and contact you within 2-3 business days.\n\n` +
-        `You will receive a phone call regarding the outcome of your application.`
-      );
-      setSuccessDialogOpen(true);
-      // Reset form
-      setFormData({
-        // Learner Information
-        surname: '',
-        learnerName: '',
-        dateOfBirth: '',
-        placeOfBirth: '',
-        gradeApplying: '',
-        year: '',
-        lastGradePassed: '',
-        hasRepeated: false,
-        repeatedGrade: '',
-        
-        // Mother's Information
-        motherFullName: '',
-        motherAddress: '',
-        motherHomePhone: '',
-        motherWorkPhone: '',
-        motherCellPhone: '',
-        
-        // Father's Information
-        fatherFullName: '',
-        fatherAddress: '',
-        fatherHomePhone: '',
-        fatherWorkPhone: '',
-        fatherCellPhone: '',
-        
-        // Responsible Party (if not parents)
-        responsiblePartyName: '',
-        responsiblePartyAddress: '',
-        responsiblePartyRelationship: '',
-        responsiblePartyHomePhone: '',
-        responsiblePartyWorkPhone: '',
-        responsiblePartyCellPhone: '',
-        
-        // Learner Address (if different from parents)
-        learnerAddress: '',
-        
-        // Religious Information
-        religiousDenomination: '',
-        isBaptised: false,
-        parishChurch: '',
-        refugeeStatus: false,
-        homeLanguage: '',
-        
-        // Family Information
-        numberOfChildren: '',
-        childrenAges: '',
-        siblingsAtHolyCross: false,
-        siblingName: '',
-        siblingGrade: '',
-        
-        // Employment Details
-        motherOccupation: '',
-        motherPlaceOfEmployment: '',
-        motherWorkTel: '',
-        motherWorkCell: '',
-        motherEmail: '',
-        
-        fatherOccupation: '',
-        fatherPlaceOfEmployment: '',
-        fatherWorkTel: '',
-        fatherWorkCell: '',
-        fatherEmail: '',
-        
-        responsiblePartyOccupation: '',
-        responsiblePartyPlaceOfEmployment: '',
-        responsiblePartyWorkTel: '',
-        responsiblePartyWorkCell: '',
-        responsiblePartyEmail: '',
-        
-        selfEmployedDetails: '',
-        maritalStatus: '',
-        
-        // Current School Information
-        currentSchool: '',
-        currentSchoolAddress: '',
-        currentSchoolTel: '',
-        currentSchoolContact: '',
-        
-        // Payment Method
-        paymentMethod: '',
-        
-        // Terms and Conditions
-        agreeToTerms: false,
-        agreeToPrivacy: false,
-      });
-      setApplicationId(null);
-      setActiveStep(0);
-    } else {
-      // Create application first
-      await handleSubmit();
+  // Extract submit logic to avoid duplicate setSubmitting calls
+  const submitApplication = async (): Promise<{ success: boolean; applicationId?: number; error?: string }> => {
+    // Validate all form steps before submit (0-5, no documents yet)
+    if (!validateFormSteps()) {
+      return { success: false, error: 'Validation failed' };
     }
-  };
-
-  const handleSubmit = async () => {
-    // Validate critical steps before submit
-    if (!validateStep(0) || !validateStep(1) || !validateStep(5)) {
-      return;
-    }
+    
     try {
       setSubmitting(true);
       const applicationData: ApplicationData = {
@@ -615,10 +747,10 @@ const ApplicationProcess: React.FC = () => {
       const response = await admissionsService.submitApplication(applicationData);
       
       if (response.success) {
-        // Set the application ID and move to document upload step
         const newApplicationId = response.applicationId || null;
         setApplicationId(newApplicationId);
-        setActiveStep(6); // Move to document upload step
+        // Move to document upload step only after successful API call
+        setActiveStep(6);
         setSuccessMessage(
           `Application created successfully!\n\n` +
           `Application ID: ${newApplicationId}\n\n` +
@@ -627,15 +759,147 @@ const ApplicationProcess: React.FC = () => {
         );
         setSuccessDialogOpen(true);
         setValidationError(null);
+        return { success: true, applicationId: newApplicationId || undefined };
       } else {
-        setValidationError(response.errors?.map((e: any) => e.message).join(', ') || 'Failed to create application.');
+        const errorMsg = response.errors?.map((e: any) => e.message).join(', ') || 'Failed to create application.';
+        setValidationError(errorMsg);
+        return { success: false, error: errorMsg };
       }
     } catch (error: any) {
       console.error('Error submitting application:', error);
-      setValidationError(error?.response?.data?.message || error.message || 'Unexpected error submitting application');
+      const errorMsg = error?.response?.data?.message || error.message || 'Unexpected error submitting application';
+      setValidationError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleFinalSubmit = async () => {
+    if (applicationId) {
+      // Validate all steps including documents before final submission
+      if (!validateAllSteps()) {
+        return;
+      }
+      
+      // Mark application as completed - form will reset after dialog closes
+      setIsApplicationCompleted(true);
+      
+      // Application already created, just show success message
+      setSuccessMessage(
+        `Application submitted successfully!\n\n` +
+        `Application ID: ${applicationId}\n\n` +
+        `Our admissions team will review your application and contact you within 2-3 business days.\n\n` +
+        `You will receive a phone call regarding the outcome of your application.`
+      );
+      setSuccessDialogOpen(true);
+      // Note: Form reset will happen after user closes the success dialog
+    } else {
+      // Create application first using extracted submit logic
+      await submitApplication();
+    }
+  };
+
+  // Reset form after successful submission (called when dialog closes)
+  const resetFormAfterSuccess = () => {
+    setIsApplicationCompleted(false);
+    setFormData({
+      // Learner Information
+      surname: '',
+      learnerName: '',
+      dateOfBirth: '',
+      placeOfBirth: '',
+      gradeApplying: '',
+      year: '',
+      lastGradePassed: '',
+      hasRepeated: false,
+      repeatedGrade: '',
+      
+      // Mother's Information
+      motherFullName: '',
+      motherAddress: '',
+      motherHomePhone: '',
+      motherWorkPhone: '',
+      motherCellPhone: '',
+      
+      // Father's Information
+      fatherFullName: '',
+      fatherAddress: '',
+      fatherHomePhone: '',
+      fatherWorkPhone: '',
+      fatherCellPhone: '',
+      
+        // Responsible Party (if not parents)
+        isNotParents: false,
+        responsiblePartyName: '',
+        responsiblePartyAddress: '',
+        responsiblePartyRelationship: '',
+        responsiblePartyHomePhone: '',
+        responsiblePartyWorkPhone: '',
+        responsiblePartyCellPhone: '',
+      
+      // Learner Address (if different from parents)
+      learnerAddress: '',
+      
+      // Religious Information
+      religiousDenomination: '',
+      isBaptised: false,
+      parishChurch: '',
+      refugeeStatus: false,
+      homeLanguage: '',
+      
+      // Family Information
+      numberOfChildren: '',
+      childrenAges: '',
+      siblingsAtHolyCross: false,
+      siblingName: '',
+      siblingGrade: '',
+      
+      // Employment Details
+      motherOccupation: '',
+      motherPlaceOfEmployment: '',
+      motherWorkTel: '',
+      motherWorkCell: '',
+      motherEmail: '',
+      
+      fatherOccupation: '',
+      fatherPlaceOfEmployment: '',
+      fatherWorkTel: '',
+      fatherWorkCell: '',
+      fatherEmail: '',
+      
+      responsiblePartyOccupation: '',
+      responsiblePartyPlaceOfEmployment: '',
+      responsiblePartyWorkTel: '',
+      responsiblePartyWorkCell: '',
+      responsiblePartyEmail: '',
+      
+      selfEmployedDetails: '',
+      maritalStatus: '',
+      
+      // Current School Information
+      currentSchool: '',
+      currentSchoolAddress: '',
+      currentSchoolTel: '',
+      currentSchoolContact: '',
+      
+      // Payment Method
+      paymentMethod: '',
+      
+      // Terms and Conditions
+      agreeToTerms: false,
+      agreeToPrivacy: false,
+    });
+    setApplicationId(null);
+    setUploadedDocuments([]);
+    setActiveStep(0);
+    setFieldErrors({});
+    setValidationError(null);
+  };
+
+  const handleSubmit = async () => {
+    // Use extracted submit logic
+    await submitApplication();
   };
 
   const renderStepContent = (step: number) => {
@@ -656,7 +920,15 @@ const ApplicationProcess: React.FC = () => {
                   required
                   error={!!fieldErrors.surname}
                   helperText={fieldErrors.surname}
+                  id="surname"
+                  aria-describedby={fieldErrors.surname ? 'surname-error' : undefined}
+                  aria-invalid={!!fieldErrors.surname}
                 />
+                {fieldErrors.surname && (
+                  <Typography id="surname-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                    {fieldErrors.surname}
+                  </Typography>
+                )}
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
@@ -667,7 +939,15 @@ const ApplicationProcess: React.FC = () => {
                   required
                   error={!!fieldErrors.learnerName}
                   helperText={fieldErrors.learnerName}
+                  id="learnerName"
+                  aria-describedby={fieldErrors.learnerName ? 'learnerName-error' : undefined}
+                  aria-invalid={!!fieldErrors.learnerName}
                 />
+                {fieldErrors.learnerName && (
+                  <Typography id="learnerName-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                    {fieldErrors.learnerName}
+                  </Typography>
+                )}
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
@@ -800,31 +1080,36 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Home Phone"
                     value={formData.motherHomePhone}
                     onChange={handleInputChange('motherHomePhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Work Phone"
                     value={formData.motherWorkPhone}
                     onChange={handleInputChange('motherWorkPhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell Phone"
                     value={formData.motherCellPhone}
                     onChange={handleInputChange('motherCellPhone')}
                     required
                     error={!!fieldErrors.motherCellPhone}
                     helperText={fieldErrors.motherCellPhone}
+                    id="motherCellPhone"
+                    aria-describedby={fieldErrors.motherCellPhone ? 'motherCellPhone-error' : undefined}
+                    aria-invalid={!!fieldErrors.motherCellPhone}
                   />
+                  {fieldErrors.motherCellPhone && (
+                    <Typography id="motherCellPhone-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                      {fieldErrors.motherCellPhone}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>
@@ -858,41 +1143,59 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Home Phone"
                     value={formData.fatherHomePhone}
                     onChange={handleInputChange('fatherHomePhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Work Phone"
                     value={formData.fatherWorkPhone}
                     onChange={handleInputChange('fatherWorkPhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell Phone"
                     value={formData.fatherCellPhone}
                     onChange={handleInputChange('fatherCellPhone')}
                     required
                     error={!!fieldErrors.fatherCellPhone}
                     helperText={fieldErrors.fatherCellPhone}
+                    id="fatherCellPhone"
+                    aria-describedby={fieldErrors.fatherCellPhone ? 'fatherCellPhone-error' : undefined}
+                    aria-invalid={!!fieldErrors.fatherCellPhone}
                   />
+                  {fieldErrors.fatherCellPhone && (
+                    <Typography id="fatherCellPhone-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                      {fieldErrors.fatherCellPhone}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>
 
-            {/* Responsible Party (if not parents) */}
+            {/* Responsible Party (if not parents) - Progressive Disclosure */}
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, mb: 2, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                If responsible party not parents
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.isNotParents}
+                    onChange={handleCheckboxChange('isNotParents')}
+                    aria-label="Responsible party is not the parents"
+                  />
+                }
+                label={
+                  <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+                    Responsible party is not the parents
+                  </Typography>
+                }
+                sx={{ mb: 2 }}
+              />
+              {formData.isNotParents && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2 }}>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                   <TextField
                     fullWidth
@@ -922,32 +1225,38 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Home Phone"
                     value={formData.responsiblePartyHomePhone}
                     onChange={handleInputChange('responsiblePartyHomePhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Work Phone"
                     value={formData.responsiblePartyWorkPhone}
                     onChange={handleInputChange('responsiblePartyWorkPhone')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell Phone"
                     value={formData.responsiblePartyCellPhone}
                     onChange={handleInputChange('responsiblePartyCellPhone')}
                     error={!!fieldErrors.responsiblePartyCellPhone}
                     helperText={fieldErrors.responsiblePartyCellPhone}
+                    id="responsiblePartyCellPhone"
+                    aria-describedby={fieldErrors.responsiblePartyCellPhone ? 'responsiblePartyCellPhone-error' : undefined}
+                    aria-invalid={!!fieldErrors.responsiblePartyCellPhone}
                   />
+                  {fieldErrors.responsiblePartyCellPhone && (
+                    <Typography id="responsiblePartyCellPhone-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                      {fieldErrors.responsiblePartyCellPhone}
+                    </Typography>
+                  )}
                 </Box>
-              </Box>
+                </Box>
+              )}
             </Box>
 
             {/* Learner Address (if different from parents) */}
@@ -1118,16 +1427,14 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Tel"
                     value={formData.motherWorkTel}
                     onChange={handleInputChange('motherWorkTel')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell"
                     value={formData.motherWorkCell}
                     onChange={handleInputChange('motherWorkCell')}
@@ -1168,16 +1475,14 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Tel"
                     value={formData.fatherWorkTel}
                     onChange={handleInputChange('fatherWorkTel')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell"
                     value={formData.fatherWorkCell}
                     onChange={handleInputChange('fatherWorkCell')}
@@ -1218,16 +1523,14 @@ const ApplicationProcess: React.FC = () => {
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Tel"
                     value={formData.responsiblePartyWorkTel}
                     onChange={handleInputChange('responsiblePartyWorkTel')}
                   />
                 </Box>
                 <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 16px)' } }}>
-                  <TextField
-                    fullWidth
+                  <PhoneInput
                     label="Cell"
                     value={formData.responsiblePartyWorkCell}
                     onChange={handleInputChange('responsiblePartyWorkCell')}
@@ -1305,15 +1608,22 @@ const ApplicationProcess: React.FC = () => {
                 />
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
-                <TextField
-                  fullWidth
+                <PhoneInput
                   label="Tel. No of School/Creche *"
                   value={formData.currentSchoolTel}
                   onChange={handleInputChange('currentSchoolTel')}
                   required
                   error={!!fieldErrors.currentSchoolTel}
                   helperText={fieldErrors.currentSchoolTel || 'Required for background checks'}
+                  id="currentSchoolTel"
+                  aria-describedby={fieldErrors.currentSchoolTel ? 'currentSchoolTel-error' : undefined}
+                  aria-invalid={!!fieldErrors.currentSchoolTel}
                 />
+                {fieldErrors.currentSchoolTel && (
+                  <Typography id="currentSchoolTel-error" role="alert" variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                    {fieldErrors.currentSchoolTel}
+                  </Typography>
+                )}
               </Box>
               <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
                 <TextField
@@ -1429,7 +1739,7 @@ const ApplicationProcess: React.FC = () => {
                 }
                 label={
                   <span>
-                    I agree to the school's terms and conditions <span style={{ color: '#d32f2f' }}>*</span>
+                    I agree to the school's terms and conditions <RequiredAsterisk />
                   </span>
                 }
                 sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
@@ -1449,7 +1759,7 @@ const ApplicationProcess: React.FC = () => {
                 }
                 label={
                   <span>
-                    I agree to the privacy policy and data processing <span style={{ color: '#d32f2f' }}>*</span>
+                    I agree to the privacy policy and data processing <RequiredAsterisk />
                   </span>
                 }
                 sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}
@@ -1476,11 +1786,25 @@ const ApplicationProcess: React.FC = () => {
               <ApplicationDocumentUpload 
                 applicationId={applicationId}
                 onDocumentsChange={(documents) => {
+                  setUploadedDocuments(documents);
+                  // Clear document error when documents are uploaded
+                  if (documents.length > 0 && fieldErrors.documents) {
+                    setFieldErrors(prev => {
+                      const newErrors = { ...prev };
+                      delete newErrors.documents;
+                      return newErrors;
+                    });
+                  }
                   if (process.env.NODE_ENV === 'development') {
                     console.log('Documents updated:', documents);
                   }
                 }}
               />
+            )}
+            {fieldErrors.documents && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {fieldErrors.documents}
+              </Alert>
             )}
           </Box>
         );
@@ -1536,28 +1860,36 @@ const ApplicationProcess: React.FC = () => {
 
   return (
     <>
-      <Backdrop
-        open={loadingDocuments}
-        sx={{
-          color: '#fff',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <CircularProgress color="inherit" size={60} />
-          <Typography variant="h6" sx={{ color: '#fff' }}>
-            Loading application resources...
-          </Typography>
-        </Box>
-      </Backdrop>
-      <SEO
-        title="Application Process - Holy Cross Convent School"
-        description="Apply to Holy Cross Convent School Brooklyn. Complete our online application process for Grade R to Grade 7. Join our Catholic educational community."
-        keywords="application process, enrollment, admissions, Holy Cross Convent School, Brooklyn, Catholic school, Grade R, primary school"
-      />
-      
-      {/* Hero Section */}
+      {/* Loading Skeleton instead of Backdrop */}
+      {loadingDocuments && (
+        <Container maxWidth="lg" sx={{ py: 6 }}>
+          <Box sx={{ mb: 4 }}>
+            <Skeleton variant="rectangular" height={400} sx={{ mb: 4, borderRadius: 2 }} />
+          </Box>
+          <Paper sx={{ p: 4 }}>
+            <Skeleton variant="text" width="60%" height={60} sx={{ mb: 3 }} />
+            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <Skeleton key={i} variant="rectangular" width={120} height={40} />
+              ))}
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} variant="rectangular" width="48%" height={56} />
+              ))}
+            </Box>
+          </Paper>
+        </Container>
+      )}
+      {!loadingDocuments && (
+        <>
+          <SEO
+            title="Application Process - Holy Cross Convent School"
+            description="Apply to Holy Cross Convent School Brooklyn. Complete our online application process for Grade R to Grade 7. Join our Catholic educational community."
+            keywords="application process, enrollment, admissions, Holy Cross Convent School, Brooklyn, Catholic school, Grade R, primary school"
+          />
+          
+          {/* Hero Section */}
       <HeroSection>
         <Container maxWidth="lg">
           <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
@@ -1859,7 +2191,11 @@ const ApplicationProcess: React.FC = () => {
             Online Application Form
           </Typography>
           
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          <Stepper 
+            activeStep={activeStep} 
+            orientation={isMobile ? 'vertical' : 'horizontal'}
+            sx={{ mb: 4 }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -1868,7 +2204,7 @@ const ApplicationProcess: React.FC = () => {
           </Stepper>
 
           {validationError && (
-            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+            <Alert severity="error" sx={{ mt: 2, mb: 2 }} role="alert" aria-live="polite">
               {validationError}
             </Alert>
           )}
@@ -1897,7 +2233,7 @@ const ApplicationProcess: React.FC = () => {
             >
               {submitting 
                 ? (activeStep === steps.length - 1 ? 'Submitting...' : 'Processing...')
-                : (activeStep === steps.length - 1 ? (applicationId ? 'Complete Application' : 'Create Application') : 'Next')
+                : (activeStep === steps.length - 1 ? (applicationId ? 'Complete Application' : 'Submit Application') : 'Next')
               }
             </Button>
           </Box>
@@ -2018,69 +2354,69 @@ const ApplicationProcess: React.FC = () => {
               <Typography variant="h6" sx={{ mb: 3, color: '#d32f2f', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                 Transport Contacts and Areas
               </Typography>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#1a237e', color: 'white' }}>
-                      <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Name</th>
-                      <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Areas</th>
-                      <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Contact Numbers</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Gwenneth Samuels</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Milnerton, Sanddrift, Bothasig, Edgemead, Monte Vista</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 61 872 0074</td>
-                    </tr>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Ronald</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Brooklyn, Ysterplaat, Milnerton, Rugby, Sanddrift, and areas up to Paddocks</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 73 461 5486</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Cecilia Bless</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Maitland, Ysterplaat</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 63 931 2639</td>
-                    </tr>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Brother of all Kids</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Maitland, Kensington, Ysterplaat, Brooklyn</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 69 381 7478</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Michael</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Kensington</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 73 774 8799</td>
-                    </tr>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Craig/Tara Campbell</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Milnerton, Brooklyn, Tygerhof, Sanddrift, Rugby (Surrounds)</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 83 342 5446</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Maggie</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Milnerton, Tygerhof, Ysterplaat (Surrounds)</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 72 717 1265</td>
-                    </tr>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Chris</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Tygerhof, Ysterplaat (Surrounds)</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 73 630 0404</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Avrin</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Most areas</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 82 818 3222</td>
-                    </tr>
-                    <tr style={{ backgroundColor: '#f5f5f5' }}>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Nyalleng</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>Milnerton, Tygerhof (surrounding)</td>
-                      <td style={{ padding: '12px', border: '1px solid #ddd' }}>+27 60 764 6543</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </Box>
+              <TableContainer>
+                <Table sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#1a237e' }}>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} scope="col">Name</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} scope="col">Areas</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} scope="col">Contact Numbers</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Gwenneth Samuels</TableCell>
+                      <TableCell>Milnerton, Sanddrift, Bothasig, Edgemead, Monte Vista</TableCell>
+                      <TableCell>+27 61 872 0074</TableCell>
+                    </TableRow>
+                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell>Ronald</TableCell>
+                      <TableCell>Brooklyn, Ysterplaat, Milnerton, Rugby, Sanddrift, and areas up to Paddocks</TableCell>
+                      <TableCell>+27 73 461 5486</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Cecilia Bless</TableCell>
+                      <TableCell>Maitland, Ysterplaat</TableCell>
+                      <TableCell>+27 63 931 2639</TableCell>
+                    </TableRow>
+                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell>Brother of all Kids</TableCell>
+                      <TableCell>Maitland, Kensington, Ysterplaat, Brooklyn</TableCell>
+                      <TableCell>+27 69 381 7478</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Michael</TableCell>
+                      <TableCell>Kensington</TableCell>
+                      <TableCell>+27 73 774 8799</TableCell>
+                    </TableRow>
+                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell>Craig/Tara Campbell</TableCell>
+                      <TableCell>Milnerton, Brooklyn, Tygerhof, Sanddrift, Rugby (Surrounds)</TableCell>
+                      <TableCell>+27 83 342 5446</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Maggie</TableCell>
+                      <TableCell>Milnerton, Tygerhof, Ysterplaat (Surrounds)</TableCell>
+                      <TableCell>+27 72 717 1265</TableCell>
+                    </TableRow>
+                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell>Chris</TableCell>
+                      <TableCell>Tygerhof, Ysterplaat (Surrounds)</TableCell>
+                      <TableCell>+27 73 630 0404</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Avrin</TableCell>
+                      <TableCell>Most areas</TableCell>
+                      <TableCell>+27 82 818 3222</TableCell>
+                    </TableRow>
+                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell>Nyalleng</TableCell>
+                      <TableCell>Milnerton, Tygerhof (surrounding)</TableCell>
+                      <TableCell>+27 60 764 6543</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
               <Alert severity="warning" sx={{ mt: 3 }}>
                 <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
                   <strong>PLEASE NOTE:</strong> These are private individuals and have no contracts or interest between the Holy Cross School and the drivers. 
@@ -2222,7 +2558,13 @@ const ApplicationProcess: React.FC = () => {
       {/* Success Dialog */}
       <Dialog
         open={successDialogOpen}
-        onClose={() => setSuccessDialogOpen(false)}
+        onClose={() => {
+          setSuccessDialogOpen(false);
+          // Reset form after dialog closes (only if application was completed, not just created)
+          if (isApplicationCompleted) {
+            resetFormAfterSuccess();
+          }
+        }}
         maxWidth="sm"
         fullWidth
       >
@@ -2231,13 +2573,27 @@ const ApplicationProcess: React.FC = () => {
           Application Submitted Successfully
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ fontFamily: '"Poppins", sans-serif', whiteSpace: 'pre-line', fontSize: '1rem', lineHeight: 1.8 }}>
-            {successMessage}
-          </DialogContentText>
+          <Box sx={{ fontFamily: '"Poppins", sans-serif', fontSize: '1rem', lineHeight: 1.8 }}>
+            {successMessage.split('\n').map((line, index) => (
+              <Typography 
+                key={index} 
+                component="p" 
+                sx={{ mb: line.trim() === '' ? 1 : 0.5 }}
+              >
+                {line || '\u00A0'}
+              </Typography>
+            ))}
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
-            onClick={() => setSuccessDialogOpen(false)}
+            onClick={() => {
+              setSuccessDialogOpen(false);
+              // Reset form after dialog closes (only if application was completed, not just created)
+              if (isApplicationCompleted) {
+                resetFormAfterSuccess();
+              }
+            }}
             variant="contained"
             sx={{
               fontFamily: '"Poppins", sans-serif',
@@ -2249,6 +2605,8 @@ const ApplicationProcess: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+        </>
+      )}
     </>
   );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Stack, Button, Paper } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Stack, Button, Paper, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { AccessTime, School, Groups, EmojiEvents, Favorite, Lightbulb } from '@mui/icons-material';
 import SEO from '../components/SEO';
@@ -13,6 +13,9 @@ const Hero = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   background: 'url("/edu2.jpg") center/cover no-repeat',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
   textAlign: 'center',
   '&::before': {
     content: '""',
@@ -28,6 +31,12 @@ const FeatureCard = styled(Card)(({ theme }) => ({
   height: '100%',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)'
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 40px rgba(211, 47, 47, 0.25)'
   }
@@ -49,22 +58,25 @@ const IconBox = styled(Box)(({ theme }) => ({
 }));
 
 const AfterSchoolProgram: React.FC = () => {
+  const theme = useTheme();
+  
   return (
     <>
       <SEO 
         title="After School Programme - Holy Cross Convent School" 
-        description="Our After School Programme provides learners with a safe, engaging, and enriching environment from 14:30 to 17:15, completely free of charge." 
+        description="Our After School Programme provides learners with a safe, engaging, and enriching environment from 14:30 to 17:15, completely free of charge."
+        image="/edu2.jpg"
       />
       
       {/* Hero Section */}
       <Hero>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl" sx={{ position: 'relative', py: 8 }}>
           {/* Return to Home */}
           <Box sx={{ 
-            position: 'fixed',
-            top: { xs: 80, sm: 100 },
+            position: 'absolute',
+            top: 16,
             left: 16,
-            zIndex: 1000,
+            zIndex: 10,
             '& .MuiTypography-root': {
               color: 'white !important',
               textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
@@ -84,7 +96,8 @@ const AfterSchoolProgram: React.FC = () => {
           </Box>
 
           <Chip 
-            label="Free Programme" 
+            label="Free Programme"
+            aria-label="After School Programme is 100% free"
             sx={{ 
               backgroundColor: '#ffd700', 
               color: '#1a237e',
@@ -97,6 +110,7 @@ const AfterSchoolProgram: React.FC = () => {
           />
           
           <Typography 
+            component="h1"
             variant="h1" 
             sx={{ 
               fontWeight: 900,
@@ -193,14 +207,14 @@ const AfterSchoolProgram: React.FC = () => {
       </Hero>
 
       {/* Mission Statement */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Paper 
           elevation={0}
           sx={{
             background: 'linear-gradient(135deg, #e3f2fd 0%, #ffebee 100%)',
             p: 6,
             borderRadius: 4,
-            border: '3px solid #1a237e',
+            border: '2px solid #1a237e',
             textAlign: 'center'
           }}
         >
@@ -231,7 +245,7 @@ const AfterSchoolProgram: React.FC = () => {
       </Container>
 
       {/* Main Features with Images */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
           sx={{ 
@@ -244,7 +258,7 @@ const AfterSchoolProgram: React.FC = () => {
           What We Offer
         </Typography>
 
-        <Grid container spacing={4} sx={{ mb: 8 }}>
+        <Grid container spacing={3} sx={{ mb: 8 }}>
           {/* Row 1 - Full Width */}
           <Grid item xs={12}>
             <Grid container spacing={3}>
@@ -253,7 +267,8 @@ const AfterSchoolProgram: React.FC = () => {
                   <CardMedia 
                     component="img" 
                     image="/edu2.jpg" 
-                    alt="After School Learning"
+                    alt="Learners receiving homework support in safe after-school environment"
+                    loading="lazy"
                     sx={{ height: 400, objectFit: 'cover' }}
                   />
                   <CardContent sx={{ p: 3 }}>
@@ -272,7 +287,8 @@ const AfterSchoolProgram: React.FC = () => {
                   <CardMedia 
                     component="img" 
                     image="/Acare.jpg" 
-                    alt="Supervised Activities"
+                    alt="Supervised educational games and group activities"
+                    loading="lazy"
                     sx={{ height: 400, objectFit: 'cover' }}
                   />
                   <CardContent sx={{ p: 3 }}>
@@ -335,10 +351,10 @@ const AfterSchoolProgram: React.FC = () => {
             }}>
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
                 <IconBox sx={{ 
-                  background: 'linear-gradient(135deg, #d32f2f 0%, #ff6b6b 100%)',
+                  background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.light} 100%)`,
                   boxShadow: '0 8px 24px rgba(211, 47, 47, 0.4)'
                 }}>
-                  <School sx={{ fontSize: 40 }} />
+                  <School sx={{ fontSize: 40 }} aria-hidden="true" />
                 </IconBox>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#d32f2f' }}>
                   Homework Support
@@ -360,10 +376,10 @@ const AfterSchoolProgram: React.FC = () => {
             }}>
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
                 <IconBox sx={{ 
-                  background: 'linear-gradient(135deg, #d32f2f 0%, #ff6b6b 100%)',
+                  background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.light} 100%)`,
                   boxShadow: '0 8px 24px rgba(211, 47, 47, 0.4)'
                 }}>
-                  <Lightbulb sx={{ fontSize: 40 }} />
+                  <Lightbulb sx={{ fontSize: 40 }} aria-hidden="true" />
                 </IconBox>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#d32f2f' }}>
                   Guided Study Sessions
@@ -385,10 +401,10 @@ const AfterSchoolProgram: React.FC = () => {
             }}>
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
                 <IconBox sx={{ 
-                  background: 'linear-gradient(135deg, #d32f2f 0%, #ff6b6b 100%)',
+                  background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.light} 100%)`,
                   boxShadow: '0 8px 24px rgba(211, 47, 47, 0.4)'
                 }}>
-                  <EmojiEvents sx={{ fontSize: 40 }} />
+                  <EmojiEvents sx={{ fontSize: 40 }} aria-hidden="true" />
                 </IconBox>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#d32f2f' }}>
                   Educational Games

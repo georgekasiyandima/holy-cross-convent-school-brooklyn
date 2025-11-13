@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Container,
@@ -33,7 +33,8 @@ import {
   Divider,
   Grid,
   Stack,
-  CircularProgress
+  CircularProgress,
+  Skeleton
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -93,6 +94,7 @@ const CalendarManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   
   // Dialog states
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
@@ -100,6 +102,9 @@ const CalendarManagement: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [editingTerm, setEditingTerm] = useState<Term | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  
+  // AbortController ref for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Check authentication
   useEffect(() => {
@@ -116,8 +121,23 @@ const CalendarManagement: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  // Form states
-  const [eventForm, setEventForm] = useState({
+  // Form states - using Date | null for proper DatePicker handling
+  const [eventForm, setEventForm] = useState<{
+    title: string;
+    description: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    type: string;
+    isHoliday: boolean;
+    isExam: boolean;
+    isPublicHoliday: boolean;
+    grade: string;
+    category: string;
+    location: string;
+    time: string;
+    facebookLink: string;
+    termId: string;
+  }>({
     title: '',
     description: '',
     startDate: new Date(),
@@ -134,7 +154,14 @@ const CalendarManagement: React.FC = () => {
     termId: ''
   });
 
-  const [termForm, setTermForm] = useState({
+  const [termForm, setTermForm] = useState<{
+    year: number;
+    termNumber: number;
+    name: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    description: string;
+  }>({
     year: new Date().getFullYear(),
     termNumber: 1,
     name: '',
@@ -168,18 +195,59 @@ const CalendarManagement: React.FC = () => {
   ];
 
   useEffect(() => {
+    // Check authentication before fetching
+    if (!isAuthenticated) {
+      return;
+    }
+    
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      setError('Admin access required. Please log in with admin credentials.');
+      setLoading(false);
+      return;
+    }
+
     fetchData();
-  }, []);
+    
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      setError('Admin access required');
+      setLoading(false);
+      return;
+    }
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     try {
       setLoading(true);
+      setError(null);
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       
-      // Use unified school-hub endpoint
+      // Use unified school-hub endpoint with Authorization header
       const [eventsRes, termsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/school-hub/events`),
-        fetch(`${apiUrl}/api/calendar/terms`)
+        fetch(`${apiUrl}/api/school-hub/events`, {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          },
+          signal
+        }),
+        fetch(`${apiUrl}/api/calendar/terms`, {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          },
+          signal
+        })
       ]);
 
       if (!eventsRes.ok || !termsRes.ok) {
@@ -218,7 +286,11 @@ const CalendarManagement: React.FC = () => {
 
       setEvents(eventsData);
       setTerms(termsData);
-    } catch (err) {
+    } catch (err: any) {
+      // Don't set error if request was aborted
+      if (err.name === 'AbortError') {
+        return;
+      }
       setError('Failed to load calendar data');
       console.error('Error fetching data:', err);
     } finally {
@@ -228,8 +300,30 @@ const CalendarManagement: React.FC = () => {
 
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Form validation
+    if (!eventForm.title.trim()) {
+      setError('Event title is required');
+      return;
+    }
+    
+    if (!eventForm.startDate || !eventForm.endDate) {
+      setError('Start date and end date are required');
+      return;
+    }
+    
+    if (eventForm.startDate > eventForm.endDate) {
+      setError('End date cannot be before start date');
+      return;
+    }
+    
     try {
       const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        setError('Admin access required');
+        return;
+      }
+      
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       
       // Use unified school-hub endpoint
@@ -270,7 +364,30 @@ const CalendarManagement: React.FC = () => {
 
   const handleTermSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Form validation
+    if (!termForm.name.trim()) {
+      setError('Term name is required');
+      return;
+    }
+    
+    if (!termForm.startDate || !termForm.endDate) {
+      setError('Start date and end date are required');
+      return;
+    }
+    
+    if (termForm.startDate > termForm.endDate) {
+      setError('End date cannot be before start date');
+      return;
+    }
+    
     try {
+      const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        setError('Admin access required');
+        return;
+      }
+      
       const url = editingTerm 
         ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms/${editingTerm.id}`
         : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms`;
@@ -281,7 +398,7 @@ const CalendarManagement: React.FC = () => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${adminToken}`
         },
         body: JSON.stringify({
           ...termForm,
@@ -310,12 +427,19 @@ const CalendarManagement: React.FC = () => {
     }
 
     try {
+      setDeletingEventId(id);
+      const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        setError('Admin access required');
+        return;
+      }
+      
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       // Use unified school-hub endpoint
       const response = await fetch(`${apiUrl}/api/school-hub/events/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${adminToken}`
         }
       });
 
@@ -329,15 +453,27 @@ const CalendarManagement: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete event');
       console.error('Error deleting event:', err);
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
   const handleActivateTerm = async (id: string) => {
+    if (!window.confirm('Activate this term? All other terms will be deactivated.')) {
+      return;
+    }
+
     try {
+      const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+        setError('Admin access required');
+        return;
+      }
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/calendar/terms/${id}/activate`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${adminToken}`
         }
       });
 
@@ -388,6 +524,7 @@ const CalendarManagement: React.FC = () => {
   const openEventDialog = (event?: CalendarEvent) => {
     if (event) {
       setEditingEvent(event);
+      // Clone Date objects to prevent mutation
       setEventForm({
         title: event.title,
         description: event.description || '',
@@ -483,11 +620,18 @@ const CalendarManagement: React.FC = () => {
   if (loading) {
     return (
       <AdminLayout>
-        <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
-          <CircularProgress sx={{ color: '#1a237e', mb: 2 }} />
-          <Typography variant="body1" color="text.secondary">
-            Loading calendar management...
-          </Typography>
+        <Container maxWidth="lg" sx={{ py: 8 }}>
+          <Box sx={{ mb: 4 }}>
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 3, mb: 3 }} />
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              {[1, 2, 3].map((i) => (
+                <Grid item xs={12} md={4} key={i}>
+                  <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+                </Grid>
+              ))}
+            </Grid>
+            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
+          </Box>
         </Container>
       </AdminLayout>
     );
@@ -692,7 +836,17 @@ const CalendarManagement: React.FC = () => {
                       <TableHead>
                         <TableRow sx={{ bgcolor: '#1a237e' }}>
                           {['Event', 'Date', 'Type', 'Category', 'Grade', 'Actions'].map((heading) => (
-                            <TableCell key={heading} sx={{ color: '#ffffff', fontWeight: 600 }}>
+                            <TableCell 
+                              key={heading} 
+                              sx={{ 
+                                color: '#ffffff', 
+                                fontWeight: 600,
+                                backgroundColor: '#1a237e',
+                                '&:hover': {
+                                  backgroundColor: '#283593'
+                                }
+                              }}
+                            >
                               {heading}
                             </TableCell>
                           ))}
@@ -700,7 +854,7 @@ const CalendarManagement: React.FC = () => {
                       </TableHead>
                       <TableBody>
                         {events.map((event) => (
-                          <TableRow key={event.id}>
+                          <TableRow key={event.id || `event-${event.title}`} data-testid={`event-row-${event.id}`}>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {getEventIcon(event.type)}
@@ -758,8 +912,15 @@ const CalendarManagement: React.FC = () => {
                                   size="small"
                                   onClick={() => handleDeleteEvent(event.id)}
                                   color="error"
+                                  disabled={deletingEventId === event.id}
+                                  aria-label={`Delete event ${event.title}`}
+                                  data-testid={`delete-event-${event.id}`}
                                 >
-                                  <Delete />
+                                  {deletingEventId === event.id ? (
+                                    <CircularProgress size={20} />
+                                  ) : (
+                                    <Delete />
+                                  )}
                                 </IconButton>
                               </Stack>
                             </TableCell>
@@ -799,7 +960,7 @@ const CalendarManagement: React.FC = () => {
 
                   <Grid container spacing={2}>
                     {terms.map((term) => (
-                      <Grid item xs={12} md={6} key={term.id}>
+                      <Grid item xs={12} md={6} key={term.id || `term-${term.name}-${term.year}`} data-testid={`term-card-${term.id}`}>
                         <Card
                           sx={{
                             borderRadius: 3,
@@ -871,12 +1032,18 @@ const CalendarManagement: React.FC = () => {
         </Container>
 
         {/* Event Dialog */}
-        <Dialog open={eventDialogOpen} onClose={() => setEventDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
+        <Dialog 
+          open={eventDialogOpen} 
+          onClose={() => setEventDialogOpen(false)} 
+          maxWidth="md" 
+          fullWidth
+          aria-labelledby="event-dialog-title"
+        >
+          <DialogTitle id="event-dialog-title">
             {editingEvent ? 'Edit Event' : 'Add New Event'}
           </DialogTitle>
           <form onSubmit={handleEventSubmit}>
-            <DialogContent>
+            <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                 <TextField
                   fullWidth
@@ -900,7 +1067,8 @@ const CalendarManagement: React.FC = () => {
                   <DatePicker
                     label="Start Date"
                     value={eventForm.startDate}
-                    onChange={(date) => setEventForm({ ...eventForm, startDate: date || new Date() })}
+                    onChange={(date) => setEventForm({ ...eventForm, startDate: date })}
+                    minDate={new Date()}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -911,7 +1079,8 @@ const CalendarManagement: React.FC = () => {
                   <DatePicker
                     label="End Date"
                     value={eventForm.endDate}
-                    onChange={(date) => setEventForm({ ...eventForm, endDate: date || new Date() })}
+                    onChange={(date) => setEventForm({ ...eventForm, endDate: date })}
+                    minDate={eventForm.startDate || new Date()}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -1046,12 +1215,18 @@ const CalendarManagement: React.FC = () => {
         </Dialog>
 
         {/* Term Dialog */}
-        <Dialog open={termDialogOpen} onClose={() => setTermDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>
+        <Dialog 
+          open={termDialogOpen} 
+          onClose={() => setTermDialogOpen(false)} 
+          maxWidth="sm" 
+          fullWidth
+          aria-labelledby="term-dialog-title"
+        >
+          <DialogTitle id="term-dialog-title">
             {editingTerm ? 'Edit Term' : 'Add New Term'}
           </DialogTitle>
           <form onSubmit={handleTermSubmit}>
-            <DialogContent>
+            <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
@@ -1082,13 +1257,14 @@ const CalendarManagement: React.FC = () => {
                   <DatePicker
                     label="Start Date"
                     value={termForm.startDate}
-                    onChange={(date) => setTermForm({ ...termForm, startDate: date || new Date() })}
+                    onChange={(date) => setTermForm({ ...termForm, startDate: date })}
                     slotProps={{ textField: { fullWidth: true } }}
                   />
                   <DatePicker
                     label="End Date"
                     value={termForm.endDate}
-                    onChange={(date) => setTermForm({ ...termForm, endDate: date || new Date() })}
+                    onChange={(date) => setTermForm({ ...termForm, endDate: date })}
+                    minDate={termForm.startDate || undefined}
                     slotProps={{ textField: { fullWidth: true } }}
                   />
                 </Stack>
@@ -1116,8 +1292,9 @@ const CalendarManagement: React.FC = () => {
         {/* Success/Error Messages */}
         <Snackbar
           open={!!success}
-          autoHideDuration={6000}
+          autoHideDuration={4000}
           onClose={() => setSuccess(null)}
+          data-testid="success-snackbar"
         >
           <Alert onClose={() => setSuccess(null)} severity="success">
             {success}
@@ -1126,8 +1303,9 @@ const CalendarManagement: React.FC = () => {
 
         <Snackbar
           open={!!error}
-          autoHideDuration={6000}
+          autoHideDuration={4000}
           onClose={() => setError(null)}
+          data-testid="error-snackbar"
         >
           <Alert onClose={() => setError(null)} severity="error">
             {error}

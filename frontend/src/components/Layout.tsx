@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { Box, Container, Typography, Paper, Divider, IconButton, Link } from '@mui/material';
 import { 
   Facebook, 
@@ -103,24 +104,46 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'Home', onNavig
               <Typography variant="h6" gutterBottom sx={{ color: '#ffd700', fontWeight: 700, mb: 3 }}>
                 Quick Links
               </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • Admissions
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • School Board
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • Events & Calendar
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • Gallery
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • History
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1, cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
-                • Spiritual Life
-              </Typography>
+              <Link component={RouterLink} to="/admissions" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Admissions
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/school-hub" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Events & Calendar
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/gallery" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Gallery
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/news" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • News & Announcements
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/virtual-tour" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Virtual Tour
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/forms" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • School Documents
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/contact" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Contact Us
+                </Typography>
+              </Link>
+              <Link component={RouterLink} to="/donate" sx={{ display: 'block', mb: 1.5, textDecoration: 'none' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', cursor: 'pointer', '&:hover': { color: '#ffd700' } }}>
+                  • Support Us
+                </Typography>
+              </Link>
             </Box>
 
             {/* School Information */}

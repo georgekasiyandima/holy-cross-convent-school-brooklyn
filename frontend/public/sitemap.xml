@@ -25,12 +25,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/spiritual</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/info</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
@@ -55,12 +49,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/links</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/forms</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
@@ -68,12 +56,6 @@
   </url>
   <url>
     <loc>http://localhost:3000/extra-mural</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/music</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

@@ -10,16 +10,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 const Home = lazy(() => import('./pages/Home'));
 const Gallery = lazy(() => import('./pages/Gallery'));
 const History = lazy(() => import('./pages/History'));
-const Spiritual = lazy(() => import('./pages/Spiritual'));
 const Info = lazy(() => import('./pages/Info'));
 const Events = lazy(() => import('./pages/Events'));
 const SchoolBoard = lazy(() => import('./pages/SchoolBoard'));
 const Staff = lazy(() => import('./pages/Staff'));
-const Links = lazy(() => import('./pages/Links'));
 const ExtraMural = lazy(() => import('./pages/ExtraMural'));
 const FormsFees = lazy(() => import('./pages/FormsFees'));
 const News = lazy(() => import('./pages/News'));
-const Music = lazy(() => import('./pages/Music'));
 const ContactForm = lazy(() => import('./components/ContactForm'));
 const Donate = lazy(() => import('./pages/Donate'));
 const AdminDocumentUpload = lazy(() => import('./pages/AdminDocumentUpload'));
@@ -46,7 +43,6 @@ const Sport = lazy(() => import('./pages/Sport'));
 const Cultural = lazy(() => import('./pages/Cultural'));
 const ServiceEthos = lazy(() => import('./pages/ServiceEthos'));
 const AfterSchoolProgram = lazy(() => import('./pages/AfterSchoolProgram'));
-const Aftercare = lazy(() => import('./pages/Aftercare'));
 const VirtualTour = lazy(() => import('./pages/VirtualTour'));
 const Vacancies = lazy(() => import('./pages/Vacancies'));
 const VacancyManagement = lazy(() => import('./pages/VacancyManagement'));
@@ -194,14 +190,8 @@ const NavigationWrapper: React.FC = () => {
         return 'Info';
       case '/forms':
         return 'School Documents';
-      case '/links':
-        return 'Links';
-      case '/music':
-        return 'Music';
       case '/extra-mural':
         return 'Extra Mural';
-      case '/spiritual':
-        return 'Spiritual';
       case '/events':
         return 'Events';
       case '/donate':
@@ -231,7 +221,6 @@ const NavigationWrapper: React.FC = () => {
       case '/service-ethos':
         return 'Service & Ethos';
       case '/after-school-programme':
-      case '/aftercare':
         return 'After School Programme';
       case '/vacancies':
         return 'Vacancies';
@@ -372,16 +361,13 @@ const NavigationWrapper: React.FC = () => {
           <Route path="/virtual-tour" element={<VirtualTour />} />
           <Route path="/history" element={<History />} />
           <Route path="/news" element={<News />} />
-          <Route path="/spiritual" element={<Spiritual />} />
           <Route path="/info" element={<Info />} />
           <Route path="/events" element={<Events />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/school-board" element={<SchoolBoard />} />
           <Route path="/staff" element={<Staff />} />
-          <Route path="/links" element={<Links />} />
           <Route path="/forms" element={<FormsFees />} />
           <Route path="/extra-mural" element={<ExtraMural />} />
-          <Route path="/music" element={<Music />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/contact" element={<ContactForm />} />
           <Route path="/documents" element={<SchoolDocuments />} />
@@ -396,7 +382,6 @@ const NavigationWrapper: React.FC = () => {
           <Route path="/service-ethos" element={<ServiceEthos />} />
           {/* Our School Section */}
           <Route path="/after-school-programme" element={<AfterSchoolProgram />} />
-          <Route path="/aftercare" element={<Aftercare />} />
           <Route path="/vacancies" element={<Vacancies />} />
           {/* Admissions Section */}
           <Route path="/admissions" element={<ApplicationProcess />} />

@@ -25,10 +25,9 @@ import {
   ChevronRight,
   Login,
   Logout,
-  Dashboard,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 // Remove EnhancedNavigation import - we'll create a simpler, cleaner menu
 
 // TypeScript interfaces for type safety
@@ -86,10 +85,11 @@ const LogoImage = styled('img')({
   // Add drop shadow for depth
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
   borderRadius: '8px',
-  padding: '5px',
-  '&:hover': {
-    transform: 'scale(1.05)',
-    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+  '@media (hover: hover)': {
+    '&:hover': {
+      transform: 'scale(1.05)',
+      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+    },
   },
 });
 
@@ -121,7 +121,7 @@ const NavButton = styled(Button)<{ scrolled?: boolean }>(({ theme, scrolled }) =
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  minWidth: 'auto',
+  minWidth: '64px',
   '&:hover': {
     backgroundColor: 'rgba(26, 35, 126, 0.08)',
     transform: 'translateY(-2px)',
@@ -159,7 +159,7 @@ const navigationItems: NavigationItem[] = [
       { name: 'Board Members', path: '/school-board' },
       { name: 'History', path: '/history' },
       { name: 'School Info', path: '/info' },
-      { name: 'Aftercare Programme', path: '/aftercare' },
+      { name: 'Aftercare Programme', path: '/after-school-programme' },
       { name: 'Vacancies', path: '/vacancies' }
     ]
   },
@@ -211,7 +211,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 // Memoized subcomponents
-const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
+const LogoComponent = memo(({ logoError, setLogoError }: { logoError: boolean; setLogoError: (value: boolean) => void }) => (
   <LogoContainer>
     {logoError ? (
       <LogoFallback>
@@ -221,27 +221,37 @@ const LogoComponent = memo(({ logoError }: { logoError: boolean }) => (
       <LogoImage 
         src={schoolLogo} 
         alt="Holy Cross Convent School Brooklyn"
-        onError={() => console.log('Logo failed to load')}
+        onError={() => setLogoError(true)}
+        width="auto"
+        height="80"
       />
     )}
   </LogoContainer>
 ));
 
 const MobileDrawer = memo(({ 
-  currentPage, 
+  currentPath, 
   handleNavigation, 
   mobileOpen, 
   handleDrawerToggle,
   navigationItems: items,
-  handleLogout
+  handleLogout,
+  isAuthenticated
 }: {
-  currentPage: string;
+  currentPath: string;
   handleNavigation: (path: string) => void;
   mobileOpen: boolean;
   handleDrawerToggle: () => void;
   navigationItems: NavigationItem[];
   handleLogout: () => void;
-}) => (
+  isAuthenticated: boolean;
+}) => {
+  // Filter out Admin items if not authenticated
+  const filteredItems = isAuthenticated 
+    ? items 
+    : items.filter(item => item.name !== 'Admin');
+  
+  return (
       <Drawer
         variant="temporary"
         anchor="right"
@@ -269,18 +279,18 @@ const MobileDrawer = memo(({
         </Typography>
       </Box>
       <List sx={{ px: 1 }}>
-        {items.map((item, index) => (
-          <Fade in timeout={300 + index * 100} key={item.name}>
+        {filteredItems.map((item, index) => (
+          <Fade in timeout={300 + Math.min(index, 5) * 100} key={item.name}>
             <span>
             {item.type === 'single' ? (
               <ListItem 
                 onClick={() => handleNavigation(item.path!)}
                 sx={{
                   backgroundColor: item.name === 'SUPPORT US' 
-                    ? (currentPage === item.name ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)')
+                    ? (currentPath === item.path ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)')
                     : (item.name === 'Login' 
-                      ? (currentPage === item.name ? 'rgba(26, 35, 126, 0.15)' : 'rgba(26, 35, 126, 0.08)')
-                      : (currentPage === item.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent')),
+                      ? (currentPath === item.path ? 'rgba(26, 35, 126, 0.15)' : 'rgba(26, 35, 126, 0.08)')
+                      : (item.path && currentPath.startsWith(item.path) ? 'rgba(26, 35, 126, 0.1)' : 'transparent')),
                   cursor: 'pointer',
                   borderRadius: '8px',
                   margin: '4px 8px',
@@ -307,7 +317,7 @@ const MobileDrawer = memo(({
                     primary={item.name} 
                     sx={{
                       '& .MuiTypography-root': {
-                        fontWeight: currentPage === item.name ? 600 : (item.name === 'SUPPORT US' || item.name === 'Login' ? 600 : 500),
+                        fontWeight: (item.path && currentPath.startsWith(item.path)) || (item.name === 'SUPPORT US' || item.name === 'Login') ? 600 : 500,
                         color: '#1a237e',
                         fontSize: '0.95rem',
                       }
@@ -347,7 +357,7 @@ const MobileDrawer = memo(({
                     key={subItem.name}
                     onClick={() => handleNavigation(subItem.path)}
                     sx={{
-                      backgroundColor: currentPage === subItem.name ? 'rgba(26, 35, 126, 0.1)' : 'transparent',
+                      backgroundColor: currentPath.startsWith(subItem.path) ? 'rgba(26, 35, 126, 0.1)' : 'transparent',
                       cursor: 'pointer',
                       borderRadius: '8px',
                       margin: '2px 8px 2px 24px',
@@ -372,7 +382,7 @@ const MobileDrawer = memo(({
                       primary={subItem.name} 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontWeight: currentPage === subItem.name ? 600 : 500,
+                          fontWeight: currentPath.startsWith(subItem.path) ? 600 : 500,
                           color: '#1a237e',
                           fontSize: '0.95rem',
                         }
@@ -433,26 +443,29 @@ const MobileDrawer = memo(({
       </List>
     </Box>
   </Drawer>
-));
+  );
+});
 
 const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [logoError] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
+  const [dropdownAnchors, setDropdownAnchors] = useState<Record<string, HTMLElement | null>>({});
   const [scrolled, setScrolled] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
-  // Build navigation items based on authentication state
+  // Build navigation items based on authentication state - properly clone to avoid mutation
   const filteredNavigationItems = useMemo(() => {
-    const baseItems = [...navigationItems];
+    const baseItems = [...navigationItems]; // Clone base array
+    const items = [...baseItems]; // Clone again for mutations
     
     // Add admin menu for authenticated users
     if (isAuthenticated) {
-      const adminMenuIndex = baseItems.findIndex(item => item.name === 'SUPPORT US');
+      const adminMenuIndex = items.findIndex(item => item.name === 'SUPPORT US');
       const adminMenu: NavigationItem = {
         name: 'Admin',
         type: 'dropdown',
@@ -470,7 +483,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
           { name: 'School Stats', path: '/admin/stats' },
         ]
       };
-      baseItems.splice(adminMenuIndex, 0, adminMenu);
+      items.splice(adminMenuIndex, 0, adminMenu);
     } else {
       // Add login link for non-authenticated users
       const loginItem: NavigationItem = {
@@ -478,31 +491,34 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
         path: '/admin/login',
         type: 'single'
       };
-      const supportUsIndex = baseItems.findIndex(item => item.name === 'SUPPORT US');
-      baseItems.splice(supportUsIndex, 0, loginItem);
+      const supportUsIndex = items.findIndex(item => item.name === 'SUPPORT US');
+      items.splice(supportUsIndex, 0, loginItem);
     }
     
-    return baseItems;
+    return items;
   }, [isAuthenticated]);
 
-  const handleLogout = () => {
-    logout();
-    handleNavigation('/');
-    handleDropdownClose();
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+    setMobileOpen(false);
+    setDropdownAnchors({});
   };
 
-  // Handle scroll effect
+  // Handle scroll effect with ref to avoid re-creating listener
+  const scrollHandlerRef = React.useRef<() => void>();
   useEffect(() => {
-    const handleScroll = () => {
+    scrollHandlerRef.current = () => {
       const isScrolled = window.scrollY > 50;
       setScrolled(isScrolled);
     };
 
     // Set initial scroll state
-    handleScroll();
+    scrollHandlerRef.current();
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handler = () => scrollHandlerRef.current?.();
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
   const handleDrawerToggle = () => {
@@ -512,21 +528,38 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
   const handleNavigation = (path: string) => {
     if (onNavigate) {
       onNavigate(path);
+    } else {
+      navigate(path);
     }
     setMobileOpen(false);
-    setAnchorEl(null);
-    setActiveDropdown(null);
+    setDropdownAnchors({});
   };
 
   const handleDropdownClick = (event: React.MouseEvent<HTMLElement>, dropdownName: string) => {
-    setAnchorEl(event.currentTarget);
-    setActiveDropdown(dropdownName);
+    // Close other dropdowns when opening a new one
+    setDropdownAnchors({ [dropdownName]: event.currentTarget });
   };
 
-  const handleDropdownClose = () => {
-    setAnchorEl(null);
-    setActiveDropdown(null);
+  const handleDropdownClose = (dropdownName?: string) => {
+    if (dropdownName) {
+      setDropdownAnchors(prev => ({ ...prev, [dropdownName]: null }));
+    } else {
+      setDropdownAnchors({});
+    }
   };
+
+  // Preload logo for better performance
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = schoolLogo;
+    document.head.appendChild(link);
+    
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
 
   return (
     <>
@@ -534,53 +567,69 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
         <Container maxWidth="xl">
           <Toolbar sx={{ px: { xs: 1, sm: 1 }, py: 1 }}>
             {/* Logo and School Name */}
-            <LogoComponent logoError={logoError} />
+            <LogoComponent logoError={logoError} setLogoError={setLogoError} />
 
             {/* Desktop Navigation */}
             {!isMobile && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
                 {filteredNavigationItems.map((item, index) => (
                   <Box key={index} sx={{ position: 'relative' }}>
-                  <NavButton
-                      onClick={(e) => {
-                        if (item.type === 'dropdown') {
-                          handleDropdownClick(e, item.name);
-                        } else if (item.path) {
-                          handleNavigation(item.path);
+                  {item.type === 'dropdown' ? (
+                    <NavButton
+                      onClick={(e) => handleDropdownClick(e, item.name)}
+                      endIcon={<ExpandMore />}
+                      scrolled={scrolled}
+                      aria-haspopup="menu"
+                      aria-expanded={!!dropdownAnchors[item.name]}
+                      sx={{
+                        backgroundColor: 'transparent',
+                        color: scrolled ? '#1a237e' : '#1a237e',
+                        fontWeight: 600,
+                        '&:hover': {
+                          backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                          transform: 'translateY(-2px)',
+                          color: '#1a237e',
                         }
                       }}
-                      startIcon={item.name === 'Login' ? <Login sx={{ fontSize: '1rem' }} /> : undefined}
-                      endIcon={item.type === 'dropdown' ? <ExpandMore /> : undefined}
-                      scrolled={scrolled}
-                    sx={{
-                      backgroundColor: currentPage === item.name 
-                        ? 'rgba(26, 35, 126, 0.1)' 
-                        : (item.name === 'SUPPORT US' ? 'rgba(211, 47, 47, 0.1)' 
-                        : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.08)' : 'transparent')),
-                      color: scrolled ? '#1a237e' : '#1a237e',
-                      fontWeight: 600,
-                      border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' 
-                        : (item.name === 'Login' ? '1px solid #1a237e' : 'none'),
-                      '&:hover': {
-                        backgroundColor: item.name === 'SUPPORT US' 
-                          ? 'rgba(211, 47, 47, 0.15)' 
-                          : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.12)' : 'rgba(26, 35, 126, 0.08)'),
-                        transform: 'translateY(-2px)',
-                        color: '#1a237e',
-                        borderColor: item.name === 'SUPPORT US' ? '#d32f2f' 
-                          : (item.name === 'Login' ? '#1a237e' : 'transparent'),
-                      }
-                    }}
-                  >
-                    {item.name}
-                  </NavButton>
+                    >
+                      {item.name}
+                    </NavButton>
+                  ) : item.path ? (
+                    <Box component={RouterLink} to={item.path} sx={{ textDecoration: 'none' }}>
+                      <NavButton
+                        startIcon={item.name === 'Login' ? <Login sx={{ fontSize: '1rem' }} /> : undefined}
+                        scrolled={scrolled}
+                        sx={{
+                          backgroundColor: (item.path && currentPath.startsWith(item.path))
+                            ? 'rgba(26, 35, 126, 0.1)' 
+                            : (item.name === 'SUPPORT US' ? 'rgba(211, 47, 47, 0.1)' 
+                            : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.08)' : 'transparent')),
+                          color: scrolled ? '#1a237e' : '#1a237e',
+                          fontWeight: 600,
+                          border: item.name === 'SUPPORT US' ? '2px solid #d32f2f' 
+                            : (item.name === 'Login' ? '1px solid #1a237e' : 'none'),
+                          '&:hover': {
+                            backgroundColor: item.name === 'SUPPORT US' 
+                              ? 'rgba(211, 47, 47, 0.15)' 
+                              : (item.name === 'Login' ? 'rgba(26, 35, 126, 0.12)' : 'rgba(26, 35, 126, 0.08)'),
+                            transform: 'translateY(-2px)',
+                            color: '#1a237e',
+                            borderColor: item.name === 'SUPPORT US' ? '#d32f2f' 
+                              : (item.name === 'Login' ? '#1a237e' : 'transparent'),
+                          }
+                        }}
+                      >
+                        {item.name}
+                      </NavButton>
+                    </Box>
+                  ) : null}
                     
                     {/* Modern Drawer-Style Dropdown Menu */}
                     {item.type === 'dropdown' && (
                       <Menu
-                        anchorEl={anchorEl}
-                        open={activeDropdown === item.name}
-                        onClose={handleDropdownClose}
+                        anchorEl={dropdownAnchors[item.name] || null}
+                        open={!!dropdownAnchors[item.name]}
+                        onClose={() => handleDropdownClose(item.name)}
                         TransitionComponent={Fade}
                         anchorOrigin={{
                           vertical: 'bottom',
@@ -620,16 +669,20 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                         {item.items?.map((subItem, subIndex) => (
                           <MenuItem
                             key={subIndex}
-                            onClick={() => handleNavigation(subItem.path)}
-                            sx={{
+                            component={RouterLink}
+                            to={subItem.path}
+                            onClick={() => handleDropdownClose(item.name)}
+                            data-testid={`nav-${item.name}-${subItem.name.toLowerCase().replace(/\s+/g, '-')}`}
+                              sx={{
                               py: 1.75,
                               px: 2.5,
-                              color: '#1a237e',
+                              color: currentPath.startsWith(subItem.path) ? '#1a237e' : '#1a237e',
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
                               transition: 'all 0.2s ease',
-                              borderLeft: '3px solid transparent',
+                              borderLeft: currentPath.startsWith(subItem.path) ? '3px solid #ffd700' : '3px solid transparent',
+                              backgroundColor: currentPath.startsWith(subItem.path) ? 'rgba(26, 35, 126, 0.05)' : 'transparent',
                               '&:hover': {
                                 backgroundColor: 'rgba(26, 35, 126, 0.05)',
                                 borderLeftColor: '#ffd700',
@@ -648,7 +701,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
                               variant="body1" 
                               className="menu-text"
                               sx={{ 
-                                fontWeight: 500,
+                                fontWeight: currentPath.startsWith(subItem.path) ? 600 : 500,
                                 color: 'inherit',
                                 fontSize: '0.95rem',
                                 transition: 'all 0.2s ease',
@@ -727,12 +780,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage = 'Home', onNavigate }) => 
 
       {/* Mobile Navigation Drawer */}
       <MobileDrawer
-        currentPage={currentPage}
+        currentPath={currentPath}
         handleNavigation={handleNavigation}
         mobileOpen={mobileOpen}
         handleDrawerToggle={handleDrawerToggle}
         navigationItems={filteredNavigationItems}
         handleLogout={handleLogout}
+        isAuthenticated={isAuthenticated}
       />
     </>
   );

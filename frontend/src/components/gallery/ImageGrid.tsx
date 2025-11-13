@@ -178,6 +178,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
                         component="img"
                         image={imageUrl}
                         alt={item.title}
+                        loading="lazy"
                         onError={(e) => {
                           console.error('Image failed to load:', {
                             imageUrl,

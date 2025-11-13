@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Container,
   Box,
@@ -7,8 +7,6 @@ import {
   Button,
   Grid,
   Card,
-  CardContent,
-  CircularProgress,
 } from '@mui/material';
 import {
   PlayCircleOutline,
@@ -21,9 +19,12 @@ import { useNavigate } from 'react-router-dom';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
 
+// Image path - using constant for better production handling
+const heroImage = '/edu2.jpg';
+
 const HeroSection = styled(Box)(({ theme }) => ({
   position: 'relative',
-  minHeight: '500px',
+  minHeight: '70vh',
   color: '#fff',
   display: 'flex',
   alignItems: 'center',
@@ -35,8 +36,8 @@ const HeroSection = styled(Box)(({ theme }) => ({
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'url("/edu2.jpg") center/cover no-repeat',
-    opacity: 0.2,
+    background: `url("${heroImage}") center/cover no-repeat`,
+    opacity: 0.3,
     zIndex: 0,
   },
   '& > *': { position: 'relative', zIndex: 1 },
@@ -64,10 +65,21 @@ const FeatureCard = styled(Card)(({ theme }) => ({
     transform: 'translateY(-8px)',
     boxShadow: theme.shadows[8],
   },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-8px)',
+    boxShadow: theme.shadows[8],
+  },
 }));
 
 const VirtualTour: React.FC = () => {
   const navigate = useNavigate();
+  
+  // Memoize navigate callback to prevent re-renders
+  const handleNavigateToContact = useCallback(() => {
+    navigate('/contact');
+  }, [navigate]);
 
   return (
     <>
@@ -75,37 +87,41 @@ const VirtualTour: React.FC = () => {
         title="Virtual Tour - Holy Cross Convent School Brooklyn"
         description="Take a virtual tour of Holy Cross Convent School Brooklyn. Explore our facilities, classrooms, and campus from anywhere in the world."
         keywords="virtual tour, school tour, Holy Cross Convent School, Brooklyn, Cape Town, school facilities"
+        image="/edu2.jpg"
+        type="website"
       />
+
+      {/* Return to Home - moved outside hero to avoid blocking content */}
+      <Box sx={{ 
+        position: 'fixed', 
+        top: { xs: 80, sm: 100 }, 
+        left: 16, 
+        zIndex: 1000,
+        '& .MuiTypography-root': {
+          color: 'white !important',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+          backgroundColor: 'rgba(26, 35, 126, 0.7)',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          display: 'inline-block',
+          backdropFilter: 'blur(4px)',
+          '&:hover': {
+            transform: 'translateX(-2px)',
+            backgroundColor: 'rgba(26, 35, 126, 0.9)',
+          },
+          transition: 'all 0.3s ease'
+        }
+      }}>
+        <ReturnToHome />
+      </Box>
 
       {/* Hero Section */}
       <HeroSection>
-        <Box sx={{ 
-          position: 'fixed', 
-          top: { xs: 80, sm: 100 }, 
-          left: 16, 
-          zIndex: 1000,
-          '& .MuiTypography-root': {
-            color: 'white !important',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
-            backgroundColor: 'rgba(26, 35, 126, 0.7)',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            display: 'inline-block',
-            backdropFilter: 'blur(4px)',
-            '&:hover': {
-              transform: 'translateX(-2px)',
-              backgroundColor: 'rgba(26, 35, 126, 0.9)',
-            },
-            transition: 'all 0.3s ease'
-          }
-        }}>
-          <ReturnToHome />
-        </Box>
-
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 }, py: 8 }}>
-          <Videocam sx={{ fontSize: 80, mb: 3, color: '#ffd700' }} />
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 4 }, py: 8 }}>
+          <Videocam sx={{ fontSize: 80, mb: 3, color: '#ffd700' }} aria-hidden="true" />
           <Typography
             variant="h1"
+            component="h1"
             sx={{
               fontWeight: 900,
               fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
@@ -131,7 +147,7 @@ const VirtualTour: React.FC = () => {
         </Container>
       </HeroSection>
 
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         {/* Video Section */}
         <Box sx={{ mb: 8 }}>
           <Typography
@@ -145,7 +161,10 @@ const VirtualTour: React.FC = () => {
           >
             Aerial Campus Tour
           </Typography>
-          <VideoPlaceholder>
+          <VideoPlaceholder
+            role="img"
+            aria-label="Aerial campus tour video placeholder - coming soon"
+          >
             <Box
               sx={{
                 position: 'absolute',
@@ -156,7 +175,7 @@ const VirtualTour: React.FC = () => {
                 color: '#fff',
               }}
             >
-              <PlayCircleOutline sx={{ fontSize: 100, mb: 2, opacity: 0.8 }} />
+              <PlayCircleOutline sx={{ fontSize: 100, mb: 2, opacity: 0.8 }} aria-hidden="true" />
               <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
                 Aerial Drone Video
               </Typography>
@@ -180,10 +199,10 @@ const VirtualTour: React.FC = () => {
           >
             What You'll See
           </Typography>
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
               <FeatureCard>
-                <School sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} />
+                <School sx={{ fontSize: 48, color: '#1a237e', mb: 2 }} aria-hidden="true" />
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
                   Modern Classrooms
                 </Typography>
@@ -194,7 +213,7 @@ const VirtualTour: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <FeatureCard>
-                <Videocam sx={{ fontSize: 48, color: '#d32f2f', mb: 2 }} />
+                <Videocam sx={{ fontSize: 48, color: '#d32f2f', mb: 2 }} aria-hidden="true" />
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
                   Computer Lab
                 </Typography>
@@ -205,7 +224,7 @@ const VirtualTour: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <FeatureCard>
-                <LocationOn sx={{ fontSize: 48, color: '#ffd700', mb: 2 }} />
+                <LocationOn sx={{ fontSize: 48, color: '#ffd700', mb: 2 }} aria-hidden="true" />
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
                   Campus Grounds
                 </Typography>
@@ -216,7 +235,7 @@ const VirtualTour: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <FeatureCard>
-                <PlayCircleOutline sx={{ fontSize: 48, color: '#4caf50', mb: 2 }} />
+                <PlayCircleOutline sx={{ fontSize: 48, color: '#4caf50', mb: 2 }} aria-hidden="true" />
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
                   Sports Facilities
                 </Typography>
@@ -237,23 +256,28 @@ const VirtualTour: React.FC = () => {
             borderRadius: 3,
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 2 }}>
+          <Typography variant="h2" sx={{ fontWeight: 700, color: '#1a237e', mb: 2 }}>
             Ready to Visit in Person?
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
             While you wait for our virtual tour video, we'd love to welcome you to our campus for a personal tour.
           </Typography>
           <Button
+            type="button"
             variant="contained"
             size="large"
-            onClick={() => navigate('/contact')}
+            onClick={handleNavigateToContact}
             sx={{
               bgcolor: '#1a237e',
               color: '#fff',
               px: 4,
               py: 1.5,
               fontWeight: 600,
-              '&:hover': { bgcolor: '#0d47a1' },
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                bgcolor: '#0d47a1',
+                transform: 'translateY(-2px)',
+              },
             }}
           >
             Schedule a Visit

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -8,7 +8,6 @@ import {
   IconButton,
   Avatar,
   Paper,
-  useTheme,
   Button,
   TextField,
   InputAdornment,
@@ -16,7 +15,14 @@ import {
   Alert,
   Stack,
   Fade,
-  Tooltip
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControlLabel,
+  Checkbox,
+  Skeleton
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -67,16 +73,19 @@ const LiveFeedContainer = styled(Box)(({ theme }) => ({
 
 const FeedCard = styled(Card)(({ theme }) => ({
   height: '100%',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease',
   cursor: 'pointer',
   position: 'relative',
   overflow: 'hidden',
   border: '1px solid rgba(26, 35, 126, 0.1)',
   borderRadius: theme.spacing(2),
   '&:hover': {
-    transform: 'translateY(-4px)',
     boxShadow: '0 8px 24px rgba(26, 35, 126, 0.15)',
     borderColor: 'rgba(26, 35, 126, 0.2)',
+  },
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
   },
   '&::before': {
     content: '""',
@@ -97,11 +106,115 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   flexWrap: 'wrap'
 }));
 
+// Memoized FeedCard component for performance
+const FeedCardComponent = React.memo<{
+  item: LiveFeedItem;
+  onClick: (item: LiveFeedItem) => void;
+}>(({ item, onClick }) => {
+  const category = item.category || 'general';
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(item);
+    }
+  };
+
+  return (
+    <FeedCard
+      role="button"
+      tabIndex={0}
+      onClick={() => onClick(item)}
+      onKeyDown={handleKeyDown}
+      aria-label={`View ${item.type}: ${item.title}`}
+      data-testid={`feed-item-${item.id || item.title}`}
+    >
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <Avatar
+            sx={{
+              bgcolor: getCategoryColor(category),
+              width: 40,
+              height: 40
+            }}
+          >
+            {getCategoryIcon(category)}
+          </Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
+                {item.title}
+              </Typography>
+              <Chip
+                label={item.type}
+                size="small"
+                color={item.type === 'event' ? 'primary' : 'secondary'}
+                sx={{ 
+                  bgcolor: item.type === 'event' ? '#1a237e' : '#ffd700',
+                  color: 'white'
+                }}
+              />
+              {item.priority === 'high' && (
+                <Chip
+                  icon={<Star />}
+                  label="High Priority"
+                  size="small"
+                  color="error"
+                />
+              )}
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {item.summary || item.content}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <AccessTime fontSize="small" color="action" />
+                <Typography variant="caption">
+                  {formatRelativeDate(item.date)}
+                </Typography>
+              </Box>
+              {item.location && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <LocationOn fontSize="small" color="action" />
+                  <Typography variant="caption">{item.location}</Typography>
+                </Box>
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Chip
+                label={category}
+                size="small"
+                sx={{ bgcolor: getCategoryColor(category), color: 'white' }}
+              />
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton size="small" aria-label="Bookmark">
+                  <Bookmark />
+                </IconButton>
+                <IconButton size="small" aria-label="Share">
+                  <Share />
+                </IconButton>
+                <IconButton size="small" aria-label="View details">
+                  <Visibility />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </CardContent>
+    </FeedCard>
+  );
+});
+
 //---------------------------------------------------------
 // HELPER FUNCTIONS
 //---------------------------------------------------------
-const getCategoryIcon = (category: string) => {
-  switch (category.toLowerCase()) {
+/**
+ * Get category icon with safe fallback
+ * @param category - Category string (may be undefined or empty)
+ * @returns Icon component
+ */
+const getCategoryIcon = (category?: string) => {
+  const normalizedCategory = (category || 'general').toLowerCase();
+  switch (normalizedCategory) {
     case 'technology':
     case 'academic':
       return <Science />;
@@ -118,8 +231,14 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
-const getCategoryColor = (category: string) => {
-  switch (category.toLowerCase()) {
+/**
+ * Get category color with safe fallback
+ * @param category - Category string (may be undefined or empty)
+ * @returns Color hex string
+ */
+const getCategoryColor = (category?: string) => {
+  const normalizedCategory = (category || 'general').toLowerCase();
+  switch (normalizedCategory) {
     case 'technology':
     case 'academic':
       return '#9c27b0';
@@ -128,22 +247,58 @@ const getCategoryColor = (category: string) => {
     case 'infrastructure':
       return '#2196f3';
     case 'music':
-        return '#ff9800';
+      return '#ff9800';
     case 'celebration':
       return '#e91e63';
-      default:
-      return '#1a237e';
+    default:
+      return '#6c757d'; // Neutral gray fallback
   }
-  };
+};
+
+/**
+ * Format date to relative time (e.g., "2 hours ago", "Yesterday at 2:30 PM")
+ * @param date - Date string or Date object
+ * @returns Formatted date string
+ */
+const formatRelativeDate = (date: string | Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - dateObj.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) {
+    return 'Just now';
+  } else if (diffMins < 60) {
+    return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+  } else if (diffDays === 1) {
+    return `Yesterday at ${dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else {
+    return dateObj.toLocaleString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: dateObj.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+};
 
 
 //---------------------------------------------------------
 // MAIN COMPONENT
 //---------------------------------------------------------
 const LiveFeed: React.FC = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use live feed hook for real-time data
   const {
@@ -165,37 +320,123 @@ const LiveFeed: React.FC = () => {
     enableSearch: true
   });
 
-  // Handle search
-  const handleSearch = useCallback(async (query: string) => {
-    setSearchQuery(query);
-    if (query.trim()) {
-      await search(query);
-    } else {
-      clearSearch();
+  // Memoize filtered items
+  const filteredItems = useMemo(() => {
+    if (selectedCategories.length === 0) return items;
+    return items.filter(item => {
+      const category = (item.category || 'general').toLowerCase();
+      return selectedCategories.some(selected => selected.toLowerCase() === category);
+    });
+  }, [items, selectedCategories]);
+
+  // Debounced search handler
+  const debouncedSearch = useCallback((query: string) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
+    
+    debounceTimerRef.current = setTimeout(async () => {
+      if (query.trim()) {
+        await search(query);
+      } else {
+        clearSearch();
+      }
+    }, 300);
   }, [search, clearSearch]);
+
+  // Handle search input change
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSearch(value);
+  }, [debouncedSearch]);
+
+  // Cleanup debounce timer
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Handle refresh
   const handleRefresh = useCallback(async () => {
     await refresh();
   }, [refresh]);
 
-  // Handle item click
+  // Handle item click with error handling
   const handleItemClick = useCallback((item: LiveFeedItem) => {
-    if (item.type === 'event') {
-      navigate(`/events/${item.id}`);
-    } else if (item.type === 'news') {
-      navigate(`/news/${item.id}`);
+    try {
+      if (!item.id) {
+        console.warn('Item missing ID:', item);
+        return;
+      }
+      
+      if (item.type === 'event') {
+        navigate(`/events/${item.id}`);
+      } else if (item.type === 'news') {
+        navigate(`/news/${item.id}`);
+      } else {
+        console.warn('Unknown item type:', item.type);
+      }
+    } catch (err) {
+      console.error('Error navigating to item:', err);
+      // Optionally show user-friendly error message
     }
   }, [navigate]);
 
-  // Render loading state
+  // Get unique categories for filter
+  const availableCategories = useMemo(() => {
+    const categories = new Set<string>();
+    items.forEach(item => {
+      if (item.category) {
+        categories.add(item.category);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [items]);
+
+  // Handle filter toggle
+  const handleFilterToggle = useCallback((category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  }, []);
+
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    setSelectedCategories([]);
+  }, []);
+
+  // Render loading state with skeleton
   if (loading && !refreshing) {
     return (
       <LiveFeedContainer>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-          <CircularProgress size={60} />
+        <Box sx={{ mb: 4 }}>
+          <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
+          <Skeleton variant="rectangular" width="100%" height={56} sx={{ mb: 2 }} />
         </Box>
+        <Stack spacing={2}>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Card key={`skeleton-${index}`}>
+              <CardContent>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <Box sx={{ flex: 1 }}>
+                    <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
+                    <Skeleton variant="text" width="100%" height={20} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="text" width="80%" height={20} />
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       </LiveFeedContainer>
     );
   }
@@ -230,7 +471,7 @@ const LiveFeed: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Tooltip title="Last updated">
               <Typography variant="caption" color="text.secondary">
-                {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : 'Never updated'}
+                {lastUpdated ? `Updated ${formatRelativeDate(lastUpdated)}` : 'Never updated'}
               </Typography>
             </Tooltip>
             <IconButton onClick={handleRefresh} disabled={refreshing}>
@@ -245,29 +486,41 @@ const LiveFeed: React.FC = () => {
             fullWidth
             placeholder="Search news and events..."
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={handleSearchChange}
+            aria-label="Search news and events"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  {isSearching ? <CircularProgress size={20} /> : <Search />}
+                  {(isSearching || refreshing) ? <CircularProgress size={20} /> : <Search />}
                 </InputAdornment>
               ),
               endAdornment: searchQuery && (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => handleSearch('')} size="small">
+                  <IconButton 
+                    onClick={() => {
+                      setSearchQuery('');
+                      clearSearch();
+                    }} 
+                    size="small"
+                    aria-label="Clear search"
+                  >
                     <Clear />
                   </IconButton>
                 </InputAdornment>
               )
             }}
-            sx={{ maxWidth: 400 }}
+            sx={{ maxWidth: { xs: '100%', sm: 500, md: 600 } }}
+            data-testid="search-input"
           />
           <Button
             variant="outlined"
             startIcon={<FilterList />}
             sx={{ minWidth: 120 }}
+            onClick={() => setFilterOpen(true)}
+            aria-label="Open filters"
+            data-testid="filter-button"
           >
-            Filter
+            Filter{selectedCategories.length > 0 && ` (${selectedCategories.length})`}
           </Button>
         </SearchContainer>
       </Box>
@@ -280,86 +533,19 @@ const LiveFeed: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
               Latest Updates
             </Typography>
-            {items.length === 0 ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
+            {filteredItems.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }} data-testid="empty-state">
                 <Typography variant="body1" color="text.secondary">
-                  No updates found. Check back later!
-      </Typography>
+                  {selectedCategories.length > 0 
+                    ? 'No items match the selected filters.' 
+                    : 'No updates found. Check back later!'}
+                </Typography>
               </Paper>
             ) : (
-              <Stack spacing={2}>
-                {items.map((item) => (
-                  <Fade in key={item.id} timeout={300}>
-                    <FeedCard onClick={() => handleItemClick(item)}>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                          <Avatar
-        sx={{
-                              bgcolor: getCategoryColor(item.category || ''),
-                              width: 48,
-                              height: 48
-                            }}
-                          >
-                            {getCategoryIcon(item.category || '')}
-                          </Avatar>
-                          <Box sx={{ flex: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e' }}>
-                                {item.title}
-                              </Typography>
-                              <Chip
-                                label={item.type}
-                                size="small"
-                                color={item.type === 'event' ? 'primary' : 'secondary'}
-                              />
-                              {item.priority === 'high' && (
-                                <Chip
-                                  icon={<Star />}
-                                  label="High Priority"
-                                  size="small"
-                                  color="error"
-                                />
-                              )}
-            </Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                              {item.summary || item.content}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <AccessTime fontSize="small" color="action" />
-                                <Typography variant="caption">
-                                  {new Date(item.date).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                              {item.location && (
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                  <LocationOn fontSize="small" color="action" />
-                                  <Typography variant="caption">{item.location}</Typography>
-                                </Box>
-                              )}
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Chip
-                                label={item.category}
-                                size="small"
-                                sx={{ bgcolor: getCategoryColor(item.category || ''), color: 'white' }}
-                              />
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <IconButton size="small">
-                                  <Bookmark />
-                                </IconButton>
-                                <IconButton size="small">
-                                  <Share />
-                                </IconButton>
-                                <IconButton size="small">
-                                  <Visibility />
-                                </IconButton>
-                              </Box>
-                            </Box>
-                          </Box>
-                        </Box>
-                </CardContent>
-              </FeedCard>
+              <Stack spacing={{ xs: 2, md: 3 }} data-testid="feed-items">
+                {filteredItems.map((item, index) => (
+                  <Fade in key={item.id || `item-${index}`} timeout={300} appear={false}>
+                    <FeedCardComponent item={item} onClick={handleItemClick} />
                   </Fade>
                 ))}
               </Stack>
@@ -368,7 +554,14 @@ const LiveFeed: React.FC = () => {
         </Box>
 
         {/* Sidebar */}
-        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.333% - 12px)' } }}>
+        <Box 
+          sx={{ 
+            flex: { xs: '1 1 100%', lg: '1 1 calc(33.333% - 12px)' },
+            position: { lg: 'sticky' },
+            top: { lg: 20 },
+            alignSelf: { lg: 'flex-start' }
+          }}
+        >
           <Stack spacing={3}>
             {/* Upcoming Events */}
             <Box>
@@ -383,8 +576,12 @@ const LiveFeed: React.FC = () => {
                 </Paper>
               ) : (
                 <Stack spacing={2}>
-                  {upcomingEvents.slice(0, 3).map((event) => (
-                    <Card key={event.id} sx={{ cursor: 'pointer' }}>
+                  {upcomingEvents.slice(0, 3).map((event, index) => (
+                    <Card 
+                      key={event.id || `event-${index}`} 
+                      sx={{ cursor: 'pointer' }}
+                      data-testid={`upcoming-event-${event.id || index}`}
+                    >
                       <CardContent sx={{ p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <Avatar sx={{ bgcolor: getCategoryColor(event.category), width: 32, height: 32 }}>
@@ -417,8 +614,12 @@ const LiveFeed: React.FC = () => {
                 </Paper>
               ) : (
                 <Stack spacing={2}>
-                  {latestNews.slice(0, 3).map((article) => (
-                    <Card key={article.id} sx={{ cursor: 'pointer' }}>
+                  {latestNews.slice(0, 3).map((article, index) => (
+                    <Card 
+                      key={article.id || `news-${index}`} 
+                      sx={{ cursor: 'pointer' }}
+                      data-testid={`latest-news-${article.id || index}`}
+                    >
                       <CardContent sx={{ p: 2 }}>
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                           {article.title}
@@ -435,6 +636,47 @@ const LiveFeed: React.FC = () => {
           </Stack>
         </Box>
       </Box>
+
+      {/* Filter Dialog */}
+      <Dialog 
+        open={filterOpen} 
+        onClose={() => setFilterOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby="filter-dialog-title"
+      >
+        <DialogTitle id="filter-dialog-title">Filter by Category</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {availableCategories.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No categories available
+              </Typography>
+            ) : (
+              availableCategories.map((category) => (
+                <FormControlLabel
+                  key={category}
+                  control={
+                    <Checkbox
+                      checked={selectedCategories.includes(category)}
+                      onChange={() => handleFilterToggle(category)}
+                    />
+                  }
+                  label={category}
+                />
+              ))
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClearFilters} disabled={selectedCategories.length === 0}>
+            Clear All
+          </Button>
+          <Button onClick={() => setFilterOpen(false)} variant="contained">
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </LiveFeedContainer>
   );
 };

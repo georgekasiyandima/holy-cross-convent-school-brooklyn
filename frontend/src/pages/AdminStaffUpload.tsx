@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Container,
   Card,
@@ -14,12 +14,16 @@ import {
   Divider,
   Stack,
   MenuItem,
+  Snackbar,
+  useTheme,
+  IconButton,
 } from '@mui/material';
 import {
   CloudUpload,
   Person,
   School,
   Support,
+  Close,
 } from '@mui/icons-material';
 import ReturnToHome from '../components/ReturnToHome';
 import axios from 'axios';
@@ -68,6 +72,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 const AdminStaffUpload: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const theme = useTheme();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -76,9 +81,14 @@ const AdminStaffUpload: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
   const [createImage, setCreateImage] = useState<File | null>(null);
+  const [createImagePreview, setCreateImagePreview] = useState<string | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [createFileInputKey, setCreateFileInputKey] = useState(0);
 
   const [createForm, setCreateForm] = useState<StaffFormState>({
     name: '',
@@ -92,7 +102,7 @@ const AdminStaffUpload: React.FC = () => {
     favoriteQuote: '',
   });
 
-  const [editForm, setEditForm] = useState<StaffFormState | null>(null);
+  const [editFormState, setEditFormState] = useState<StaffFormState | null>(null);
 
   const getErrorMessage = (error: any, fallback: string) => {
     if (error?.response?.data) {
@@ -125,33 +135,31 @@ const AdminStaffUpload: React.FC = () => {
     return true;
   };
 
-  const parseSubjectsFromPayload = (subjects: unknown): string[] => {
+  const parseSubjectsFromPayload = useCallback((subjects: unknown): string[] => {
     if (!subjects) return [];
     try {
       if (typeof subjects === 'string') {
+        if (subjects.trim() === '') return [];
         const parsed = JSON.parse(subjects);
-        return Array.isArray(parsed) ? parsed : [];
+        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+          return parsed;
+        }
+        return [];
       }
-      if (Array.isArray(subjects)) {
-        return subjects as string[];
+      if (Array.isArray(subjects) && subjects.every(item => typeof item === 'string')) {
+        return subjects;
       }
       return [];
     } catch (error) {
       console.warn('Failed to parse subjects payload', error);
       return [];
     }
-  };
+  }, []);
 
-  const selectedStaffIdRef = React.useRef<string | null>(null);
-
-  React.useEffect(() => {
-    selectedStaffIdRef.current = selectedStaff?.id ?? null;
-  }, [selectedStaff]);
-
-  const loadStaff = React.useCallback(async () => {
+  const loadStaff = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`);
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/staff`, { signal });
       if (response.data.success) {
         const staffList: StaffMember[] = (response.data.data.staff || []).map((member: any) => ({
           id: member.id,
@@ -170,29 +178,39 @@ const AdminStaffUpload: React.FC = () => {
 
         setStaff(staffList);
 
-        const previousSelectionId = selectedStaffIdRef.current;
-        if (previousSelectionId) {
-          const updatedSelection = staffList.find((item) => item.id === previousSelectionId) || null;
+        // Update selected staff if it still exists
+        if (selectedStaff) {
+          const updatedSelection = staffList.find((item) => item.id === selectedStaff.id) || null;
           setSelectedStaff(updatedSelection);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error loading staff:', error);
-      setMessage({ type: 'error', text: 'Failed to load staff members. Please check if the backend server is running.' });
+      const errorMessage = error.response?.data?.message || 'Failed to load staff members. Please check if the backend server is running.';
+      setMessage({ type: 'error', text: errorMessage });
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedStaff, parseSubjectsFromPayload]);
 
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      loadStaff();
-    }
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const controller = new AbortController();
+    loadStaff(controller.signal);
+    
+    return () => {
+      controller.abort();
+    };
   }, [isAuthenticated, loadStaff]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedStaff) {
-      setEditForm({
+      setEditFormState({
         name: selectedStaff.name || '',
         role: selectedStaff.role || '',
         email: selectedStaff.email || '',
@@ -201,14 +219,15 @@ const AdminStaffUpload: React.FC = () => {
         category: selectedStaff.category,
         order: selectedStaff.order ?? '',
         subjects: Array.isArray(selectedStaff.subjects) ? selectedStaff.subjects.join(', ') : '',
-      favoriteQuote: selectedStaff.favoriteQuote || '',
+        favoriteQuote: selectedStaff.favoriteQuote || '',
       });
+      setEditImagePreview(null);
     } else {
-      setEditForm(null);
+      setEditFormState(null);
     }
   }, [selectedStaff]);
 
-  const resetCreateForm = React.useCallback(() => {
+  const resetCreateForm = useCallback(() => {
     setCreateForm({
       name: '',
       role: '',
@@ -221,12 +240,11 @@ const AdminStaffUpload: React.FC = () => {
       favoriteQuote: '',
     });
     setCreateImage(null);
-    if (createFileInputRef.current) {
-      createFileInputRef.current.value = '';
-    }
+    setCreateImagePreview(null);
+    setCreateFileInputKey(prev => prev + 1);
   }, [staff.length]);
 
-  const handleCreateInputChange =
+  const handleCreateInputChange = useCallback(
     (field: keyof StaffFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
       const mappedValue =
@@ -240,11 +258,13 @@ const AdminStaffUpload: React.FC = () => {
         ...prev,
         [field]: mappedValue,
       }));
-    };
+    },
+    []
+  );
 
-  const handleEditInputChange =
+  const handleEditInputChange = useCallback(
     (field: keyof StaffFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!editForm) return;
+      if (!editFormState) return;
       const { value } = event.target;
       const mappedValue =
         field === 'order'
@@ -253,7 +273,7 @@ const AdminStaffUpload: React.FC = () => {
             ? (value as StaffCategory)
             : value;
 
-      setEditForm((prev) =>
+      setEditFormState((prev) =>
         prev
           ? {
               ...prev,
@@ -261,25 +281,43 @@ const AdminStaffUpload: React.FC = () => {
             }
           : prev
       );
-    };
+    },
+    [editFormState]
+  );
 
-  const handleCreateImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCreateImageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!validateImage(file)) {
-      if (createFileInputRef.current) {
-        createFileInputRef.current.value = '';
-      }
+      setCreateFileInputKey(prev => prev + 1);
       return;
     }
     setCreateImage(file);
-  };
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setCreateImagePreview(previewUrl);
+  }, []);
 
-  const handleCreateStaff = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateStaff = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!createForm.name.trim() || !createForm.role.trim()) {
-      setMessage({ type: 'error', text: 'Name and role are required.' });
+    // Form validation
+    if (!createForm.name.trim()) {
+      const errorMsg = 'Name is required.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      return;
+    }
+    if (!createForm.role.trim()) {
+      const errorMsg = 'Role is required.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      return;
+    }
+    if (createForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email.trim())) {
+      const errorMsg = 'Please enter a valid email address.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
       return;
     }
 
@@ -326,7 +364,14 @@ const AdminStaffUpload: React.FC = () => {
       });
 
       if (response.data.success) {
-        setMessage({ type: 'success', text: 'Staff member created successfully.' });
+        const successMsg = 'Staff member created successfully.';
+        setMessage({ type: 'success', text: successMsg });
+        setSnackbar({ open: true, message: successMsg, severity: 'success' });
+        // Clean up preview URL
+        if (createImagePreview) {
+          URL.revokeObjectURL(createImagePreview);
+          setCreateImagePreview(null);
+        }
         await loadStaff();
         resetCreateForm();
       } else {
@@ -334,18 +379,35 @@ const AdminStaffUpload: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Create staff error:', error);
-      setMessage({ type: 'error', text: getErrorMessage(error, 'Failed to create staff member.') });
+      const errorMsg = getErrorMessage(error, 'Failed to create staff member.');
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
     } finally {
       setCreating(false);
     }
-  };
+  }, [createForm, createImage, createImagePreview, loadStaff, resetCreateForm, staff.length]);
 
-  const handleUpdateStaff = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateStaff = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!selectedStaff || !editForm) return;
+    if (!selectedStaff || !editFormState) return;
 
-    if (!editForm.name.trim() || !editForm.role.trim()) {
-      setMessage({ type: 'error', text: 'Name and role must not be empty.' });
+    // Form validation
+    if (!editFormState.name.trim()) {
+      const errorMsg = 'Name is required.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      return;
+    }
+    if (!editFormState.role.trim()) {
+      const errorMsg = 'Role is required.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      return;
+    }
+    if (editFormState.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormState.email.trim())) {
+      const errorMsg = 'Please enter a valid email address.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
       return;
     }
 
@@ -359,24 +421,24 @@ const AdminStaffUpload: React.FC = () => {
       setUpdating(true);
       setMessage(null);
 
-      const subjectsArray = editForm.subjects
+      const subjectsArray = editFormState.subjects
         .split(',')
         .map((subject) => subject.trim())
         .filter((subject) => subject.length > 0);
 
       const payload: any = {
-        name: editForm.name.trim(),
-        role: editForm.role.trim(),
-        category: editForm.category,
+        name: editFormState.name.trim(),
+        role: editFormState.role.trim(),
+        category: editFormState.category,
       };
 
-      if (editForm.email !== undefined) payload.email = editForm.email.trim();
-      if (editForm.phone !== undefined) payload.phone = editForm.phone.trim();
-      if (editForm.grade !== undefined) payload.grade = editForm.grade.trim();
-      if (editForm.order !== '') payload.order = Number(editForm.order);
+      if (editFormState.email !== undefined) payload.email = editFormState.email.trim();
+      if (editFormState.phone !== undefined) payload.phone = editFormState.phone.trim();
+      if (editFormState.grade !== undefined) payload.grade = editFormState.grade.trim();
+      if (editFormState.order !== '') payload.order = Number(editFormState.order);
 
       payload.subjects = subjectsArray;
-      payload.favoriteQuote = editForm.favoriteQuote.trim();
+      payload.favoriteQuote = editFormState.favoriteQuote.trim();
 
       const response = await axios.put(`${API_BASE_URL_WITH_PREFIX}/staff/${selectedStaff.id}`, payload, {
         headers: {
@@ -385,64 +447,24 @@ const AdminStaffUpload: React.FC = () => {
       });
 
       if (response.data.success) {
-        setMessage({ type: 'success', text: 'Staff details updated successfully.' });
+        const successMsg = 'Staff details updated successfully.';
+        setMessage({ type: 'success', text: successMsg });
+        setSnackbar({ open: true, message: successMsg, severity: 'success' });
         await loadStaff();
       } else {
         throw new Error(response.data.error || response.data.message || 'Staff update failed');
       }
     } catch (error: any) {
       console.error('Update staff error:', error);
-      setMessage({ type: 'error', text: getErrorMessage(error, 'Failed to update staff member.') });
+      const errorMsg = getErrorMessage(error, 'Failed to update staff member.');
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
     } finally {
       setUpdating(false);
     }
-  };
+  }, [selectedStaff, editFormState, loadStaff]);
 
-  const handleDeactivateStaff = async () => {
-    if (!selectedStaff) return;
-    const confirmed = window.confirm(`Deactivate ${selectedStaff.name}? They will disappear from the website.`);
-    if (!confirmed) return;
-
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      setMessage({ type: 'error', text: 'No authentication token found. Please log in again.' });
-      return;
-    }
-
-    try {
-      setDeactivating(true);
-      setMessage(null);
-      await axios.delete(`${API_BASE_URL_WITH_PREFIX}/staff/${selectedStaff.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setMessage({ type: 'success', text: 'Staff member deactivated.' });
-      setSelectedStaff(null);
-      await loadStaff();
-    } catch (error: any) {
-      console.error('Deactivate staff error:', error);
-      setMessage({ type: 'error', text: getErrorMessage(error, 'Failed to deactivate staff member.') });
-    } finally {
-      setDeactivating(false);
-    }
-  };
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !selectedStaff) return;
-
-    if (!validateImage(file)) {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-
-    await uploadImage(file, selectedStaff);
-  };
-
-  const uploadImage = async (file: File, staffMember: StaffMember) => {
+  const uploadImage = useCallback(async (file: File, staffMember: StaffMember) => {
     try {
       setUploading(true);
       setMessage(null);
@@ -469,7 +491,9 @@ const AdminStaffUpload: React.FC = () => {
       });
 
       if (response.data.success) {
-        setMessage({ type: 'success', text: `Image uploaded successfully for ${staffMember.name}` });
+        const successMsg = `Image uploaded successfully for ${staffMember.name}`;
+        setMessage({ type: 'success', text: successMsg });
+        setSnackbar({ open: true, message: successMsg, severity: 'success' });
         const updatedStaff = response.data.data?.data || response.data.data;
         const newImageUrl = updatedStaff?.imageUrl || updatedStaff?.staff?.imageUrl;
         if (newImageUrl) {
@@ -482,20 +506,82 @@ const AdminStaffUpload: React.FC = () => {
           );
           setSelectedStaff((prev) => (prev ? { ...prev, imageUrl: newImageUrl } : null));
         }
+        // Clean up preview URL
+        if (editImagePreview) {
+          URL.revokeObjectURL(editImagePreview);
+          setEditImagePreview(null);
+        }
         await loadStaff();
       } else {
         throw new Error(response.data.error || response.data.message || 'Upload failed');
       }
     } catch (error: any) {
       console.error('Upload error:', error);
-      setMessage({ type: 'error', text: getErrorMessage(error, 'Upload failed. Please try again.') });
+      const errorMsg = getErrorMessage(error, 'Upload failed. Please try again.');
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      // Clean up preview on error
+      if (editImagePreview) {
+        URL.revokeObjectURL(editImagePreview);
+        setEditImagePreview(null);
+      }
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setFileInputKey(prev => prev + 1);
     }
-  };
+  }, [editImagePreview, loadStaff]);
+
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedStaff) return;
+
+    if (!validateImage(file)) {
+      setFileInputKey(prev => prev + 1);
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setEditImagePreview(previewUrl);
+
+    await uploadImage(file, selectedStaff);
+  }, [selectedStaff, uploadImage]);
+
+  const handleDeactivateStaff = useCallback(async () => {
+    if (!selectedStaff) return;
+    const confirmed = window.confirm(`Deactivate ${selectedStaff.name}? They will disappear from the website.`);
+    if (!confirmed) return;
+
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      const errorMsg = 'No authentication token found. Please log in again.';
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+      return;
+    }
+
+    try {
+      setDeactivating(true);
+      setMessage(null);
+      await axios.delete(`${API_BASE_URL_WITH_PREFIX}/staff/${selectedStaff.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const successMsg = 'Staff member deactivated.';
+      setMessage({ type: 'success', text: successMsg });
+      setSnackbar({ open: true, message: successMsg, severity: 'success' });
+      setSelectedStaff(null);
+      await loadStaff();
+    } catch (error: any) {
+      console.error('Deactivate staff error:', error);
+      const errorMsg = getErrorMessage(error, 'Failed to deactivate staff member.');
+      setMessage({ type: 'error', text: errorMsg });
+      setSnackbar({ open: true, message: errorMsg, severity: 'error' });
+    } finally {
+      setDeactivating(false);
+    }
+  }, [selectedStaff, loadStaff]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -510,18 +596,18 @@ const AdminStaffUpload: React.FC = () => {
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = useCallback((category: string) => {
     switch (category) {
       case 'LEADERSHIP':
-        return '#e3f2fd';
+        return theme.palette.primary.light;
       case 'TEACHING':
-        return '#f3e5f5';
+        return theme.palette.secondary.light;
       case 'SUPPORT':
-        return '#f5f5f5';
+        return theme.palette.grey[100];
       default:
-        return '#f5f5f5';
+        return theme.palette.grey[100];
     }
-  };
+  }, [theme]);
 
   if (!isAuthenticated) {
     return (
@@ -611,6 +697,9 @@ const AdminStaffUpload: React.FC = () => {
                   multiline
                   minRows={2}
                   placeholder='e.g. "For I know the plans I have for you..."'
+                  inputProps={{ maxLength: 500 }}
+                  helperText={`${createForm.favoriteQuote.length}/500 characters`}
+                  data-testid="create-staff-quote"
                 />
               </Grid>
               <Grid item xs={12} md={3}>
@@ -649,26 +738,67 @@ const AdminStaffUpload: React.FC = () => {
               </Grid>
               <Grid item xs={12}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                  <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                    {createImagePreview ? (
+                      <>
+                        <Box
+                          component="img"
+                          src={createImagePreview}
+                          alt="Preview"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid',
+                            borderColor: 'primary.main',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (createImagePreview) {
+                              URL.revokeObjectURL(createImagePreview);
+                            }
+                            setCreateImagePreview(null);
+                            setCreateImage(null);
+                            setCreateFileInputKey(prev => prev + 1);
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            bgcolor: 'error.main',
+                            color: 'white',
+                            '&:hover': { bgcolor: 'error.dark' },
+                          }}
+                          data-testid="remove-create-image-button"
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <StaffAvatar name={createForm.name || 'Staff'} size={100} />
+                    )}
+                  </Box>
                   <Button
                     variant="outlined"
                     onClick={() => createFileInputRef.current?.click()}
                     startIcon={<CloudUpload />}
                     sx={{ bgcolor: '#fafafa' }}
+                    data-testid="upload-create-image-button"
                   >
-                    {createImage ? 'Change Profile Photo (optional)' : 'Upload Profile Photo (optional)'}
+                    {createImagePreview ? 'Change Photo' : 'Upload Profile Photo (optional)'}
                   </Button>
-                  {createImage && (
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Selected: {createImage.name}
-                    </Typography>
-                  )}
                 </Stack>
                 <input
+                  key={createFileInputKey}
                   type="file"
                   ref={createFileInputRef}
                   onChange={handleCreateImageChange}
                   accept="image/jpeg,image/png,image/webp"
                   style={{ display: 'none' }}
+                  data-testid="create-staff-image-input"
                 />
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
                   Optional: JPEG, PNG or WebP up to 5MB. Square images display best.
@@ -726,13 +856,33 @@ const AdminStaffUpload: React.FC = () => {
                   onClick={() => setSelectedStaff(member)}
                 >
                   <CardContent sx={{ textAlign: 'center' }}>
-                    <StaffAvatar
-                      src={member.imageUrl}
-                      name={member.name}
-                      size={100}
-                      category={member.category}
-                      sx={{ mx: 'auto', mb: 2 }}
-                    />
+                    {member.imageUrl ? (
+                      <Box
+                        component="img"
+                        src={member.imageUrl}
+                        alt={member.name}
+                        loading="lazy"
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          mx: 'auto',
+                          mb: 2,
+                          display: 'block'
+                        }}
+                        data-testid={`staff-avatar-${member.id}`}
+                      />
+                    ) : (
+                      <Box sx={{ mx: 'auto', mb: 2, display: 'flex', justifyContent: 'center' }}>
+                        <StaffAvatar
+                          name={member.name}
+                          size={100}
+                          category={member.category}
+                          data-testid={`staff-avatar-${member.id}`}
+                        />
+                      </Box>
+                    )}
 
                     <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600, mb: 1 }}>
                       {member.name}
@@ -765,7 +915,7 @@ const AdminStaffUpload: React.FC = () => {
         </CardContent>
       </Card>
 
-      {selectedStaff && editForm && (
+      {selectedStaff && editFormState && (
         <>
           <Card sx={{ mb: 4 }}>
             <CardContent>
@@ -781,64 +931,73 @@ const AdminStaffUpload: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Full Name"
-                      value={editForm.name}
+                      value={editFormState.name}
                       onChange={handleEditInputChange('name')}
                       required
                       fullWidth
+                      data-testid="edit-staff-name"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Role / Title"
-                      value={editForm.role}
+                      value={editFormState.role}
                       onChange={handleEditInputChange('role')}
                       required
                       fullWidth
+                      data-testid="edit-staff-role"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Email"
-                      value={editForm.email}
+                      value={editFormState.email}
                       onChange={handleEditInputChange('email')}
                       type="email"
                       fullWidth
+                      data-testid="edit-staff-email"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Phone"
-                      value={editForm.phone}
+                      value={editFormState.phone}
                       onChange={handleEditInputChange('phone')}
                       fullWidth
+                      data-testid="edit-staff-phone"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Grade / Department"
-                      value={editForm.grade}
+                      value={editFormState.grade}
                       onChange={handleEditInputChange('grade')}
                       fullWidth
+                      data-testid="edit-staff-grade"
                     />
                   </Grid>
                 <Grid item xs={12}>
                   <TextField
                     label="Favourite Quote or Verse"
-                    value={editForm.favoriteQuote}
+                    value={editFormState.favoriteQuote}
                     onChange={handleEditInputChange('favoriteQuote')}
                     fullWidth
                     multiline
                     minRows={2}
                     placeholder='e.g. "For I know the plans I have for you..."'
+                    inputProps={{ maxLength: 500 }}
+                    helperText={`${editFormState.favoriteQuote.length}/500 characters`}
+                    data-testid="edit-staff-quote"
                   />
                 </Grid>
                   <Grid item xs={12} md={3}>
                     <TextField
                       select
                       label="Category"
-                      value={editForm.category}
+                      value={editFormState.category}
                       onChange={handleEditInputChange('category')}
                       fullWidth
+                      data-testid="edit-staff-category"
                     >
                       {CATEGORY_OPTIONS.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
@@ -851,19 +1010,21 @@ const AdminStaffUpload: React.FC = () => {
                     <TextField
                       label="Display Order"
                       type="number"
-                      value={editForm.order}
+                      value={editFormState.order}
                       onChange={handleEditInputChange('order')}
                       fullWidth
                       inputProps={{ min: 0 }}
+                      data-testid="edit-staff-order"
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
                       label="Subjects / Specialisations"
-                      value={editForm.subjects}
+                      value={editFormState.subjects}
                       onChange={handleEditInputChange('subjects')}
                       fullWidth
                       placeholder="Separate multiple subjects with commas"
+                      data-testid="edit-staff-subjects"
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -899,12 +1060,31 @@ const AdminStaffUpload: React.FC = () => {
               </Typography>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <StaffAvatar
-                  src={selectedStaff.imageUrl}
-                  name={selectedStaff.name}
-                  size={100}
-                  category={selectedStaff.category}
-                />
+                <Box sx={{ position: 'relative' }}>
+                  {editImagePreview ? (
+                    <Box
+                      component="img"
+                      src={editImagePreview}
+                      alt="Preview"
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '2px solid',
+                        borderColor: 'primary.main',
+                      }}
+                    />
+                  ) : (
+                    <StaffAvatar
+                      src={selectedStaff.imageUrl}
+                      name={selectedStaff.name}
+                      size={100}
+                      category={selectedStaff.category}
+                      data-testid={`selected-staff-avatar-${selectedStaff.id}`}
+                    />
+                  )}
+                </Box>
 
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" sx={{ color: '#1a237e', mb: 1 }}>
@@ -920,18 +1100,21 @@ const AdminStaffUpload: React.FC = () => {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     sx={{ bgcolor: '#1a237e', '&:hover': { bgcolor: '#0d1421' } }}
+                    data-testid="upload-edit-image-button"
                   >
-                    {uploading ? 'Uploading...' : 'Choose Image'}
+                    {uploading ? 'Uploading...' : editImagePreview ? 'Change Image' : 'Choose Image'}
                   </Button>
                 </Box>
               </Box>
 
               <input
+                key={fileInputKey}
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
                 accept="image/jpeg,image/png,image/webp"
                 style={{ display: 'none' }}
+                data-testid="edit-staff-image-input"
               />
 
               <Alert severity="info" sx={{ mt: 2 }}>
@@ -947,6 +1130,23 @@ const AdminStaffUpload: React.FC = () => {
           </Card>
         </>
       )}
+
+      {/* Snackbar for toast notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        data-testid="staff-snackbar"
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

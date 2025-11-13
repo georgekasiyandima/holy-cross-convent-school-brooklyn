@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -97,7 +98,7 @@ const AdminDocumentManagement: React.FC = () => {
     refreshCategories();
   }, [refreshCategories]);
 
-  const fetchDocuments = useCallback(async () => {
+  const fetchDocuments = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
 
@@ -115,11 +116,21 @@ const AdminDocumentManagement: React.FC = () => {
         })
       );
 
+      // Check if aborted before processing results
+      if (signal?.aborted) {
+        return;
+      }
+
       const combined = results.flat();
       const docMap = new Map<string, Document>();
       combined.forEach((doc) => {
         docMap.set(doc.id, doc);
       });
+
+      // Check again before state update
+      if (signal?.aborted) {
+        return;
+      }
 
       let finalDocs = Array.from(docMap.values());
       if (statusFilter === 'published') {
@@ -131,20 +142,28 @@ const AdminDocumentManagement: React.FC = () => {
       finalDocs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setDocuments(finalDocs);
     } catch (err) {
+      if (signal?.aborted) {
+        return;
+      }
       console.error('Failed to load documents', err);
       setError('Failed to load documents. Please try again.');
       setDocuments([]);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [categories, selectedCategory, statusFilter]);
 
   useEffect(() => {
-    fetchDocuments();
+    const controller = new AbortController();
+    fetchDocuments(controller.signal);
+    return () => controller.abort();
   }, [fetchDocuments]);
 
   const handleCategoryChange = (event: SelectChangeEvent<string>) => {
     setSelectedCategory(event.target.value);
+    setError(null); // Clear error on filter change
   };
 
   const handleStatusFilterChange = (
@@ -153,6 +172,7 @@ const AdminDocumentManagement: React.FC = () => {
   ) => {
     if (value !== null) {
       setStatusFilter(value);
+      setError(null); // Clear error on filter change
     }
   };
 
@@ -227,7 +247,7 @@ const AdminDocumentManagement: React.FC = () => {
       const tags = editForm.tags
         .split(',')
         .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
+        .filter((tag) => tag.length > 1);
 
       await documentService.updateDocument(editDocument.category, editDocument.id, {
         title: editForm.title,
@@ -367,8 +387,10 @@ const AdminDocumentManagement: React.FC = () => {
               sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               <FormControl size="small" sx={{ minWidth: 200 }}>
-                <InputLabel>Category</InputLabel>
+                <InputLabel id="category-select-label">Category</InputLabel>
                 <Select
+                  labelId="category-select-label"
+                  id="category-select"
                   value={selectedCategory}
                   onChange={handleCategoryChange}
                   label="Category"
@@ -398,13 +420,15 @@ const AdminDocumentManagement: React.FC = () => {
             <Button
               variant="contained"
               color="primary"
+              disabled={loading}
               sx={{ ml: { md: 'auto' }, mt: { xs: 1, md: 0 } }}
               onClick={() => {
                 setSelectedCategory('all');
                 setStatusFilter('all');
-                fetchDocuments();
+                setError(null);
               }}
             >
+              {loading ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
               Refresh
             </Button>
           </Toolbar>
@@ -427,7 +451,7 @@ const AdminDocumentManagement: React.FC = () => {
               </Box>
             ) : (
               <Box sx={{ px: { xs: 0, md: 3 }, pb: 3 }}>
-                <Table size="medium">
+                <Table size="medium" aria-label="Document management table">
                   <TableHead>
                     <TableRow sx={{ bgcolor: '#1a237e' }}>
                       {tableColumns.map((column) => (
@@ -443,7 +467,16 @@ const AdminDocumentManagement: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {documents.map((document) => (
-                      <TableRow key={document.id} hover>
+                      <TableRow 
+                        key={document.id} 
+                        hover
+                        sx={{
+                          '&:focus-visible': {
+                            outline: '2px solid #1a237e',
+                            outlineOffset: '-2px',
+                          }
+                        }}
+                      >
                         <TableCell sx={{ maxWidth: 260 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
                             {document.title}
@@ -464,12 +497,18 @@ const AdminDocumentManagement: React.FC = () => {
                         <TableCell>{document.type ? document.type.toUpperCase() : '—'}</TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={1} alignItems="center">
-                            <Switch
-                              checked={document.isPublished}
-                              onChange={() => handleTogglePublished(document)}
-                              color="primary"
-                              disabled={actionId === document.id}
-                              inputProps={{ 'aria-label': 'Toggle publish status' }}
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={document.isPublished}
+                                  onChange={() => handleTogglePublished(document)}
+                                  color="primary"
+                                  disabled={actionId === document.id}
+                                />
+                              }
+                              label={document.isPublished ? 'Published' : 'Draft'}
+                              labelPlacement="start"
+                              sx={{ m: 0 }}
                             />
                             <Chip
                               label={document.isPublished ? 'Published' : 'Draft'}
@@ -506,6 +545,7 @@ const AdminDocumentManagement: React.FC = () => {
                               <IconButton
                                 component="a"
                                 href={downloadUrl(document)}
+                                download={document.fileName}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 size="small"
@@ -543,8 +583,17 @@ const AdminDocumentManagement: React.FC = () => {
         </Paper>
       </Container>
 
-      <Dialog open={editDialogOpen} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Document</DialogTitle>
+      <Dialog 
+        open={editDialogOpen} 
+        onClose={handleCloseEditDialog} 
+        maxWidth="sm" 
+        fullWidth
+        aria-labelledby="edit-dialog-title"
+        PaperProps={{
+          sx: { m: 2 }
+        }}
+      >
+        <DialogTitle id="edit-dialog-title">Edit Document</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField
@@ -562,8 +611,10 @@ const AdminDocumentManagement: React.FC = () => {
               minRows={3}
             />
             <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
+              <InputLabel id="edit-category-select-label">Category</InputLabel>
               <Select
+                labelId="edit-category-select-label"
+                id="edit-category-select"
                 value={editForm.category}
                 onChange={handleEditFormChange('category')}
                 label="Category"

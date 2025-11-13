@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { 
   Typography, 
   Box, 
@@ -6,7 +6,8 @@ import {
   CardContent, 
   Button, 
   Grid,
-  Avatar
+  Avatar,
+  alpha
 } from '@mui/material';
 import {
   CalendarToday,
@@ -25,81 +26,94 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
+import SEO from '../components/SEO';
 
 const ModuleCard = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   borderRadius: 12,
-  background: '#ffffff',
-  border: '1px solid #e2e8f0',
+  background: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
   boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-    border: '1px solid #1a237e'
+    border: `1px solid ${theme.palette.primary.main}`
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+    border: `1px solid ${theme.palette.primary.main}`
   }
 }));
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  // Memoize navigate callback to prevent re-renders
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
+
   const mainModules = [
     {
       title: 'Application Management',
       description: 'Review and manage student applications',
-      icon: <Assignment sx={{ fontSize: 40 }} />,
+      icon: <Assignment sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#d32f2f',
       path: '/admin/applications'
     },
     {
       title: 'Calendar Management',
       description: 'Manage school calendar, terms, and events',
-      icon: <CalendarToday sx={{ fontSize: 40 }} />,
+      icon: <CalendarToday sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#1a237e',
       path: '/admin/calendar'
     },
     {
       title: 'Gallery Management',
       description: 'Upload and organize images and videos',
-      icon: <PhotoLibrary sx={{ fontSize: 40 }} />,
+      icon: <PhotoLibrary sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#9c27b0',
       path: '/admin/gallery'
     },
     {
       title: 'Announcements',
       description: 'Publish flyers and school announcements',
-      icon: <Campaign sx={{ fontSize: 40 }} />,
+      icon: <Campaign sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#7b1fa2',
       path: '/admin/announcements'
     },
     {
       title: 'Newsletter System',
       description: 'Automated parent communication',
-      icon: <Email sx={{ fontSize: 40 }} />,
+      icon: <Email sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#2196f3',
       path: '/admin/newsletters'
     },
     {
       title: 'Governing Body',
       description: 'Update governing body directory',
-      icon: <Group sx={{ fontSize: 40 }} />,
+      icon: <Group sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#1a237e',
       path: '/admin/governing-body'
     },
     {
       title: 'Vacancy Management',
       description: 'Post and manage job openings',
-      icon: <Work sx={{ fontSize: 40 }} />,
+      icon: <Work sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#ff6f00',
       path: '/admin/vacancies'
     },
     {
       title: 'School Statistics',
       description: 'View and manage school metrics',
-      icon: <BarChart sx={{ fontSize: 40 }} />,
+      icon: <BarChart sx={{ fontSize: 40 }} aria-hidden="true" />,
       color: '#4caf50',
       path: '/admin/school-stats'
     }
@@ -109,21 +123,21 @@ const AdminDashboard: React.FC = () => {
     {
       title: 'Staff Upload',
       description: 'Manage staff photos and information',
-      icon: <Upload sx={{ fontSize: 36 }} />,
+      icon: <Upload sx={{ fontSize: 36 }} aria-hidden="true" />,
       color: '#9c27b0',
       path: '/admin/staff-upload'
     },
     {
       title: 'Document Upload',
       description: 'Upload school documents and policies',
-      icon: <School sx={{ fontSize: 36 }} />,
+      icon: <School sx={{ fontSize: 36 }} aria-hidden="true" />,
       color: '#ff9800',
       path: '/admin/document-upload'
     },
     {
       title: 'Document Management',
       description: 'Publish, organize, and download documents',
-      icon: <Description sx={{ fontSize: 36 }} />,
+      icon: <Description sx={{ fontSize: 36 }} aria-hidden="true" />,
       color: '#1a237e',
       path: '/admin/document-management'
     }
@@ -131,6 +145,12 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <AdminLayout>
+      <SEO
+        title="Admin Dashboard - Holy Cross Convent School"
+        description="Manage applications, calendar, gallery, announcements, and more."
+        type="website"
+      />
+      
       {/* Welcome Section */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 0.5 }}>
@@ -143,18 +163,28 @@ const AdminDashboard: React.FC = () => {
 
       {/* Main Management Modules */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2, fontSize: '1rem' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
           Management Modules
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {mainModules.map((module, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <ModuleCard onClick={() => navigate(module.path)}>
-                <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <ModuleCard
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleNavigate(module.path);
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                     <Avatar 
+                      aria-label={`${module.title} module`}
                       sx={{ 
-                        bgcolor: `${module.color}15`, 
+                        bgcolor: alpha(module.color, 0.15), 
                         color: module.color, 
                         width: 48, 
                         height: 48,
@@ -164,32 +194,34 @@ const AdminDashboard: React.FC = () => {
                       {module.icon}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5, fontSize: '0.95rem' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
                         {module.title}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                      <Typography variant="body2" sx={{ color: '#6b7280', lineHeight: 1.4 }}>
                         {module.description}
                       </Typography>
                     </Box>
                   </Box>
                   <Button
+                    type="button"
                     variant="contained"
                     size="small"
-                    endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+                    endIcon={<ArrowForward sx={{ fontSize: 16 }} aria-hidden="true" />}
+                    aria-label={`Open ${module.title}`}
                     sx={{
                       bgcolor: module.color,
                       color: 'white',
                       mt: 'auto',
                       '&:hover': {
-                        bgcolor: module.color,
-                        filter: 'brightness(0.9)'
+                        bgcolor: alpha(module.color, 0.9)
                       },
                       fontSize: '0.8rem',
                       py: 0.75
                     }}
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
-                      navigate(module.path);
+                      handleNavigate(module.path);
                     }}
                   >
                     Open
@@ -203,52 +235,65 @@ const AdminDashboard: React.FC = () => {
 
       {/* Utility Modules */}
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2, fontSize: '1rem' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a237e', mb: 2 }}>
           Utility Tools
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {utilityModules.map((module, index) => (
-            <Grid item xs={12} sm={6} key={index}>
-              <ModuleCard onClick={() => navigate(module.path)}>
-                <CardContent sx={{ p: 2.5 }}>
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <ModuleCard
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleNavigate(module.path);
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Avatar 
+                      aria-label={`${module.title} module`}
                       sx={{ 
-                        bgcolor: `${module.color}15`, 
+                        bgcolor: alpha(module.color, 0.15), 
                         color: module.color, 
-                        width: 44, 
-                        height: 44,
+                        width: 48, 
+                        height: 48,
                         mr: 1.5
                       }}
                     >
                       {module.icon}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5, fontSize: '0.95rem' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1a237e', mb: 0.5 }}>
                         {module.title}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                      <Typography variant="body2" sx={{ color: '#6b7280', lineHeight: 1.4 }}>
                         {module.description}
                       </Typography>
                     </Box>
                     <Button
+                      type="button"
                       variant="outlined"
                       size="small"
-                      endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+                      endIcon={<ArrowForward sx={{ fontSize: 16 }} aria-hidden="true" />}
+                      aria-label={`Access ${module.title}`}
                       sx={{
                         borderColor: module.color,
                         color: module.color,
                         '&:hover': {
                           borderColor: module.color,
-                          bgcolor: `${module.color}10`
+                          bgcolor: alpha(module.color, 0.1)
                         },
                         fontSize: '0.8rem',
                         py: 0.75,
                         px: 2
                       }}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        navigate(module.path);
+                        handleNavigate(module.path);
                       }}
                     >
                       Access

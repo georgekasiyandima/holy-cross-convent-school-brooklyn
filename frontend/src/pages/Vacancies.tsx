@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Container,
   Typography,
@@ -21,6 +21,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Grid,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -40,39 +41,39 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import { endOfDay, isAfter, format } from 'date-fns';
 import ReturnToHome from '../components/ReturnToHome';
 import SEO from '../components/SEO';
 import vacancyService, { Vacancy } from '../services/vacancyService';
 
+// Image path - using constant for better production handling
+const heroImage = '/careers012.jpg';
+
 const Hero = styled(Box)(({ theme }) => ({
   position: 'relative',
-  minHeight: '800px',
-  height: '85vh',
-  maxHeight: '1000px',
+  minHeight: '70vh',
   color: '#fff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: 'url("/careers012.jpg")',
+  backgroundImage: `url("${heroImage}")`,
   backgroundSize: 'cover',
   backgroundPosition: 'center 20%',
   backgroundRepeat: 'no-repeat',
   textAlign: 'center',
   overflow: 'hidden',
-  [theme.breakpoints.down('md')]: {
-    minHeight: '700px',
-    height: '75vh',
-    backgroundPosition: 'center 15%',
+  [theme.breakpoints.up('md')]: {
+    minHeight: '600px',
+    maxHeight: '800px',
   },
   [theme.breakpoints.down('sm')]: {
-    minHeight: '600px',
-    height: '70vh',
+    backgroundPosition: 'center 15%',
   },
   '&::before': {
     content: '""',
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(135deg, rgba(26,35,126,.75), rgba(211,47,47,.55))',
+    background: 'linear-gradient(135deg, rgba(26,35,126,0.8), rgba(211,47,47,0.6))',
     zIndex: 0
   },
   '& > *': { position: 'relative', zIndex: 1 }
@@ -86,13 +87,19 @@ const VacancyCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
   }
 }));
 
 const UrgentBadge = styled(Chip)(({ theme }) => ({
   position: 'absolute',
-  top: 16,
-  right: 16,
+  top: 12,
+  right: 12,
   backgroundColor: '#d32f2f',
   color: 'white',
   fontWeight: 700,
@@ -107,6 +114,9 @@ const Vacancies: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Memoize breakpoint check to avoid re-renders
+  const isMobileMemo = useMemo(() => isMobile, [isMobile]);
 
   useEffect(() => {
     const fetchVacancies = async () => {
@@ -183,18 +193,25 @@ const Vacancies: React.FC = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
+    try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-ZA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+      return format(date, 'dd MMMM yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
   };
 
   const isVacancyOpen = (vacancy: Vacancy) => {
     if (!vacancy.closingDate) return true;
+    try {
     const closingDate = new Date(vacancy.closingDate);
-    return closingDate >= new Date();
+      const endOfClosingDay = endOfDay(closingDate);
+      return isAfter(endOfClosingDay, new Date());
+    } catch (error) {
+      console.error('Error checking vacancy date:', error);
+      return true; // Default to open if date parsing fails
+    }
   };
 
   return (
@@ -203,11 +220,11 @@ const Vacancies: React.FC = () => {
         title="Career Opportunities - Holy Cross Convent School"
         description="Join our dedicated team of educators and support staff. Explore current job openings and career opportunities at Holy Cross Convent School Brooklyn."
         keywords="careers, job opportunities, teaching positions, employment, Holy Cross Convent School, Brooklyn"
+        image="/careers012.jpg"
+        type="website"
       />
 
-      {/* Hero Section */}
-      <Hero>
-        {/* Return to Home - positioned to avoid header clash */}
+      {/* Return to Home - moved outside hero to avoid blocking content */}
         <Box sx={{
           position: 'fixed',
           top: { xs: 80, sm: 100 },
@@ -231,6 +248,8 @@ const Vacancies: React.FC = () => {
           <ReturnToHome />
         </Box>
 
+      {/* Hero Section */}
+      <Hero>
         <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
           <Chip
             label="Join Our Team"
@@ -335,7 +354,11 @@ const Vacancies: React.FC = () => {
       <Container maxWidth="lg" sx={{ py: 8 }}>
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <CircularProgress size={60} sx={{ color: '#1a237e', mb: 3 }} />
+            <CircularProgress 
+              size={60} 
+              aria-label="Loading vacancies"
+              sx={{ color: '#1a237e', mb: 3 }} 
+            />
             <Typography variant="h6" sx={{ color: '#666' }}>
               Loading vacancies...
             </Typography>
@@ -432,16 +455,10 @@ const Vacancies: React.FC = () => {
               Current Openings
             </Typography>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                gap: 3,
-                mb: 6
-              }}
-            >
+            <Grid container spacing={3} sx={{ mb: 6 }}>
               {vacancies.filter(isVacancyOpen).map((vacancy) => (
-                <VacancyCard key={vacancy.id} elevation={2}>
+                <Grid item xs={12} sm={6} md={4} key={vacancy.id}>
+                  <VacancyCard elevation={2}>
                   {vacancy.isUrgent && <UrgentBadge label="URGENT" size="small" />}
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -480,14 +497,14 @@ const Vacancies: React.FC = () => {
 
                     <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
                       <Chip
-                        icon={<LocationOn sx={{ fontSize: 16 }} />}
+                          icon={<LocationOn sx={{ fontSize: 16 }} aria-hidden="true" />}
                         label={vacancy.location || 'Brooklyn, Cape Town'}
                         size="small"
                         variant="outlined"
                         sx={{ borderColor: '#ddd' }}
                       />
                       <Chip
-                        icon={<Schedule sx={{ fontSize: 16 }} />}
+                          icon={<Schedule sx={{ fontSize: 16 }} aria-hidden="true" />}
                         label={getEmploymentTypeLabel(vacancy.employmentType)}
                         size="small"
                         variant="outlined"
@@ -520,8 +537,8 @@ const Vacancies: React.FC = () => {
                           mb: 2
                         }}
                       >
-                        <CalendarToday sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
-                        Closes: {formatDate(vacancy.closingDate)}
+                          <CalendarToday sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} aria-hidden="true" />
+                          Closes: {formatDate(vacancy.closingDate)}
                       </Typography>
                     )}
 
@@ -542,8 +559,9 @@ const Vacancies: React.FC = () => {
                     </Button>
                   </CardContent>
                 </VacancyCard>
+                </Grid>
               ))}
-            </Box>
+            </Grid>
 
             {/* Closed Vacancies Info */}
             {vacancies.filter(v => !isVacancyOpen(v)).length > 0 && (
@@ -571,9 +589,11 @@ const Vacancies: React.FC = () => {
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
-        fullScreen={isMobile}
+        fullScreen={isMobileMemo}
+        aria-modal="true"
+        aria-labelledby="vacancy-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="vacancy-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -624,18 +644,18 @@ const Vacancies: React.FC = () => {
             <>
               <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
                 <Chip
-                  icon={<LocationOn />}
+                  icon={<LocationOn aria-hidden="true" />}
                   label={selectedVacancy.location || 'Brooklyn, Cape Town'}
                   variant="outlined"
                 />
                 <Chip
-                  icon={<Schedule />}
+                  icon={<Schedule aria-hidden="true" />}
                   label={getEmploymentTypeLabel(selectedVacancy.employmentType)}
                   variant="outlined"
                 />
                 {selectedVacancy.salaryRange && (
                   <Chip
-                    icon={<AttachMoney />}
+                    icon={<AttachMoney aria-hidden="true" />}
                     label={selectedVacancy.salaryRange}
                     variant="outlined"
                   />
@@ -728,7 +748,7 @@ const Vacancies: React.FC = () => {
                   }}
                 >
                   <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f' }}>
-                    <CalendarToday sx={{ fontSize: 16, verticalAlign: 'middle', mr: 1 }} />
+                    <CalendarToday sx={{ fontSize: 16, verticalAlign: 'middle', mr: 1 }} aria-hidden="true" />
                     Application closes: {formatDate(selectedVacancy.closingDate)}
                   </Typography>
                 </Box>
@@ -745,6 +765,8 @@ const Vacancies: React.FC = () => {
               variant="contained"
               startIcon={<Email />}
               href={`mailto:${selectedVacancy.applicationEmail}?subject=Application for ${selectedVacancy.title}`}
+              target="_blank"
+              rel="noopener noreferrer"
               sx={{
                 backgroundColor: '#1a237e',
                 '&:hover': {

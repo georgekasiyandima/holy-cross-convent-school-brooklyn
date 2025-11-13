@@ -27,7 +27,11 @@ import {
   ListItemIcon,
   ListItemText,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Snackbar,
+  Grid,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add,
@@ -49,6 +53,7 @@ import { styled } from '@mui/material/styles';
 import AdminLayout from '../components/AdminLayout';
 import GalleryService, { GalleryItem, Album } from '../services/galleryService';
 import CreateAlbumDialog from '../components/gallery/CreateAlbumDialog';
+import SEO from '../components/SEO';
 
 const UploadArea = styled(Box)(({ theme }) => ({
   border: '2px dashed #ccc',
@@ -74,6 +79,12 @@ const GalleryCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-4px)',
     boxShadow: theme.shadows[8],
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
   }
 }));
 
@@ -91,8 +102,15 @@ const GalleryManagement: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [createAlbumDialogOpen, setCreateAlbumDialogOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Memoize breakpoint check to avoid re-renders
+  const isMobileMemo = useMemo(() => isMobile, [isMobile]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -154,6 +172,15 @@ const GalleryManagement: React.FC = () => {
     fetchItems();
     fetchAlbums();
   }, [fetchItems, fetchAlbums]);
+
+  // Cleanup upload on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadControllerRef.current) {
+        uploadControllerRef.current.abort();
+      }
+    };
+  }, []);
   const filteredAlbums = useMemo(() => {
     let list = albums;
     if (albumType) {
@@ -212,8 +239,12 @@ const GalleryManagement: React.FC = () => {
     try {
       setError(null);
       
+      // Create abort controller for cleanup
+      uploadControllerRef.current = new AbortController();
+      
       const tagsArray = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [];
       
+      // Note: GalleryService doesn't support signal directly, but we can abort on unmount
       await GalleryService.uploadGalleryItem(selectedFile, {
         title: formData.title,
         description: formData.description || undefined,
@@ -224,14 +255,22 @@ const GalleryManagement: React.FC = () => {
         postToSocial: formData.postToSocial
       });
 
-      setSuccess('File uploaded successfully' + (formData.postToSocial ? ' and posted to social media!' : ''));
+      const successMessage = 'File uploaded successfully' + (formData.postToSocial ? ' and posted to social media!' : '');
+      setSuccess(successMessage);
+      setSnackbar({ open: true, message: successMessage });
       setUploadDialogOpen(false);
       setSelectedFile(null);
       setFormData({ title: '', description: '', category: 'GENERAL', tags: '', albumId: '', postToSocial: false });
       fetchItems();
+      uploadControllerRef.current = null;
     } catch (err: any) {
-      setError(err.message || 'Failed to upload file');
+      if (err.name !== 'AbortError') {
+        const errorMessage = err.message || 'Failed to upload file';
+        setError(errorMessage);
+        setSnackbar({ open: true, message: errorMessage });
       console.error('Upload error:', err);
+      }
+      uploadControllerRef.current = null;
     }
   };
 
@@ -297,8 +336,18 @@ const GalleryManagement: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbar({ open: false, message: '' });
+  };
+
   return (
     <AdminLayout>
+      <SEO
+        title="Gallery Management - Holy Cross Convent School"
+        description="Manage and organize gallery images and videos for Holy Cross Convent School Brooklyn."
+        image="/Logo(1).svg"
+        type="website"
+      />
       <Box sx={{ p: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#1a237e' }}>
           Gallery Management
@@ -315,6 +364,15 @@ const GalleryManagement: React.FC = () => {
             {success}
           </Alert>
         )}
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={handleSnackbarClose}
+          message={snackbar.message}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
 
         {/* Controls */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -364,11 +422,19 @@ const GalleryManagement: React.FC = () => {
 
         {/* Gallery Grid */}
         {loading ? (
-          <LinearProgress />
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <LinearProgress 
+              aria-label="Loading gallery images"
+              sx={{ color: '#1a237e', mb: 3 }} 
+            />
+            <Typography variant="h6" sx={{ color: '#666' }}>
+              Loading gallery images...
+            </Typography>
+          </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          <Grid container spacing={4}>
             {filteredItems.map((item) => (
-              <Box key={item.id} sx={{ flex: '1 1 250px', minWidth: '250px', maxWidth: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)', lg: 'calc(25% - 18px)' } }}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
                 <GalleryCard>
                   <Box sx={{ position: 'relative' }}>
                     {item.type === 'IMAGE' ? (
@@ -376,12 +442,13 @@ const GalleryManagement: React.FC = () => {
                         component="img"
                         height="200"
                         image={GalleryService.getItemImageUrl(item.fileName)}
-                        alt={item.title}
+                        alt={item.description || item.title || `Gallery image ${item.id}`}
+                        loading="lazy"
                         sx={{ objectFit: 'cover' }}
                       />
                     ) : (
                       <Box sx={{ height: 200, bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <VideoFile sx={{ fontSize: 48, color: '#666' }} />
+                        <VideoFile sx={{ fontSize: 48, color: '#666' }} aria-hidden="true" />
                       </Box>
                     )}
                     
@@ -432,15 +499,37 @@ const GalleryManagement: React.FC = () => {
                     </Typography>
                   </CardContent>
                 </GalleryCard>
-              </Box>
+              </Grid>
             ))}
-          </Box>
+          </Grid>
         )}
 
         {/* Upload Dialog */}
-        <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Upload Media</DialogTitle>
+        <Dialog 
+          open={uploadDialogOpen} 
+          onClose={() => setUploadDialogOpen(false)} 
+          maxWidth="md" 
+          fullWidth
+          fullScreen={isMobileMemo}
+          aria-modal="true"
+          aria-labelledby="upload-dialog-title"
+        >
+          <DialogTitle id="upload-dialog-title">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" component="span">
+                Upload Media
+              </Typography>
+              <IconButton
+                onClick={() => setUploadDialogOpen(false)}
+                aria-label="Close"
+                size="small"
+              >
+                <Box component="span" sx={{ fontSize: 24 }}>×</Box>
+              </IconButton>
+            </Box>
+          </DialogTitle>
           <DialogContent>
+            <label htmlFor="upload-input">
             <UploadArea
               className={dragActive ? 'drag-active' : ''}
               onDragEnter={handleDragEnter}
@@ -448,22 +537,33 @@ const GalleryManagement: React.FC = () => {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload sx={{ fontSize: 48, color: 'action.active', mb: 2 }} />
+                component="div"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+              >
+                <Upload sx={{ fontSize: 48, color: 'action.active', mb: 2 }} aria-hidden="true" />
               <Typography variant="h6" sx={{ mb: 1 }}>
                 {selectedFile ? selectedFile.name : 'Drag & drop files here or click to browse'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Supports images and videos up to 10MB
               </Typography>
+              </UploadArea>
+            </label>
               <input
+              id="upload-input"
                 ref={fileInputRef}
                 type="file"
-                hidden
+              style={{ display: 'none' }}
                 accept="image/*,video/*"
                 onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
               />
-            </UploadArea>
 
             {selectedFile && (
               <Box sx={{ mt: 3 }}>
