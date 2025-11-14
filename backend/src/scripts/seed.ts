@@ -23,6 +23,50 @@ async function main() {
 
   console.log('✅ Admin user created:', adminUser.email);
 
+  // Ensure workflow role users exist
+  const workflowPasswordHash = await bcrypt.hash('workflow123', 12);
+  const workflowUsers = [
+    {
+      email: 'secretary@holycross.co.za',
+      name: 'Admissions Secretary',
+      role: 'SECRETARY',
+    },
+    {
+      email: 'bursar@holycross.co.za',
+      name: 'School Bursar',
+      role: 'BURSAR',
+    },
+    {
+      email: 'principal@holycross.co.za',
+      name: 'School Principal',
+      role: 'PRINCIPAL',
+    },
+    {
+      email: 'teacher.assessments@holycross.co.za',
+      name: 'Assessment Teacher',
+      role: 'TEACHER',
+    },
+  ];
+
+  for (const user of workflowUsers) {
+    const seededUser = await prisma.user.upsert({
+      where: { email: user.email },
+      update: {
+        name: user.name,
+        role: user.role,
+        isActive: true,
+      },
+      create: {
+        email: user.email,
+        password: workflowPasswordHash,
+        name: user.name,
+        role: user.role,
+        isActive: true,
+      },
+    });
+    console.log(`✅ Workflow user ready: ${seededUser.email} (${seededUser.role})`);
+  }
+
   // Create sample staff members
   const staffMembers = [
     {
@@ -30,11 +74,8 @@ async function main() {
       role: 'Principal',
       email: 'admin@holycrossbrooklyn.co.za',
       phone: '+27 21 511 4337',
-      bio: 'The future belongs to those who believe in the beauty of their dreams - Eleanor Roosevelt',
       grade: 'All',
       subjects: JSON.stringify(['Leadership', 'Religious Education']),
-      qualifications: 'M.Ed in Educational Leadership, B.Ed in Primary Education',
-      experience: '20+ years in Catholic education',
       isActive: true,
       order: 1,
       category: 'LEADERSHIP' as const
@@ -44,11 +85,8 @@ async function main() {
       role: 'Deputy Principal',
       email: 'deputy@holycross.co.za',
       phone: '+27 21 123 4568',
-      bio: 'Experienced educator specializing in curriculum development and student support.',
       grade: 'All',
       subjects: JSON.stringify(['Mathematics', 'Curriculum Development']),
-      qualifications: 'B.Ed Honours, Advanced Certificate in Education',
-      experience: '15 years in primary education',
       isActive: true,
       order: 2,
       category: 'LEADERSHIP' as const
@@ -58,11 +96,8 @@ async function main() {
       role: 'Grade 7 Teacher',
       email: 'david.smith@holycross.co.za',
       phone: '+27 21 123 4569',
-      bio: 'Passionate mathematics and science teacher with innovative teaching methods.',
       grade: '7',
       subjects: JSON.stringify(['Mathematics', 'Natural Sciences']),
-      qualifications: 'B.Ed in Intermediate Phase, Mathematics Specialization',
-      experience: '8 years teaching experience',
       isActive: true,
       order: 3,
       category: 'TEACHING' as const
@@ -72,11 +107,8 @@ async function main() {
       role: 'Grade 5 Teacher',
       email: 'lisa.brown@holycross.co.za',
       phone: '+27 21 123 4570',
-      bio: 'Creative English and Social Sciences teacher with a passion for literature.',
       grade: '5',
       subjects: JSON.stringify(['English', 'Social Sciences']),
-      qualifications: 'B.Ed in Foundation Phase, English Literature Specialization',
-      experience: '6 years teaching experience',
       isActive: true,
       order: 4,
       category: 'TEACHING' as const
@@ -86,11 +118,8 @@ async function main() {
       role: 'School Secretary',
       email: 'patricia.wilson@holycross.co.za',
       phone: '+27 21 123 4571',
-      bio: 'Efficient administrative support with excellent communication skills.',
       grade: 'All',
       subjects: JSON.stringify(['Administration']),
-      qualifications: 'Diploma in Office Administration',
-      experience: '10 years administrative experience',
       isActive: true,
       order: 5,
       category: 'SUPPORT' as const
@@ -105,147 +134,31 @@ async function main() {
 
   console.log('✅ Staff members created');
 
-  // Create sample school information
-  const schoolInfo = [
-    {
-      key: 'school_name',
-      value: 'Holy Cross Convent School Brooklyn',
-      type: 'text',
-      category: 'general',
-      isPublic: true,
-      order: 1
+  // Governing body chairperson
+  await prisma.governingBodyMember.upsert({
+    where: { email: 'arwill@telkomsa.net' },
+    update: {
+      name: 'Mrs Nancy Will',
+      designation: 'Chairperson',
+      sector: '',
+      address: '13 Julianaveld, North Pinelands',
+      phone: '+27 83 555 8100',
+      order: 1,
+      isActive: true,
     },
-    {
-      key: 'school_motto',
-      value: 'Faith, Excellence, Service',
-      type: 'text',
-      category: 'general',
-      isPublic: true,
-      order: 2
+    create: {
+      name: 'Mrs Nancy Will',
+      designation: 'Chairperson',
+      sector: '',
+      address: '13 Julianaveld, North Pinelands',
+      phone: '+27 83 555 8100',
+      email: 'arwill@telkomsa.net',
+      order: 1,
+      isActive: true,
     },
-    {
-      key: 'school_address',
-      value: '123 Main Street, Brooklyn, Cape Town, 7405',
-      type: 'text',
-      category: 'contact',
-      isPublic: true,
-      order: 1
-    },
-    {
-      key: 'school_phone',
-      value: '+27 21 123 4567',
-      type: 'text',
-      category: 'contact',
-      isPublic: true,
-      order: 2
-    },
-    {
-      key: 'school_email',
-      value: 'info@holycross.co.za',
-      type: 'text',
-      category: 'contact',
-      isPublic: true,
-      order: 3
-    },
-    {
-      key: 'school_hours',
-      value: 'Monday - Friday: 7:30 AM - 2:30 PM',
-      type: 'text',
-      category: 'general',
-      isPublic: true,
-      order: 3
-    },
-    {
-      key: 'school_established',
-      value: '1985',
-      type: 'text',
-      category: 'general',
-      isPublic: true,
-      order: 4
-    },
-    {
-      key: 'school_principal',
-      value: 'Sr. Mary Principal',
-      type: 'text',
-      category: 'leadership',
-      isPublic: true,
-      order: 1
-    },
-    {
-      key: 'school_mission',
-      value: 'To provide quality Catholic education that nurtures the whole child - spiritually, academically, socially, and physically.',
-      type: 'text',
-      category: 'mission_vision',
-      isPublic: true,
-      order: 1
-    }
-  ];
+  });
 
-  for (const info of schoolInfo) {
-    await prisma.schoolInfo.upsert({
-      where: { key: info.key },
-      update: {},
-      create: info
-    });
-  }
-
-  console.log('✅ School information created');
-
-  // Create sample settings
-  const settings = [
-    {
-      key: 'site_title',
-      value: 'Holy Cross Convent School Brooklyn',
-      type: 'string',
-      category: 'site'
-    },
-    {
-      key: 'contact_email',
-      value: 'info@holycross.co.za',
-      type: 'string',
-      category: 'contact'
-    },
-    {
-      key: 'contact_phone',
-      value: '+27 21 123 4567',
-      type: 'string',
-      category: 'contact'
-    },
-    {
-      key: 'maintenance_mode',
-      value: 'false',
-      type: 'boolean',
-      category: 'system'
-    }
-  ];
-
-  for (const setting of settings) {
-    await prisma.setting.upsert({
-      where: { key: setting.key },
-      update: {},
-      create: setting
-    });
-  }
-
-  console.log('✅ Settings created');
-
-  // Create sample tags
-  const tags = [
-    { name: 'Academic', color: '#1a237e' },
-    { name: 'Sports', color: '#4caf50' },
-    { name: 'Cultural', color: '#ff9800' },
-    { name: 'Spiritual', color: '#9c27b0' }
-  ];
-
-  for (const tag of tags) {
-    await prisma.tag.upsert({
-      where: { name: tag.name },
-      update: {},
-      create: tag
-    });
-  }
-
-  console.log('✅ Tags created');
+  console.log('✅ Governing body member seeded');
 
   console.log('🎉 Database seeding completed successfully!');
   console.log('📧 Admin login: admin@holycross.co.za / admin123');

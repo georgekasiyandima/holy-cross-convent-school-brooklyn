@@ -115,7 +115,7 @@ const MissionVision: React.FC = () => {
           <Box 
             sx={{ 
               width: 80, 
-              height: 4, 
+              height: 6, 
               background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
               mx: 'auto',
               mb: 3,
@@ -148,7 +148,7 @@ const MissionVision: React.FC = () => {
             mb: 4, 
             background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.light}CC 100%)`,
             borderRadius: 3,
-            border: `1px solid ${theme.palette.error.main}`,
+            border: `2px solid ${theme.palette.error.main}80`,
             position: 'relative',
           }}
           data-testid="vision-paper"
@@ -160,7 +160,7 @@ const MissionVision: React.FC = () => {
               top: 0,
               left: 0,
               right: 0,
-              height: '4px',
+              height: '6px',
               background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.warning.main} 50%, ${theme.palette.error.main} 100%)`,
               borderRadius: '12px 12px 0 0',
             }}
@@ -214,7 +214,7 @@ const MissionVision: React.FC = () => {
             }}
             data-testid="vision-quote"
           >
-            &quot;In cruce salus&quot; - In the cross is salvation
+            &ldquo;In cruce salus&rdquo; &mdash; In the cross is salvation
           </Typography>
         </Paper>
 

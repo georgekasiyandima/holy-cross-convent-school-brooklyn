@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -51,10 +51,32 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import vacancyService, { Vacancy } from '../services/vacancyService';
 import SEO from '../components/SEO';
 
+// Constants
+const PRIMARY_COLOR = '#1a237e';
+const PRIMARY_HOVER = '#283593';
+const ERROR_COLOR = '#d32f2f';
+
+// Department lookup object
+const DEPARTMENT_MAP = {
+  TEACHING: { icon: <School />, label: 'Teaching' },
+  ADMIN: { icon: <BusinessCenter />, label: 'Administrative' },
+  SUPPORT: { icon: <Groups />, label: 'Support Staff' },
+  LEADERSHIP: { icon: <Person />, label: 'Leadership' },
+} as const;
+
+// Employment type lookup
+const EMPLOYMENT_TYPE_MAP = {
+  FULL_TIME: 'Full Time',
+  PART_TIME: 'Part Time',
+  CONTRACT: 'Contract',
+  TEMPORARY: 'Temporary',
+} as const;
+
 const VacancyManagement: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -85,6 +107,25 @@ const VacancyManagement: React.FC = () => {
   const [tempResponsibility, setTempResponsibility] = useState('');
   const [tempQualification, setTempQualification] = useState('');
 
+  // Memoize fetchVacancies to avoid recreating on every render
+  const fetchVacancies = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await vacancyService.getAllVacancies();
+      // Sort by order field
+      const sortedData = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+      setVacancies(sortedData);
+    } catch (err: any) {
+      console.error('Error fetching vacancies:', err);
+      const errorMessage = err?.response?.data?.message || 'Failed to load vacancies. Please check if the backend is running.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fix useEffect dependency - use fetchVacancies callback
   useEffect(() => {
     if (!isAuthenticated) {
       setError('Please log in to access vacancy management.');
@@ -92,21 +133,16 @@ const VacancyManagement: React.FC = () => {
     }
 
     fetchVacancies();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchVacancies]);
 
-  const fetchVacancies = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await vacancyService.getAllVacancies();
-      setVacancies(data);
-    } catch (err) {
-      console.error('Error fetching vacancies:', err);
-      setError('Failed to load vacancies. Please check if the backend is running.');
-    } finally {
-      setLoading(false);
+  // Clear temp fields when dialog closes (Critical Fix C3)
+  useEffect(() => {
+    if (!dialogOpen) {
+      setTempRequirement('');
+      setTempResponsibility('');
+      setTempQualification('');
     }
-  };
+  }, [dialogOpen]);
 
   const handleOpenDialog = (vacancy?: Vacancy) => {
     if (vacancy) {
@@ -160,11 +196,13 @@ const VacancyManagement: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      setSaving(true);
       setError(null);
+      // Critical Fix C2: Proper null handling for dates (use undefined for TypeScript compatibility)
       const vacancyData = {
         ...formData,
-        closingDate: formData.closingDate?.toISOString(),
-        startDate: formData.startDate?.toISOString(),
+        closingDate: formData.closingDate ? formData.closingDate.toISOString() : undefined,
+        startDate: formData.startDate ? formData.startDate.toISOString() : undefined,
       };
 
       if (editingVacancy) {
@@ -177,9 +215,13 @@ const VacancyManagement: React.FC = () => {
 
       handleCloseDialog();
       fetchVacancies();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving vacancy:', err);
-      setError('Failed to save vacancy. Please try again.');
+      // Major Fix M4: Better error handling
+      const errorMessage = err?.response?.data?.message || 'Failed to save vacancy. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -191,69 +233,81 @@ const VacancyManagement: React.FC = () => {
       setDeleteConfirmOpen(false);
       setVacancyToDelete(null);
       fetchVacancies();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting vacancy:', err);
-      setError('Failed to delete vacancy. Please try again.');
+      // Major Fix M4: Better error handling
+      const errorMessage = err?.response?.data?.message || 'Failed to delete vacancy. Please try again.';
+      setError(errorMessage);
     }
   };
 
-  const addItemToList = (list: string[], setList: (items: string[]) => void, temp: string, setTemp: (value: string) => void) => {
-    if (temp.trim()) {
-      setList([...list, temp.trim()]);
-      setTemp('');
+  // Critical Fix C4: Use functional state updates to avoid stale closures
+  const addRequirement = useCallback(() => {
+    if (tempRequirement.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        requirements: [...prev.requirements, tempRequirement.trim()],
+      }));
+      setTempRequirement('');
     }
-  };
+  }, [tempRequirement]);
 
-  const removeItemFromList = (list: string[], setList: (items: string[]) => void, index: number) => {
-    setList(list.filter((_, i) => i !== index));
-  };
+  const addResponsibility = useCallback(() => {
+    if (tempResponsibility.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        responsibilities: [...prev.responsibilities, tempResponsibility.trim()],
+      }));
+      setTempResponsibility('');
+    }
+  }, [tempResponsibility]);
 
+  const addQualification = useCallback(() => {
+    if (tempQualification.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        qualifications: [...prev.qualifications, tempQualification.trim()],
+      }));
+      setTempQualification('');
+    }
+  }, [tempQualification]);
+
+  const removeRequirement = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      requirements: prev.requirements.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const removeResponsibility = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      responsibilities: prev.responsibilities.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const removeQualification = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      qualifications: prev.qualifications.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  // Minor Fix m2: Use lookup object instead of switch statements
   const getDepartmentIcon = (department: string) => {
-    switch (department) {
-      case 'TEACHING':
-        return <School />;
-      case 'ADMIN':
-        return <BusinessCenter />;
-      case 'SUPPORT':
-        return <Groups />;
-      case 'LEADERSHIP':
-        return <Person />;
-      default:
-        return <Work />;
-    }
+    return DEPARTMENT_MAP[department as keyof typeof DEPARTMENT_MAP]?.icon || <Work />;
   };
 
   const getDepartmentLabel = (department: string) => {
-    switch (department) {
-      case 'TEACHING':
-        return 'Teaching';
-      case 'ADMIN':
-        return 'Administrative';
-      case 'SUPPORT':
-        return 'Support Staff';
-      case 'LEADERSHIP':
-        return 'Leadership';
-      default:
-        return department;
-    }
+    return DEPARTMENT_MAP[department as keyof typeof DEPARTMENT_MAP]?.label || department;
   };
 
   const getEmploymentTypeLabel = (type: string) => {
-    switch (type) {
-      case 'FULL_TIME':
-        return 'Full Time';
-      case 'PART_TIME':
-        return 'Part Time';
-      case 'CONTRACT':
-        return 'Contract';
-      case 'TEMPORARY':
-        return 'Temporary';
-      default:
-        return type;
-    }
+    return EMPLOYMENT_TYPE_MAP[type as keyof typeof EMPLOYMENT_TYPE_MAP] || type;
   };
 
-  const formatDate = (dateString?: string) => {
+  // Minor Fix m3: Memoize formatDate
+  const formatDate = useCallback((dateString?: string) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-ZA', {
@@ -261,7 +315,7 @@ const VacancyManagement: React.FC = () => {
       month: 'short',
       day: 'numeric'
     });
-  };
+  }, []);
 
   if (!isAuthenticated) {
     return (
@@ -278,7 +332,7 @@ const VacancyManagement: React.FC = () => {
       <SEO title="Vacancy Management - Admin" />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e' }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: PRIMARY_COLOR }}>
             Vacancy Management
           </Typography>
           <Button
@@ -286,9 +340,9 @@ const VacancyManagement: React.FC = () => {
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
             sx={{
-              backgroundColor: '#1a237e',
+              backgroundColor: PRIMARY_COLOR,
               '&:hover': {
-                backgroundColor: '#283593'
+                backgroundColor: PRIMARY_HOVER
               }
             }}
           >
@@ -302,15 +356,11 @@ const VacancyManagement: React.FC = () => {
           </Alert>
         )}
 
-        {success && (
-          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>
-            {success}
-          </Alert>
-        )}
+        {/* Major Fix M5: Remove duplicate success Alert, keep Snackbar only */}
 
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <CircularProgress size={60} sx={{ color: '#1a237e' }} />
+            <CircularProgress size={60} sx={{ color: PRIMARY_COLOR }} />
             <Typography variant="h6" sx={{ color: '#666', mt: 2 }}>
               Loading vacancies...
             </Typography>
@@ -326,9 +376,9 @@ const VacancyManagement: React.FC = () => {
               startIcon={<Add />}
               onClick={() => handleOpenDialog()}
               sx={{
-                backgroundColor: '#1a237e',
+                backgroundColor: PRIMARY_COLOR,
                 '&:hover': {
-                  backgroundColor: '#283593'
+                  backgroundColor: PRIMARY_HOVER
                 }
               }}
             >
@@ -344,6 +394,7 @@ const VacancyManagement: React.FC = () => {
                   <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Urgent</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Closing Date</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
                 </TableRow>
@@ -361,32 +412,16 @@ const VacancyManagement: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: 'linear-gradient(135deg, #1a237e 0%, #d32f2f 100%)',
+                            background: `linear-gradient(135deg, ${PRIMARY_COLOR} 0%, ${ERROR_COLOR} 100%)`,
                             color: 'white',
                             mr: 2
                           }}
                         >
                           {getDepartmentIcon(vacancy.department)}
                         </Box>
-                        <Box>
                           <Typography variant="body1" sx={{ fontWeight: 600 }}>
                             {vacancy.title}
                           </Typography>
-                          {vacancy.isUrgent && (
-                            <Chip
-                              label="URGENT"
-                              size="small"
-                              sx={{
-                                backgroundColor: '#d32f2f',
-                                color: 'white',
-                                fontWeight: 700,
-                                mt: 0.5,
-                                height: 20,
-                                fontSize: '0.7rem'
-                              }}
-                            />
-                          )}
-                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell>{getDepartmentLabel(vacancy.department)}</TableCell>
@@ -403,12 +438,29 @@ const VacancyManagement: React.FC = () => {
                         }}
                       />
                     </TableCell>
+                    <TableCell>
+                      {vacancy.isUrgent && (
+                        <Chip
+                          label="URGENT"
+                          size="small"
+                          sx={{
+                            backgroundColor: ERROR_COLOR,
+                            color: 'white',
+                            fontWeight: 700,
+                            height: 20,
+                            fontSize: '0.7rem'
+                          }}
+                        />
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(vacancy.closingDate)}</TableCell>
                     <TableCell>
+                      {/* Major Fix M3: Add aria-labels for accessibility */}
                       <IconButton
                         size="small"
                         onClick={() => handleOpenDialog(vacancy)}
-                        sx={{ color: '#1a237e' }}
+                        sx={{ color: PRIMARY_COLOR }}
+                        aria-label="Edit vacancy"
                       >
                         <Edit />
                       </IconButton>
@@ -418,7 +470,8 @@ const VacancyManagement: React.FC = () => {
                           setVacancyToDelete(vacancy.id);
                           setDeleteConfirmOpen(true);
                         }}
-                        sx={{ color: '#d32f2f' }}
+                        sx={{ color: ERROR_COLOR }}
+                        aria-label="Delete vacancy"
                       >
                         <Delete />
                       </IconButton>
@@ -431,7 +484,14 @@ const VacancyManagement: React.FC = () => {
         )}
 
         {/* Create/Edit Dialog */}
-        <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        {/* Minor Fix m5: Fix dialog overflow on mobile */}
+        <Dialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+          maxWidth="md" 
+          fullWidth
+          PaperProps={{ sx: { overflowY: 'auto', maxHeight: '90vh' } }}
+        >
           <DialogTitle>
             {editingVacancy ? 'Edit Vacancy' : 'Create New Vacancy'}
           </DialogTitle>
@@ -514,13 +574,13 @@ const VacancyManagement: React.FC = () => {
                     onChange={(e) => setTempResponsibility(e.target.value)}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
-                        addItemToList(formData.responsibilities, (items) => setFormData({ ...formData, responsibilities: items }), tempResponsibility, setTempResponsibility);
+                        addResponsibility();
                       }
                     }}
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => addItemToList(formData.responsibilities, (items) => setFormData({ ...formData, responsibilities: items }), tempResponsibility, setTempResponsibility)}
+                    onClick={addResponsibility}
                   >
                     Add
                   </Button>
@@ -530,7 +590,7 @@ const VacancyManagement: React.FC = () => {
                     <Chip
                       key={index}
                       label={item}
-                      onDelete={() => removeItemFromList(formData.responsibilities, (items) => setFormData({ ...formData, responsibilities: items }), index)}
+                      onDelete={() => removeResponsibility(index)}
                     />
                   ))}
                 </Stack>
@@ -550,13 +610,13 @@ const VacancyManagement: React.FC = () => {
                     onChange={(e) => setTempRequirement(e.target.value)}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
-                        addItemToList(formData.requirements, (items) => setFormData({ ...formData, requirements: items }), tempRequirement, setTempRequirement);
+                        addRequirement();
                       }
                     }}
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => addItemToList(formData.requirements, (items) => setFormData({ ...formData, requirements: items }), tempRequirement, setTempRequirement)}
+                    onClick={addRequirement}
                   >
                     Add
                   </Button>
@@ -566,7 +626,7 @@ const VacancyManagement: React.FC = () => {
                     <Chip
                       key={index}
                       label={item}
-                      onDelete={() => removeItemFromList(formData.requirements, (items) => setFormData({ ...formData, requirements: items }), index)}
+                      onDelete={() => removeRequirement(index)}
                     />
                   ))}
                 </Stack>
@@ -586,13 +646,13 @@ const VacancyManagement: React.FC = () => {
                     onChange={(e) => setTempQualification(e.target.value)}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
-                        addItemToList(formData.qualifications, (items) => setFormData({ ...formData, qualifications: items }), tempQualification, setTempQualification);
+                        addQualification();
                       }
                     }}
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => addItemToList(formData.qualifications, (items) => setFormData({ ...formData, qualifications: items }), tempQualification, setTempQualification)}
+                    onClick={addQualification}
                   >
                     Add
                   </Button>
@@ -602,7 +662,7 @@ const VacancyManagement: React.FC = () => {
                     <Chip
                       key={index}
                       label={item}
-                      onDelete={() => removeItemFromList(formData.qualifications, (items) => setFormData({ ...formData, qualifications: items }), index)}
+                      onDelete={() => removeQualification(index)}
                     />
                   ))}
                 </Stack>
@@ -665,11 +725,18 @@ const VacancyManagement: React.FC = () => {
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} variant="outlined" startIcon={<Cancel />}>
+            <Button onClick={handleCloseDialog} variant="outlined" startIcon={<Cancel />} disabled={saving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} variant="contained" startIcon={<Save />} sx={{ backgroundColor: '#1a237e' }}>
-              Save
+            {/* Major Fix M1: Add saving state and loading indicator */}
+            <Button 
+              onClick={handleSave} 
+              variant="contained" 
+              startIcon={saving ? <CircularProgress size={20} /> : <Save />} 
+              sx={{ backgroundColor: PRIMARY_COLOR }}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : 'Save'}
             </Button>
           </DialogActions>
         </Dialog>

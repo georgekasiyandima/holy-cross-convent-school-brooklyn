@@ -162,15 +162,12 @@ router.get('/:id', async (req, res, next) => {
  */
 router.post(
   "/",
+  authMiddleware,
   requireEditor,
   uploadImage.single("image"),
   validateStaffMember,
   async (req: AuthRequest, res, next) => {
     try {
-      if (!req.file) {
-        return next(createError('Image file is required', 400));
-      }
-
       const staffData = {
         name: req.body.name,
         role: req.body.role,
@@ -179,10 +176,10 @@ router.post(
         grade: req.body.grade,
         subjects: req.body.subjects ? JSON.parse(req.body.subjects) : undefined,
         category: req.body.category,
-        order: req.body.order ? parseInt(req.body.order) : undefined
+        order: req.body.order ? parseInt(req.body.order) : undefined,
+        favoriteQuote: typeof req.body.favoriteQuote === 'string' ? req.body.favoriteQuote.trim() : undefined
       };
 
-      // Use enhanced upload service
       const result = await uploadService.uploadStaffImage(req.file, staffData);
 
       if (!result.success) {
@@ -261,7 +258,8 @@ router.put(
         order,
         category,
         subjects,
-        isActive
+        isActive,
+        favoriteQuote
       } = req.body;
 
       // ✅ Safe subjects parsing
@@ -282,7 +280,10 @@ router.put(
         grade: grade !== undefined ? grade : existingStaff.grade,
         subjects: parsedSubjects ? JSON.parse(parsedSubjects) : (existingStaff.subjects ? JSON.parse(existingStaff.subjects) : null),
         category: category || existingStaff.category,
-        order: order !== undefined ? parseInt(order, 10) : existingStaff.order
+        order: order !== undefined ? parseInt(order, 10) : existingStaff.order,
+        favoriteQuote: favoriteQuote !== undefined
+          ? (typeof favoriteQuote === 'string' ? favoriteQuote.trim() : favoriteQuote)
+          : existingStaff.favoriteQuote
       };
 
       // Basic validation for required fields
@@ -355,6 +356,10 @@ router.put(
       if (parsedSubjects !== null) updateData.subjects = parsedSubjects;
       if (isActive !== undefined) updateData.isActive = isActive;
       if (category !== undefined) updateData.category = category;
+      if (favoriteQuote !== undefined) {
+        const trimmedQuote = typeof favoriteQuote === 'string' ? favoriteQuote.trim() : '';
+        updateData.favoriteQuote = trimmedQuote.length > 0 ? trimmedQuote : null;
+      }
 
       // Only update if there's data to update
       if (Object.keys(updateData).length === 0) {
@@ -388,7 +393,7 @@ router.put(
  * Delete staff member (soft delete by setting isActive to false)
  * Middleware: requireEditor
  */
-router.delete('/:id', requireEditor, async (req: AuthRequest, res, next) => {
+router.delete('/:id', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
     const { id } = req.params;
 
@@ -480,7 +485,7 @@ router.get('/category/:category', async (req, res, next) => {
  * Toggle staff member active status
  * Middleware: requireEditor
  */
-router.patch('/:id/status', requireEditor, async (req: AuthRequest, res, next) => {
+router.patch('/:id/status', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
     const { id } = req.params;
     const { isActive } = req.body;
@@ -509,7 +514,7 @@ router.patch('/:id/status', requireEditor, async (req: AuthRequest, res, next) =
  * Update staff member display order
  * Middleware: requireEditor
  */
-router.patch('/:id/order', requireEditor, async (req: AuthRequest, res, next) => {
+router.patch('/:id/order', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
     const { id } = req.params;
     const { order } = req.body;

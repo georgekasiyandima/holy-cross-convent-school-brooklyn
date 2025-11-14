@@ -5,53 +5,138 @@ import { authMiddleware, requireRole } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get all terms (Note: Term model doesn't exist, returning empty array for now)
+// Get all terms
 router.get('/terms', async (req, res) => {
   try {
-    // Term model doesn't exist in schema, return empty array
-    // This can be implemented later if needed
-    return res.json([]);
+    const terms = await prisma.academicTerm.findMany({
+      orderBy: [{ year: 'desc' }, { termNumber: 'desc' }],
+    });
+    return res.json(terms);
   } catch (error) {
     console.error('Error fetching terms:', error);
     return res.status(500).json({ error: 'Failed to fetch terms' });
   }
 });
 
-// Get active term (Note: Term model doesn't exist, returning null for now)
+// Get active term
 router.get('/terms/active', async (req, res) => {
   try {
-    // Term model doesn't exist in schema, return null
-    return res.status(404).json({ error: 'No active term found' });
+    const term = await prisma.academicTerm.findFirst({
+      where: { isActive: true },
+      orderBy: [{ year: 'desc' }, { termNumber: 'desc' }],
+    });
+
+    if (!term) {
+      return res.status(404).json({ error: 'No active term found' });
+    }
+
+    return res.json(term);
   } catch (error) {
     console.error('Error fetching active term:', error);
     return res.status(500).json({ error: 'Failed to fetch active term' });
   }
 });
 
-// Create new term (DISABLED: Term model doesn't exist)
+// Create new term
 router.post('/terms',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
+    try {
+      const { year, termNumber, name, startDate, endDate, description, isActive } = req.body;
+
+      if (!year || !termNumber || !name || !startDate || !endDate) {
+        return res.status(400).json({ error: 'year, termNumber, name, startDate, and endDate are required.' });
+      }
+
+      const created = await prisma.academicTerm.create({
+        data: {
+          year: Number(year),
+          termNumber: Number(termNumber),
+          name,
+          description: description || null,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          isActive: Boolean(isActive),
+        },
+      });
+
+      if (isActive) {
+        await prisma.academicTerm.updateMany({
+          where: { id: { not: created.id } },
+          data: { isActive: false },
+        });
+      }
+
+      return res.status(201).json(created);
+    } catch (error) {
+      console.error('Error creating term:', error);
+      return res.status(500).json({ error: 'Failed to create term' });
+    }
   }
 );
 
-// Update term (DISABLED: Term model doesn't exist)
+// Update term
 router.put('/terms/:id',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
+    try {
+      const { id } = req.params;
+      const { year, termNumber, name, startDate, endDate, description, isActive } = req.body;
+
+      const updated = await prisma.academicTerm.update({
+        where: { id },
+        data: {
+          year: year !== undefined ? Number(year) : undefined,
+          termNumber: termNumber !== undefined ? Number(termNumber) : undefined,
+          name,
+          description,
+          startDate: startDate ? new Date(startDate) : undefined,
+          endDate: endDate ? new Date(endDate) : undefined,
+          isActive,
+        },
+      });
+
+      if (isActive) {
+        await prisma.academicTerm.updateMany({
+          where: { id: { not: updated.id } },
+          data: { isActive: false },
+        });
+      }
+
+      return res.json(updated);
+    } catch (error) {
+      console.error('Error updating term:', error);
+      return res.status(500).json({ error: 'Failed to update term' });
+    }
   }
 );
 
-// Set active term (DISABLED: Term model doesn't exist)
+// Set active term
 router.patch('/terms/:id/activate',
   authMiddleware,
   requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
-    return res.status(501).json({ error: 'Term model not implemented. Please use AcademicCalendar events instead.' });
+    try {
+      const { id } = req.params;
+
+      await prisma.$transaction([
+        prisma.academicTerm.updateMany({
+          data: { isActive: false },
+        }),
+        prisma.academicTerm.update({
+          where: { id },
+          data: { isActive: true },
+        }),
+      ]);
+
+      const activeTerm = await prisma.academicTerm.findUnique({ where: { id } });
+      return res.json(activeTerm);
+    } catch (error) {
+      console.error('Error activating term:', error);
+      return res.status(500).json({ error: 'Failed to activate term' });
+    }
   }
 );
 
@@ -129,7 +214,7 @@ router.get('/events', async (req, res) => {
 // Create calendar event
 router.post('/events',
   authMiddleware,
-  requireRole(['ADMIN']),
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
     try {
       const {
@@ -176,7 +261,7 @@ router.post('/events',
 // Update calendar event
 router.put('/events/:id',
   authMiddleware,
-  requireRole(['ADMIN']),
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
     try {
       const { id } = req.params;
@@ -225,7 +310,7 @@ router.put('/events/:id',
 // Delete calendar event
 router.delete('/events/:id',
   authMiddleware,
-  requireRole(['ADMIN']),
+  requireRole(['ADMIN', 'SUPER_ADMIN']),
   async (req, res) => {
     try {
       const { id } = req.params;

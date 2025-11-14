@@ -21,7 +21,9 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node src/scripts/seed.ts",
     "seed:remote": "ts-node src/scripts/remoteSeed.ts",
-    "postinstall": "npm run prisma:generate:prod"
+    "postinstall": "npm run prisma:generate:prod",
+    "data:export": "ts-node src/scripts/exportData.ts",
+    "data:import": "ts-node src/scripts/importData.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

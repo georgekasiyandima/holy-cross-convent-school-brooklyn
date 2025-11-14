@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Stack, Paper, Divider } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardContent, Button, Stack, Paper, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { School, MenuBook, Groups, Lightbulb, Favorite } from '@mui/icons-material';
 import SEO from '../components/SEO';
@@ -31,6 +31,12 @@ const FeatureCard = styled(Card)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-8px)',
     boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 40px rgba(26,35,126,0.2)'
   }
 }));
 
@@ -42,7 +48,7 @@ const IconBox = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   margin: '0 auto 16px',
-  background: 'linear-gradient(135deg, #1a237e 0%, #d32f2f 100%)',
+  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.error.main} 100%)`,
   color: '#fff',
   boxShadow: '0 8px 24px rgba(26,35,126,0.3)'
 }));
@@ -52,50 +58,39 @@ const Academic: React.FC = () => {
     <>
       <SEO 
         title="Academic Excellence - Holy Cross Convent School" 
-        description="At Holy Cross Convent School, every child is seen, supported, and encouraged to reach their full God-given potential — academically, spiritually, and personally." 
+        description="At Holy Cross Convent School, every child is seen, supported, and encouraged to reach their full God-given potential — academically, spiritually, and personally."
+        image="/acad1.jpg"
       />
       
       {/* Hero Section */}
       <Hero>
-        {/* Return to Home - positioned to avoid header clash */}
-        <Box sx={{
-          position: 'fixed',
-          top: { xs: 80, sm: 100 },
-          left: 16,
-          zIndex: 1000,
-          '& .MuiTypography-root': {
-            color: 'white !important',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
-            backgroundColor: 'rgba(26, 35, 126, 0.7)',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            display: 'inline-block',
-            backdropFilter: 'blur(4px)',
-            '&:hover': {
-              transform: 'translateX(-2px)',
-              backgroundColor: 'rgba(26, 35, 126, 0.9)',
-            },
-            transition: 'all 0.3s ease'
-          }
-        }}>
-          <ReturnToHome />
-        </Box>
+        <Container maxWidth="xl" sx={{ position: 'relative', py: 8, px: { xs: 2, sm: 4 } }}>
+          {/* Return to Home - positioned to avoid header/logo */}
+          <Box sx={{
+            position: 'absolute',
+            top: { xs: 16, sm: 24 },
+            right: { xs: 16, sm: 24 },
+            zIndex: 10,
+            '& .MuiTypography-root': {
+              color: 'white !important',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(26, 35, 126, 0.7)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              display: 'inline-block',
+              backdropFilter: 'blur(4px)',
+              '&:hover': {
+                transform: 'translateX(-2px)',
+                backgroundColor: 'rgba(26, 35, 126, 0.9)',
+              },
+              transition: 'all 0.3s ease'
+            }
+          }}>
+            <ReturnToHome />
+          </Box>
 
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
-          <Chip 
-            label="Academic Pillar" 
-            sx={{ 
-              backgroundColor: '#ffd700', 
-              color: '#1a237e',
-              fontWeight: 700,
-              fontSize: '1rem',
-              px: 2,
-              py: 3,
-              mb: 4
-            }} 
-          />
-          
           <Typography 
+            component="h1"
             variant="h1" 
             sx={{ 
               fontWeight: 900,
@@ -182,14 +177,14 @@ const Academic: React.FC = () => {
       </Hero>
 
       {/* Mission Statement - Following Robotics Pattern */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Paper 
           elevation={0}
           sx={{
             background: 'linear-gradient(135deg, #e3f2fd 0%, #ffebee 100%)',
             p: 6,
             borderRadius: 4,
-            border: '3px solid #d32f2f',
+            border: '2px solid #d32f2f',
             textAlign: 'center'
           }}
         >
@@ -250,7 +245,7 @@ const Academic: React.FC = () => {
 
       {/* Features Section */}
       <Box sx={{ backgroundColor: '#f5f5f5', py: 8 }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Typography 
             variant="h3" 
             sx={{ 
@@ -263,12 +258,12 @@ const Academic: React.FC = () => {
             Our Academic Phases
           </Typography>
 
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <MenuBook sx={{ fontSize: 40 }} />
+                    <MenuBook sx={{ fontSize: 40 }} aria-hidden="true" />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Foundation Phase (R–3)
@@ -284,7 +279,7 @@ const Academic: React.FC = () => {
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <Lightbulb sx={{ fontSize: 40 }} />
+                    <Lightbulb sx={{ fontSize: 40 }} aria-hidden="true" />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Intermediate Phase (4–6)
@@ -300,7 +295,7 @@ const Academic: React.FC = () => {
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <School sx={{ fontSize: 40 }} />
+                    <School sx={{ fontSize: 40 }} aria-hidden="true" />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Senior Phase (7)
@@ -316,7 +311,7 @@ const Academic: React.FC = () => {
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <Groups sx={{ fontSize: 40 }} />
+                    <Groups sx={{ fontSize: 40 }} aria-hidden="true" />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Small Classes
@@ -332,7 +327,7 @@ const Academic: React.FC = () => {
               <FeatureCard>
                 <CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <IconBox>
-                    <Favorite sx={{ fontSize: 40 }} />
+                    <Favorite sx={{ fontSize: 40 }} aria-hidden="true" />
                   </IconBox>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#1a237e' }}>
                     Dedicated Support
@@ -348,7 +343,7 @@ const Academic: React.FC = () => {
       </Box>
 
       {/* Gallery Section - Images Only */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="xl" sx={{ py: 8 }}>
         <Typography 
           variant="h3" 
           sx={{ 
@@ -366,7 +361,8 @@ const Academic: React.FC = () => {
             <Box
               component="img"
               src="/acad2.jpg"
-              alt="Academic learning"
+              alt="Foundation Phase learners reading in small group setting"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -384,7 +380,8 @@ const Academic: React.FC = () => {
             <Box
               component="img"
               src="/academics1.jpg"
-              alt="Academic support"
+              alt="Intermediate Phase students working on science project"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 400,
@@ -402,7 +399,8 @@ const Academic: React.FC = () => {
             <Box
               component="img"
               src="/acad1.jpg"
-              alt="Academic excellence"
+              alt="Senior Phase leadership workshop in progress"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -420,7 +418,8 @@ const Academic: React.FC = () => {
             <Box
               component="img"
               src="/acadms2.jpg"
-              alt="Academic activities"
+              alt="Learners engaged in collaborative academic activities"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,
@@ -438,7 +437,8 @@ const Academic: React.FC = () => {
             <Box
               component="img"
               src="/acads1.jpg"
-              alt="Academic excellence"
+              alt="Students participating in hands-on learning experience"
+              loading="lazy"
               sx={{
                 width: '100%',
                 height: 300,

@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import nodemailer from 'nodemailer';
 
 const prisma = new PrismaClient();
 
@@ -30,14 +29,37 @@ export class NewsletterService {
   static async createNewsletter(data: CreateNewsletterData) {
     const gradeLevelsJson = data.gradeLevels ? JSON.stringify(data.gradeLevels) : null;
     const attachmentsJson = data.attachments ? JSON.stringify(data.attachments) : null;
-    
-    return await prisma.newsletter.create({
+
+    const created = await prisma.newsletter.create({
       data: {
-        ...data,
+        title: data.title,
+        content: data.content,
+        priority: data.priority ?? 'NORMAL',
+        status: data.status ?? 'DRAFT',
+        scheduledFor: data.scheduledFor,
+        targetAudience: data.targetAudience ?? 'ALL',
         gradeLevels: gradeLevelsJson,
         attachments: attachmentsJson,
+        authorId: data.authorId,
+        isPublished: data.status === 'SENT' || data.status === 'SCHEDULED' ? true : false,
+        publishedAt: data.status === 'SENT' ? new Date() : undefined,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
     });
+
+    return {
+      ...created,
+      gradeLevels: created.gradeLevels ? JSON.parse(created.gradeLevels) : [],
+      attachments: created.attachments ? JSON.parse(created.attachments) : [],
+    };
   }
 
   static async getNewsletters(filters?: {
@@ -104,17 +126,6 @@ export class NewsletterService {
             email: true,
           },
         },
-        recipients: {
-          include: {
-            parent: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
       },
     });
 
@@ -135,7 +146,7 @@ export class NewsletterService {
     if (data.gradeLevels) {
       updateData.gradeLevels = JSON.stringify(data.gradeLevels);
     }
-    
+
     if (data.attachments) {
       updateData.attachments = JSON.stringify(data.attachments);
     }
@@ -178,129 +189,54 @@ export class NewsletterService {
       throw new Error('Newsletter already sent');
     }
 
-    // Update status to SENDING
-    await prisma.newsletter.update({
+    const now = new Date();
+
+    const updated = await prisma.newsletter.update({
       where: { id: newsletterId },
-      data: { status: 'SENDING' },
+      data: {
+        status: 'SENT',
+        sentAt: now,
+        publishedAt: now,
+        isPublished: true,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
-    try {
-      // Get all parents for the target audience
-      const parents = await this.getTargetParents(newsletter);
-      
-      // Create recipient records
-      const recipients = await Promise.all(
-        parents.map(parent =>
-          prisma.newsletterRecipient.create({
-            data: {
-              newsletterId,
-              parentId: parent.id,
-              status: 'PENDING',
-            },
-          })
-        )
-      );
-
-      // Send emails (simplified - in production, use a proper email service)
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      const emailPromises = recipients.map(async (recipient) => {
-        try {
-          // Get parent details
-          const parent = await prisma.parent.findUnique({
-            where: { id: recipient.parentId },
-          });
-
-          if (!parent) {
-            throw new Error('Parent not found');
-          }
-
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || 'noreply@holycrossbrooklyn.co.za',
-            to: parent.email,
-            subject: newsletter.title,
-            html: newsletter.content,
-          });
-
-          await prisma.newsletterRecipient.update({
-            where: { id: recipient.id },
-            data: {
-              status: 'SENT',
-              sentAt: new Date(),
-            },
-          });
-        } catch (error) {
-          await prisma.newsletterRecipient.update({
-            where: { id: recipient.id },
-            data: {
-              status: 'FAILED',
-              errorMessage: error instanceof Error ? error.message : 'Unknown error',
-            },
-          });
-        }
-      });
-
-      await Promise.all(emailPromises);
-
-      // Update newsletter status
-      await prisma.newsletter.update({
-        where: { id: newsletterId },
-        data: {
-          status: 'SENT',
-          sentAt: new Date(),
-        },
-      });
-
-      return { success: true, recipientsCount: recipients.length };
-    } catch (error) {
-      // Update newsletter status to FAILED
-      await prisma.newsletter.update({
-        where: { id: newsletterId },
-        data: { status: 'FAILED' },
-      });
-
-      throw error;
-    }
-  }
-
-  private static async getTargetParents(newsletter: any) {
-    const where: any = { isActive: true };
-
-    if (newsletter.targetAudience === 'SPECIFIC_GRADES' && newsletter.gradeLevels.length > 0) {
-      // Get parents of students in specific grades
-      const students = await prisma.student.findMany({
-        where: {
-          grade: { in: newsletter.gradeLevels },
-          isActive: true,
-        },
-        include: { parent: true },
-      });
-
-      return students.map(student => student.parent);
-    }
-
-    // Get all active parents
-    return await prisma.parent.findMany({ where });
+    return {
+      success: true,
+      newsletter: {
+        ...updated,
+        gradeLevels: updated.gradeLevels ? JSON.parse(updated.gradeLevels) : [],
+        attachments: updated.attachments ? JSON.parse(updated.attachments) : [],
+      },
+      recipientsCount: 0,
+    };
   }
 
   static async getNewsletterStats(newsletterId: string) {
-    const stats = await prisma.newsletterRecipient.groupBy({
-      by: ['status'],
-      where: { newsletterId },
-      _count: { status: true },
+    const newsletter = await prisma.newsletter.findUnique({
+      where: { id: newsletterId },
+      select: {
+        status: true,
+        sentAt: true,
+      },
     });
 
-    return stats.reduce((acc, stat) => {
-      acc[stat.status] = stat._count.status;
-      return acc;
-    }, {} as Record<string, number>);
+    if (!newsletter) {
+      return {};
+    }
+
+    return {
+      [newsletter.status]: 1,
+      sentAt: newsletter.sentAt || null,
+    };
   }
 }

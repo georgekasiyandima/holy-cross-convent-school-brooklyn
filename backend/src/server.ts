@@ -13,7 +13,9 @@ import staffRoutes from './routes/staff';
 import documentsRoutes from './routes/documents';
 import schoolHubRoutes from './routes/schoolHub';
 import calendarRoutes from './routes/calendar';
+import newsRoutes from './routes/news';
 import galleryRoutes from './routes/gallery';
+import governingBodyRoutes from './routes/governingBody';
 import vacanciesRoutes from './routes/vacancies';
 import { errorHandler } from './middleware/errorHandler';
 import keepAliveService from './services/keepAliveService';
@@ -24,6 +26,7 @@ dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Middleware
 // Allow cross-origin resource embedding for static assets (images)
@@ -33,17 +36,9 @@ app.use(helmet({
 app.use(compression());
 app.use(morgan('combined'));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
 // CORS - Allow all origins in development for easier debugging
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
+  origin: isProduction 
     ? (process.env.FRONTEND_URL || 'http://localhost:3000')
     : true, // Allow all origins in development
   credentials: true,
@@ -52,6 +47,21 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isProduction ? 100 : 1000, // relaxed limit in development
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+if (isProduction) {
+  app.use('/api/', limiter);
+} else {
+  console.log('⚙️  Rate limiter disabled for development environment');
+}
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -68,20 +78,28 @@ app.use('/uploads', express.static(uploadsPath, {
   }
 }));
 
-// Log upload directory info on startup
-console.log('📁 Upload directory configured:', uploadsPath);
-console.log('📁 Upload directory exists:', require('fs').existsSync(uploadsPath));
-console.log('📁 Process CWD:', process.cwd());
-console.log('📁 __dirname:', __dirname);
+// Log upload directory info on startup (development only)
+if (!isProduction) {
+  console.log('📁 Upload directory configured:', uploadsPath);
+  console.log('📁 Upload directory exists:', require('fs').existsSync(uploadsPath));
+  console.log('📁 Process CWD:', process.cwd());
+  console.log('📁 __dirname:', __dirname);
+}
 
 // Verify gallery directory exists
 const galleryPath = path.join(uploadsPath, 'gallery');
 if (require('fs').existsSync(galleryPath)) {
-  console.log('✅ Gallery directory exists:', galleryPath);
+  if (!isProduction) {
+    console.log('✅ Gallery directory exists:', galleryPath);
+  }
 } else {
-  console.log('⚠️  Gallery directory does not exist yet:', galleryPath);
+  if (!isProduction) {
+    console.log('⚠️  Gallery directory does not exist yet:', galleryPath);
+  }
   require('fs').mkdirSync(galleryPath, { recursive: true });
-  console.log('✅ Created gallery directory:', galleryPath);
+  if (!isProduction) {
+    console.log('✅ Created gallery directory:', galleryPath);
+  }
 }
 
 // Auth routes
@@ -99,6 +117,9 @@ app.use('/api/staff', staffRoutes);
 // Documents routes
 app.use('/api/documents', documentsRoutes);
 
+// News / announcements routes
+app.use('/api/news', newsRoutes);
+
 // School Hub routes (unified calendar & events)
 app.use('/api/school-hub', schoolHubRoutes);
 
@@ -107,6 +128,9 @@ app.use('/api/calendar', calendarRoutes);
 
 // Gallery routes
 app.use('/api/gallery', galleryRoutes);
+
+// Governing body routes
+app.use('/api/governing-body', governingBodyRoutes);
 
 // Vacancies routes
 app.use('/api/vacancies', vacanciesRoutes);

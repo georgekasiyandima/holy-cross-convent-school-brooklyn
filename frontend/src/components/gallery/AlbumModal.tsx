@@ -244,3 +244,4 @@ const AlbumModal: React.FC<AlbumModalProps> = ({ open, album, onClose }) => {
 
 export default AlbumModal;
 
+

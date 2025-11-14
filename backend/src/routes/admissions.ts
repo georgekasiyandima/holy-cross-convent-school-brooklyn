@@ -1,7 +1,8 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { authMiddleware, requireRole } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth';
+import applicationWorkflowService from '../services/applicationWorkflowService';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +11,7 @@ const prisma = new PrismaClient();
 const applicationSchema = z.object({
   // Learner Information
   surname: z.string().min(1, 'Surname is required'),
-  christianName: z.string().min(1, 'Christian name is required'),
+  learnerName: z.string().min(1, 'Learner name is required'),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
   placeOfBirth: z.string().min(1, 'Place of birth is required'),
   gradeApplying: z.string().min(1, 'Grade applying for is required'),
@@ -100,12 +101,12 @@ router.post('/submit', async (req, res) => {
     // Validate the request body
     const validatedData = applicationSchema.parse(req.body);
 
-    // Create application in database
-    const application = await prisma.application.create({
-      data: {
+    const application = await prisma.$transaction(async (tx) => {
+      const createdApplication = await tx.application.create({
+        data: {
         // Learner Information
         surname: validatedData.surname,
-        christianName: validatedData.christianName,
+        learnerName: validatedData.learnerName,
         dateOfBirth: new Date(validatedData.dateOfBirth),
         placeOfBirth: validatedData.placeOfBirth,
         gradeApplying: validatedData.gradeApplying,
@@ -190,6 +191,11 @@ router.post('/submit', async (req, res) => {
       },
     });
 
+      await applicationWorkflowService.initializeWorkflow(createdApplication.id, tx);
+
+      return createdApplication;
+    });
+
     // TODO: Send email notification to admin
     // TODO: Send confirmation email to parent
 
@@ -229,10 +235,30 @@ router.get('/applications',
               id: true,
               documentType: true,
               originalName: true,
+              fileName: true,
               uploadedAt: true,
             },
             orderBy: {
               uploadedAt: 'desc',
+            },
+          },
+          stages: {
+            select: {
+              id: true,
+              stageKey: true,
+              name: true,
+              description: true,
+              assignedRole: true,
+              assignedUserId: true,
+              sequence: true,
+              status: true,
+              startedAt: true,
+              completedAt: true,
+              dueDate: true,
+              payload: true,
+            },
+            orderBy: {
+              sequence: 'asc',
             },
           },
         },
@@ -250,6 +276,201 @@ router.get('/applications',
       res.status(500).json({
         success: false,
         message: 'Internal server error',
+      });
+    }
+  }
+);
+
+// Get workflow summary for application (authorized staff)
+router.get(
+  '/applications/:id/workflow',
+  authMiddleware,
+  requireRole(['SUPER_ADMIN', 'ADMIN', 'SECRETARY', 'BURSAR', 'PRINCIPAL', 'TEACHER']),
+  async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(applicationId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid application id'
+        });
+      }
+
+      const application = await prisma.application.findUnique({
+        where: { id: applicationId }
+      });
+
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: 'Application not found'
+        });
+      }
+
+      const summary = await applicationWorkflowService.getWorkflowSummary(applicationId);
+
+      res.json({
+        success: true,
+        data: summary
+      });
+    } catch (error) {
+      console.error('Error fetching workflow summary:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Unable to fetch workflow summary'
+      });
+    }
+  }
+);
+
+// Update workflow stage status
+router.patch(
+  '/applications/:id/stages/:stageId/status',
+  authMiddleware,
+  requireRole(['SUPER_ADMIN', 'ADMIN', 'SECRETARY', 'BURSAR', 'PRINCIPAL', 'TEACHER']),
+  async (req: AuthRequest, res) => {
+    try {
+      const applicationId = parseInt(req.params.id, 10);
+      const stageId = parseInt(req.params.stageId, 10);
+      const { status, notes, metadata } = req.body;
+
+      if (Number.isNaN(applicationId) || Number.isNaN(stageId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid identifiers supplied'
+        });
+      }
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: 'Status is required'
+        });
+      }
+
+      const updatedStage = await prisma.$transaction(async (tx) => {
+        const stage = await tx.applicationStage.findUnique({
+          where: { id: stageId }
+        });
+
+        if (!stage || stage.applicationId !== applicationId) {
+          throw {
+            handled: true,
+            status: 404,
+            message: 'Stage not found for application'
+          };
+        }
+
+        if (
+          req.user &&
+          !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) &&
+          stage.assignedRole !== req.user.role
+        ) {
+          throw {
+            handled: true,
+            status: 403,
+            message: 'You are not assigned to this stage'
+          };
+        }
+
+        return applicationWorkflowService.updateStageStatus(
+          applicationId,
+          stageId,
+          {
+            status,
+            notes,
+            metadata,
+            actorUserId: req.user?.id,
+            actorDisplayName: req.user?.name || req.user?.email
+          },
+          tx
+        );
+      });
+
+      res.json({
+        success: true,
+        stage: updatedStage
+      });
+    } catch (error: any) {
+      if (error?.handled) {
+        return res.status(error.status).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      console.error('Error updating stage status:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update stage status'
+      });
+    }
+  }
+);
+
+// Assign workflow stage to role or user
+router.post(
+  '/applications/:id/stages/:stageId/assign',
+  authMiddleware,
+  requireRole(['SUPER_ADMIN', 'ADMIN', 'PRINCIPAL']),
+  async (req: AuthRequest, res) => {
+    try {
+      const applicationId = parseInt(req.params.id, 10);
+      const stageId = parseInt(req.params.stageId, 10);
+      const { assignedRole, assignedUserId, notes, metadata } = req.body;
+
+      if (Number.isNaN(applicationId) || Number.isNaN(stageId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid identifiers supplied'
+        });
+      }
+
+      const updatedStage = await prisma.$transaction(async (tx) => {
+        const stage = await tx.applicationStage.findUnique({
+          where: { id: stageId }
+        });
+
+        if (!stage || stage.applicationId !== applicationId) {
+          throw {
+            handled: true,
+            status: 404,
+            message: 'Stage not found for application'
+          };
+        }
+
+        return applicationWorkflowService.assignStage(
+          applicationId,
+          stageId,
+          {
+            assignedRole,
+            assignedUserId,
+            notes,
+            metadata,
+            actorUserId: req.user?.id,
+            actorDisplayName: req.user?.name || req.user?.email
+          },
+          tx
+        );
+      });
+
+      res.json({
+        success: true,
+        stage: updatedStage
+      });
+    } catch (error: any) {
+      if (error?.handled) {
+        return res.status(error.status).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      console.error('Error assigning stage:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to assign workflow stage'
       });
     }
   }
@@ -280,6 +501,24 @@ router.get('/applications/:id',
           },
           orderBy: {
             uploadedAt: 'desc',
+          },
+        },
+        stages: {
+          select: {
+            id: true,
+            stageKey: true,
+            name: true,
+            assignedRole: true,
+            assignedUserId: true,
+            sequence: true,
+            status: true,
+            startedAt: true,
+            completedAt: true,
+            dueDate: true,
+            description: true,
+          },
+          orderBy: {
+            sequence: 'asc',
           },
         },
       },
@@ -399,6 +638,10 @@ router.get('/statistics',
     res.json({
       success: true,
       statistics: {
+        totalApplications,
+        pendingApplications,
+        approvedApplications,
+        enrolledApplications,
         total: totalApplications,
         pending: pendingApplications,
         approved: approvedApplications,

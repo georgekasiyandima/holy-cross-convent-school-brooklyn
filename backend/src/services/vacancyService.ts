@@ -39,13 +39,8 @@ export class VacancyService {
    * Create a new vacancy
    */
   async createVacancy(data: CreateVacancyData) {
-    const requirementsJson = data.requirements ? JSON.stringify(data.requirements) : null;
-    const responsibilitiesJson = data.responsibilities ? JSON.stringify(data.responsibilities) : null;
-    const qualificationsJson = data.qualifications ? JSON.stringify(data.qualifications) : null;
-
-    // Schema only has: id, title, description, requirements, department, isActive, createdAt, updatedAt
-    // Store all extra data in requirements JSON
-    const allData = {
+    const combinedRequirements = JSON.stringify({
+      requirements: data.requirements || [],
       responsibilities: data.responsibilities,
       qualifications: data.qualifications,
       employmentType: data.employmentType,
@@ -57,11 +52,7 @@ export class VacancyService {
       isUrgent: data.isUrgent,
       applicationEmail: data.applicationEmail,
       applicationInstructions: data.applicationInstructions,
-      order: data.order,
-    };
-    const combinedRequirements = JSON.stringify({
-      requirements: data.requirements || [],
-      ...allData
+      order: data.order ?? 0,
     });
 
     return await prisma.vacancy.create({
@@ -70,7 +61,16 @@ export class VacancyService {
         department: data.department || 'TEACHING',
         description: data.description,
         requirements: combinedRequirements,
-        isActive: data.isPublished !== false, // Map isPublished to isActive
+        isPublished: data.isPublished ?? false,
+        isUrgent: data.isUrgent ?? false,
+        employmentType: data.employmentType ?? 'FULL_TIME',
+        location: data.location ?? 'Brooklyn, Cape Town',
+        salaryRange: data.salaryRange ?? null,
+        closingDate: data.closingDate ? new Date(data.closingDate) : null,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        applicationEmail: data.applicationEmail ?? null,
+        applicationInstructions: data.applicationInstructions ?? null,
+        order: data.order ?? 0,
       },
     });
   }
@@ -86,60 +86,23 @@ export class VacancyService {
     const where: any = {};
 
     if (options.publishedOnly) {
-      where.isActive = true; // Map isPublished to isActive
+      where.isPublished = true;
     }
 
     if (options.department) {
       where.department = options.department;
     }
 
-    // Note: isUrgent filtering would need to be done in memory after fetching
-    // since it's stored in requirements JSON
+    if (options.isUrgent !== undefined) {
+      where.isUrgent = options.isUrgent;
+    }
 
     const vacancies = await prisma.vacancy.findMany({
       where,
-      orderBy: [
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ createdAt: 'desc' }],
     });
 
-    // Parse JSON fields safely
-    return vacancies.map(vacancy => {
-      let requirementsData: any = {};
-      let requirements = null;
-      let responsibilities = null;
-      let qualifications = null;
-
-      try {
-        if (vacancy.requirements) {
-          requirementsData = JSON.parse(vacancy.requirements);
-          requirements = requirementsData.requirements || [];
-          responsibilities = requirementsData.responsibilities || null;
-          qualifications = requirementsData.qualifications || null;
-        }
-      } catch (e) {
-        console.warn('Failed to parse requirements:', e);
-        requirements = [];
-      }
-
-      return {
-        ...vacancy,
-        requirements,
-        responsibilities,
-        qualifications,
-        isPublished: vacancy.isActive, // Map isActive to isPublished
-        // Add other fields from requirementsData if needed
-        employmentType: requirementsData.employmentType || null,
-        location: requirementsData.location || null,
-        salaryRange: requirementsData.salaryRange || null,
-        closingDate: requirementsData.closingDate || null,
-        startDate: requirementsData.startDate || null,
-        isUrgent: requirementsData.isUrgent || false,
-        applicationEmail: requirementsData.applicationEmail || null,
-        applicationInstructions: requirementsData.applicationInstructions || null,
-        order: requirementsData.order || 0,
-      };
-    });
+    return vacancies.map(this.deserializeVacancy);
   }
 
   /**
@@ -152,39 +115,7 @@ export class VacancyService {
 
     if (!vacancy) return null;
 
-    let requirementsData: any = {};
-    let requirements = null;
-    let responsibilities = null;
-    let qualifications = null;
-
-    try {
-      if (vacancy.requirements) {
-        requirementsData = JSON.parse(vacancy.requirements);
-        requirements = requirementsData.requirements || [];
-        responsibilities = requirementsData.responsibilities || null;
-        qualifications = requirementsData.qualifications || null;
-      }
-    } catch (e) {
-      console.warn('Failed to parse requirements:', e);
-      requirements = [];
-    }
-
-    return {
-      ...vacancy,
-      requirements,
-      responsibilities,
-      qualifications,
-      isPublished: vacancy.isActive,
-      employmentType: requirementsData.employmentType || null,
-      location: requirementsData.location || null,
-      salaryRange: requirementsData.salaryRange || null,
-      closingDate: requirementsData.closingDate || null,
-      startDate: requirementsData.startDate || null,
-      isUrgent: requirementsData.isUrgent || false,
-      applicationEmail: requirementsData.applicationEmail || null,
-      applicationInstructions: requirementsData.applicationInstructions || null,
-      order: requirementsData.order || 0,
-    };
+    return this.deserializeVacancy(vacancy);
   }
 
   /**
@@ -207,7 +138,7 @@ export class VacancyService {
 
     // Merge with new data
     const allData = {
-      requirements: data.requirements || existingData.requirements || [],
+      requirements: data.requirements ?? existingData.requirements ?? [],
       responsibilities: data.responsibilities !== undefined ? data.responsibilities : existingData.responsibilities,
       qualifications: data.qualifications !== undefined ? data.qualifications : existingData.qualifications,
       employmentType: data.employmentType !== undefined ? data.employmentType : existingData.employmentType,
@@ -227,46 +158,23 @@ export class VacancyService {
     if (data.department !== undefined) updateData.department = data.department;
     if (data.description !== undefined) updateData.description = data.description;
     updateData.requirements = JSON.stringify(allData);
-    if (data.isPublished !== undefined) updateData.isActive = data.isPublished;
+    if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
+    if (data.isUrgent !== undefined) updateData.isUrgent = data.isUrgent;
+    if (data.employmentType !== undefined) updateData.employmentType = data.employmentType;
+    if (data.location !== undefined) updateData.location = data.location;
+    if (data.salaryRange !== undefined) updateData.salaryRange = data.salaryRange;
+    if (data.closingDate !== undefined) updateData.closingDate = data.closingDate ? new Date(data.closingDate) : null;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+    if (data.applicationEmail !== undefined) updateData.applicationEmail = data.applicationEmail;
+    if (data.applicationInstructions !== undefined) updateData.applicationInstructions = data.applicationInstructions;
+    if (data.order !== undefined) updateData.order = data.order;
 
     const updated = await prisma.vacancy.update({
       where: { id },
       data: updateData,
     });
 
-    let requirementsData: any = {};
-      let requirements = null;
-      let responsibilities = null;
-      let qualifications = null;
-
-      try {
-        if (updated.requirements) {
-          requirementsData = JSON.parse(updated.requirements);
-          requirements = requirementsData.requirements || [];
-          responsibilities = requirementsData.responsibilities || null;
-          qualifications = requirementsData.qualifications || null;
-        }
-      } catch (e) {
-        console.warn('Failed to parse requirements:', e);
-        requirements = [];
-      }
-
-      return {
-        ...updated,
-        requirements,
-        responsibilities,
-        qualifications,
-        isPublished: updated.isActive,
-        employmentType: requirementsData.employmentType || null,
-        location: requirementsData.location || null,
-        salaryRange: requirementsData.salaryRange || null,
-        closingDate: requirementsData.closingDate || null,
-        startDate: requirementsData.startDate || null,
-        isUrgent: requirementsData.isUrgent || false,
-        applicationEmail: requirementsData.applicationEmail || null,
-        applicationInstructions: requirementsData.applicationInstructions || null,
-        order: requirementsData.order || 0,
-      };
+    return this.deserializeVacancy(updated);
   }
 
   /**
@@ -283,49 +191,47 @@ export class VacancyService {
    */
   async getPublishedVacancies() {
     const vacancies = await prisma.vacancy.findMany({
-      where: {
-        isActive: true, // Map isPublished to isActive
-      },
-      orderBy: [
-        { createdAt: 'desc' },
-      ],
+      where: { isPublished: true },
+      orderBy: [{ createdAt: 'desc' }],
     });
 
-    return vacancies.map(vacancy => {
-      let requirementsData: any = {};
-      let requirements = null;
-      let responsibilities = null;
-      let qualifications = null;
+    return vacancies.map(this.deserializeVacancy);
+  }
 
-      try {
-        if (vacancy.requirements) {
-          requirementsData = JSON.parse(vacancy.requirements);
-          requirements = requirementsData.requirements || [];
-          responsibilities = requirementsData.responsibilities || null;
-          qualifications = requirementsData.qualifications || null;
-        }
-      } catch (e) {
-        console.warn('Failed to parse requirements:', e);
-        requirements = [];
+  private deserializeVacancy(vacancy: any) {
+    let requirementsData: any = {};
+    let requirements = null;
+    let responsibilities = null;
+    let qualifications = null;
+
+    try {
+      if (vacancy.requirements) {
+        requirementsData = JSON.parse(vacancy.requirements);
+        requirements = requirementsData.requirements || [];
+        responsibilities = requirementsData.responsibilities || null;
+        qualifications = requirementsData.qualifications || null;
       }
+    } catch (e) {
+      console.warn('Failed to parse requirements:', e);
+      requirements = [];
+    }
 
-      return {
-        ...vacancy,
-        requirements,
-        responsibilities,
-        qualifications,
-        isPublished: vacancy.isActive,
-        employmentType: requirementsData.employmentType || null,
-        location: requirementsData.location || null,
-        salaryRange: requirementsData.salaryRange || null,
-        closingDate: requirementsData.closingDate || null,
-        startDate: requirementsData.startDate || null,
-        isUrgent: requirementsData.isUrgent || false,
-        applicationEmail: requirementsData.applicationEmail || null,
-        applicationInstructions: requirementsData.applicationInstructions || null,
-        order: requirementsData.order || 0,
-      };
-    });
+    return {
+      ...vacancy,
+      requirements,
+      responsibilities,
+      qualifications,
+      isPublished: vacancy.isPublished,
+      employmentType: vacancy.employmentType ?? requirementsData.employmentType ?? null,
+      location: vacancy.location ?? requirementsData.location ?? null,
+      salaryRange: vacancy.salaryRange ?? requirementsData.salaryRange ?? null,
+      closingDate: vacancy.closingDate ?? requirementsData.closingDate ?? null,
+      startDate: vacancy.startDate ?? requirementsData.startDate ?? null,
+      isUrgent: vacancy.isUrgent ?? requirementsData.isUrgent ?? false,
+      applicationEmail: vacancy.applicationEmail ?? requirementsData.applicationEmail ?? null,
+      applicationInstructions: vacancy.applicationInstructions ?? requirementsData.applicationInstructions ?? null,
+      order: vacancy.order ?? requirementsData.order ?? 0,
+    };
   }
 }
 

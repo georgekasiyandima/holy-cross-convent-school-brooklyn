@@ -26,6 +26,8 @@ export const createAlbumSchema = z.object({
   description: z.string().max(1000).optional(),
   albumType: z.enum(['GENERAL', 'CLASS']).default('GENERAL'),
   classGrade: z.string().optional(),
+  phase: z.string().optional(),
+  parentAlbumId: z.string().optional(),
   coverImageId: z.string().optional(),
   isPublished: z.boolean().optional().default(true),
 });
@@ -35,7 +37,9 @@ export const updateAlbumSchema = z.object({
   description: z.string().max(1000).optional(),
   albumType: z.enum(['GENERAL', 'CLASS']).optional(),
   classGrade: z.string().nullable().optional(),
+  phase: z.string().nullable().optional(),
   coverImageId: z.string().nullable().optional(),
+  parentAlbumId: z.string().nullable().optional(),
   isPublished: z.boolean().optional(),
 });
 

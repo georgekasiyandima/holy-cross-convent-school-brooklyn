@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Card, Button, Paper, styled, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import SchoolIcon from '@mui/icons-material/School';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -38,11 +39,8 @@ const Banner = styled(Box)(({ theme }) => ({
 // Helper function to get document image URL from API response or fallback
 const getDocumentImageUrl = (document: Document | null | undefined, fallback: string): string => {
   if (document && document.fileUrl) {
-    const url = documentService.getDocumentDownloadUrl(document.fileUrl);
-    console.log('Document image URL generated:', url, 'for document:', document.title || 'unknown');
-    return url;
+    return documentService.getDocumentDownloadUrl(document.fileUrl);
   }
-  console.log('No document found, using fallback:', fallback);
   return fallback;
 };
 
@@ -64,6 +62,7 @@ const galleryImages = [
 ];
 
 const Info: React.FC = () => {
+  const navigate = useNavigate();
   const [missionDoc, setMissionDoc] = useState<Document | null>(null);
   const [visionDoc, setVisionDoc] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,31 +73,37 @@ const Info: React.FC = () => {
   const visionFallback = '/HCCMS.jpeg'; // Using HCCMS temporarily until HCCVS.jpeg is uploaded
 
   useEffect(() => {
-    const fetchStatements = async () => {
+    const controller = new AbortController();
+    
+    const fetchStatements = async (signal: AbortSignal) => {
       setLoading(true);
       try {
         const findImageDocument = async (categories: string[], keyword: string): Promise<Document | null> => {
+          if (signal.aborted) return null;
+          
           for (const category of categories) {
+            if (signal.aborted) return null;
+            
             try {
               const docs = await documentService.getDocumentsByCategory(category, true);
-              if (docs.length) {
-                console.log(`✅ ${docs.length} docs found in category ${category}`);
-              }
               const imageDoc = docs.find((doc) => doc.mimeType.startsWith('image/'));
               if (imageDoc) {
                 return imageDoc;
               }
             } catch (error) {
-              console.warn(`⚠️ Unable to fetch documents for category ${category}`, error);
+              // Silently handle errors
+              if (signal.aborted) return null;
             }
           }
+
+          if (signal.aborted) return null;
 
           try {
             const allDocs = await documentService.getAllPublishedDocuments();
             const imageDoc = allDocs.find((doc) => {
               if (!doc.mimeType.startsWith('image/')) {
-            return false;
-          }
+                return false;
+              }
               const haystack = `${doc.title} ${doc.category} ${doc.tags.join(' ')} ${doc.fileName}`.toLowerCase();
               return haystack.includes(keyword.toLowerCase());
             });
@@ -106,7 +111,8 @@ const Info: React.FC = () => {
               return imageDoc;
             }
           } catch (error) {
-            console.error('❌ Failed to fetch all published documents for fallback search', error);
+            // Silently handle errors
+            if (signal.aborted) return null;
           }
 
           return null;
@@ -117,19 +123,26 @@ const Info: React.FC = () => {
           findImageDocument(['mission', 'mission-statement', 'mission_statement'], 'mission'),
         ]);
 
+        if (signal.aborted) return;
+
         setVisionDoc(vision);
         if (mission && vision && mission.id === vision.id) {
-          console.warn('⚠️ Mission document duplicates vision document, ignoring mission image.');
           setMissionDoc(null);
         } else {
           setMissionDoc(mission);
         }
       } finally {
-        setLoading(false);
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchStatements();
+    fetchStatements(controller.signal);
+    
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // Get image URLs - CRITICAL: Ensure vision and mission are never mixed
@@ -146,51 +159,43 @@ const Info: React.FC = () => {
   const visionImageUrl: string = visionDoc 
     ? getDocumentImageUrl(visionDoc, visionFallback) 
     : visionFallback;
-  
-  // Debug logging with explicit verification
-  console.log('🔍 DOCUMENT ASSIGNMENT VERIFICATION:', {
-    visionDoc: visionDoc ? { id: visionDoc.id, title: visionDoc.title, category: visionDoc.category } : 'NULL',
-    missionDoc: missionDoc ? { id: missionDoc.id, title: missionDoc.title, category: missionDoc.category } : 'NULL',
-    areSame: visionDoc && missionDoc ? visionDoc.id === missionDoc.id : false,
-    missionImageUrl: missionImageUrl,
-    visionImageUrl: visionImageUrl
-  });
 
   return (
     <>
       <SEO 
         title="School Info - Holy Cross Convent School Brooklyn" 
-        description="Learn about Holy Cross Convent School Brooklyn, our mission, vision, and community values." 
+        description="Learn about Holy Cross Convent School Brooklyn, our mission, vision, and community values."
+        image="/xul.jpg"
       />
     
-    {/* Return to Home - positioned outside banner to avoid clash */}
-    <Box sx={{ 
-      position: 'fixed', 
-      top: { xs: 80, sm: 100 }, 
-      left: 16, 
-      zIndex: 1000,
-      '& .MuiTypography-root': {
-        color: 'white !important',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
-        backgroundColor: 'rgba(26, 35, 126, 0.7)',
-        padding: '8px 16px',
-        borderRadius: '8px',
-        display: 'inline-block',
-        backdropFilter: 'blur(4px)',
-        '&:hover': {
-          transform: 'translateX(-2px)',
-          backgroundColor: 'rgba(26, 35, 126, 0.9)',
-        },
-        transition: 'all 0.3s ease'
-      }
-    }}>
-      <ReturnToHome />
-    </Box>
-
     {/* Banner Section */}
     <Banner>
-      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', px: { xs: 2, sm: 4 }, py: 8 }}>
+        {/* Return to Home - positioned to avoid header/logo */}
+        <Box sx={{ 
+          position: 'absolute',
+          top: { xs: 16, sm: 24 },
+          right: { xs: 16, sm: 24 },
+          zIndex: 10,
+          '& .MuiTypography-root': {
+            color: 'white !important',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(26, 35, 126, 0.7)',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            display: 'inline-block',
+            backdropFilter: 'blur(4px)',
+            '&:hover': {
+              transform: 'translateX(-2px)',
+              backgroundColor: 'rgba(26, 35, 126, 0.9)',
+            },
+            transition: 'all 0.3s ease'
+          }
+        }}>
+          <ReturnToHome />
+        </Box>
         <Typography 
+          component="h1"
           variant="h1" 
           sx={{ 
             fontWeight: 900,
@@ -226,7 +231,7 @@ const Info: React.FC = () => {
           mb: 4, 
           background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
           borderRadius: 3,
-          border: '2px solid #1a237e',
+          border: '1px solid #1a237e',
           position: 'relative',
           '&::before': {
             content: '""',
@@ -269,10 +274,16 @@ const Info: React.FC = () => {
             <Box
               component="img"
               src={missionImageUrl}
-              alt="Mission Statement"
+              alt="Holy Cross Convent School Mission Statement Document"
+              loading="lazy"
               onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                 const target = e.target as HTMLImageElement;
-                if (target.src === missionFallback) return; // Prevent infinite loop
+                const currentSrc = target.src;
+                // Prevent infinite loop - if already using fallback, stop
+                if (currentSrc.includes(missionFallback) || currentSrc.endsWith(missionFallback)) {
+                  target.style.display = 'none';
+                  return;
+                }
                 target.src = missionFallback;
               }}
               sx={{
@@ -302,7 +313,7 @@ const Info: React.FC = () => {
           mb: 4, 
           background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
           borderRadius: 3,
-        border: '2px solid #d32f2f',
+        border: '1px solid #d32f2f',
         position: 'relative',
         '&::before': {
           content: '""',
@@ -345,22 +356,17 @@ const Info: React.FC = () => {
             <Box
               component="img"
               src={visionImageUrl}
-              alt="Vision Statement"
+              alt="Holy Cross Convent School Vision Statement Document"
+              loading="lazy"
               onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                 const target = e.target as HTMLImageElement;
                 const currentSrc = target.src;
                 // Prevent infinite loop - if already using fallback, stop
-                if (currentSrc.includes('HCCMS.jpeg') || currentSrc.includes('HCCMS') || currentSrc.endsWith(visionFallback)) {
-                  console.error('⚠️ Both document and fallback image failed to load:', currentSrc);
-                  // Hide the image element if fallback also fails
+                if (currentSrc.includes(visionFallback) || currentSrc.endsWith(visionFallback)) {
                   target.style.display = 'none';
                   return;
                 }
-                console.log('🔄 Vision document image failed, trying fallback:', visionFallback, 'Current src:', currentSrc);
                 target.src = visionFallback;
-              }}
-              onLoad={() => {
-                console.log('✅ Vision statement image loaded successfully from:', visionImageUrl);
               }}
               sx={{
                 borderRadius: 2,
@@ -413,6 +419,12 @@ const Info: React.FC = () => {
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 20px rgba(26, 35, 126, 0.15)'
+                },
+                '&:focus-visible': {
+                  outline: '3px solid #ffd700',
+                  outlineOffset: '4px',
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 20px rgba(26, 35, 126, 0.15)'
                 }
               }}>
                 <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
@@ -446,7 +458,7 @@ const Info: React.FC = () => {
           </Typography>
           <Button 
             variant="contained"
-            onClick={() => window.location.href = '/gallery'}
+            onClick={() => navigate('/gallery')}
             sx={{
               backgroundColor: '#1a237e',
               color: '#fff',
@@ -467,8 +479,21 @@ const Info: React.FC = () => {
         </Box>
         <Box sx={{ 
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-          gap: 2
+          gridTemplateColumns: { 
+            xs: '1fr', 
+            sm: 'repeat(2, 1fr)', 
+            md: 'repeat(4, 1fr)' 
+          },
+          gap: 2,
+          // Fallback for older browsers
+          '@supports not (grid-template-columns: repeat(4, 1fr))': {
+            display: 'flex',
+            flexWrap: 'wrap',
+            '& > *': {
+              flex: '1 1 200px',
+              minWidth: '200px'
+            }
+          }
         }}>
           {galleryImages.map((img, idx) => (
             <Card 
@@ -480,13 +505,20 @@ const Info: React.FC = () => {
                 '&:hover': {
                   transform: 'translateY(-8px)',
                   boxShadow: '0 12px 30px rgba(26, 35, 126, 0.25)'
+                },
+                '&:focus-visible': {
+                  outline: '3px solid #ffd700',
+                  outlineOffset: '4px',
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 30px rgba(26, 35, 126, 0.25)'
                 }
               }}
             >
               <Box
                 component="img"
                 src={`/${img}`}
-                alt={`School photo ${idx + 1}`}
+                alt={`School campus photo ${idx + 1} - ${img.replace('.jpg', '').replace(/\d/g, '')}`}
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: { xs: 200, sm: 180, md: 160 },
@@ -533,7 +565,7 @@ const Info: React.FC = () => {
       </Typography>
       <Button 
         variant="contained" 
-        onClick={() => window.location.href = '/logo-symbolism'}
+        onClick={() => navigate('/logo-symbolism')}
             sx={{
               backgroundColor: '#1a237e',
               color: '#fff',

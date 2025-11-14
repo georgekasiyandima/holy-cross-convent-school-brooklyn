@@ -600,6 +600,8 @@ router.get('/announcements', async (req, res, next) => {
           content: article.content,
           summary: article.summary || article.content.substring(0, 150) + '...',
           imageUrl: article.imageUrl || null,
+          attachmentUrl: article.attachmentUrl || null,
+          attachmentType: article.attachmentType || null,
           type: 'news',
           priority: article.priority || 'NORMAL',
           publishedAt: article.publishedAt || article.createdAt,
@@ -618,7 +620,7 @@ router.get('/announcements', async (req, res, next) => {
       }
 
       try {
-        const newsletters = await prisma.newsletter.findMany({
+        const newsletters = await prisma.newsletters.findMany({
           where: newsletterWhere,
           orderBy: [
             { publishedAt: 'desc' },
@@ -630,12 +632,33 @@ router.get('/announcements', async (req, res, next) => {
         // Transform Newsletters to unified format
         newsletters.forEach(newsletter => {
           const content = newsletter.content || '';
+          let attachmentUrl: string | null = null;
+          let attachmentType: string | null = null;
+          if (newsletter.attachments) {
+            try {
+              const parsed = JSON.parse(newsletter.attachments);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const first = parsed[0];
+                if (typeof first === 'string') {
+                  attachmentUrl = first;
+                } else if (first && typeof first === 'object') {
+                  attachmentUrl = first.url || null;
+                  attachmentType = first.mimeType || null;
+                }
+              }
+            } catch (err) {
+              console.warn('Unable to parse newsletter attachments:', err);
+            }
+          }
+
           announcements.push({
             id: newsletter.id,
             title: newsletter.title,
             content: content,
             summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
             imageUrl: newsletter.imageUrl || null,
+            attachmentUrl,
+            attachmentType,
             type: 'newsletter',
             priority: 'NORMAL',
             publishedAt: newsletter.publishedAt || newsletter.createdAt,
@@ -701,6 +724,8 @@ router.get('/announcements/latest', async (req, res, next) => {
         content: article.content,
         summary: article.summary || article.content.substring(0, 150) + '...',
         imageUrl: article.imageUrl || null,
+        attachmentUrl: article.attachmentUrl || null,
+        attachmentType: article.attachmentType || null,
         type: 'news',
         priority: article.priority || 'NORMAL',
         publishedAt: article.publishedAt || article.createdAt,
@@ -710,7 +735,7 @@ router.get('/announcements/latest', async (req, res, next) => {
 
     // Fetch latest published newsletters
     try {
-      const newsletters = await prisma.newsletter.findMany({
+      const newsletters = await prisma.newsletters.findMany({
         where: {
           isPublished: true,
         },
@@ -723,12 +748,33 @@ router.get('/announcements/latest', async (req, res, next) => {
 
       newsletters.forEach(newsletter => {
         const content = newsletter.content || '';
+        let attachmentUrl: string | null = null;
+        let attachmentType: string | null = null;
+        if (newsletter.attachments) {
+          try {
+            const parsed = JSON.parse(newsletter.attachments);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const first = parsed[0];
+              if (typeof first === 'string') {
+                attachmentUrl = first;
+              } else if (first && typeof first === 'object') {
+                attachmentUrl = first.url || null;
+                attachmentType = first.mimeType || null;
+              }
+            }
+          } catch (err) {
+            console.warn('Unable to parse newsletter attachments:', err);
+          }
+        }
+
         announcements.push({
           id: newsletter.id,
           title: newsletter.title,
           content: content,
           summary: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
           imageUrl: newsletter.imageUrl || null,
+          attachmentUrl,
+          attachmentType,
           type: 'newsletter',
           priority: 'NORMAL',
           publishedAt: newsletter.publishedAt || newsletter.createdAt,

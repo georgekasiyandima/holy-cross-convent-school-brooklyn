@@ -25,6 +25,7 @@ export interface StaffUploadData {
   subjects?: string[];
   category?: string;
   order?: number;
+  favoriteQuote?: string;
 }
 
 export interface DocumentUploadData {
@@ -282,23 +283,52 @@ class UploadService {
     staffData: StaffUploadData
   ): Promise<UploadResult> {
     try {
-      // Validate file
-      const validation = this.validateFile(file, this.allowedImageTypes);
-      if (!validation.success) {
+      if (file) {
+        const validation = this.validateFile(file, this.allowedImageTypes);
+        if (!validation.success) {
+          await this.cleanupFile(file.path);
+          return validation;
+        }
+
+        const processedFile = await this.optimizeImage(file.path, {
+          width: 800,
+          height: 800,
+          quality: 90,
+          createThumbnail: true,
+          thumbnailSize: 200
+        });
+
+        const staffMember = await prisma.staffMember.create({
+          data: {
+            name: staffData.name,
+            role: staffData.role,
+            email: staffData.email,
+            phone: staffData.phone,
+            grade: staffData.grade,
+            subjects: staffData.subjects ? JSON.stringify(staffData.subjects) : null,
+            category: (staffData.category as any) || 'TEACHING',
+            order: staffData.order || 0,
+            imageUrl: processedFile.url,
+            favoriteQuote: staffData.favoriteQuote?.trim() || null
+          }
+        });
+
         await this.cleanupFile(file.path);
-        return validation;
+
+        return {
+          success: true,
+          data: {
+            staff: staffMember,
+            image: {
+              url: processedFile.url,
+              thumbnailUrl: processedFile.thumbnailUrl,
+              metadata: processedFile.metadata
+            }
+          },
+          message: 'Staff member created successfully with optimized image'
+        };
       }
 
-      // Optimize image
-      const processedFile = await this.optimizeImage(file.path, {
-        width: 800,
-        height: 800,
-        quality: 90,
-        createThumbnail: true,
-        thumbnailSize: 200
-      });
-
-      // Save staff member to database
       const staffMember = await prisma.staffMember.create({
         data: {
           name: staffData.name,
@@ -309,29 +339,23 @@ class UploadService {
           subjects: staffData.subjects ? JSON.stringify(staffData.subjects) : null,
           category: (staffData.category as any) || 'TEACHING',
           order: staffData.order || 0,
-          imageUrl: processedFile.url
+          favoriteQuote: staffData.favoriteQuote?.trim() || null
         }
       });
-
-      // Clean up original file
-      await this.cleanupFile(file.path);
 
       return {
         success: true,
         data: {
-          staff: staffMember,
-          image: {
-            url: processedFile.url,
-            thumbnailUrl: processedFile.thumbnailUrl,
-            metadata: processedFile.metadata
-          }
+          staff: staffMember
         },
-        message: 'Staff member created successfully with optimized image'
+        message: 'Staff member created successfully'
       };
 
     } catch (error) {
       console.error('Staff upload error:', error);
-      await this.cleanupFile(file.path);
+      if (file?.path) {
+        await this.cleanupFile(file.path);
+      }
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to upload staff image'
@@ -417,6 +441,7 @@ class UploadService {
           ...(staffData.subjects ? { subjects: JSON.stringify(staffData.subjects) } : { subjects: null }),
           ...(staffData.category !== undefined && { category: staffData.category as any }),
           ...(staffData.order !== undefined && { order: staffData.order }),
+          ...(staffData.favoriteQuote !== undefined && { favoriteQuote: staffData.favoriteQuote?.trim() || null }),
           imageUrl: processedFile.url
         }
       });

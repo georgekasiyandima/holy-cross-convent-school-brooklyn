@@ -6,6 +6,8 @@ import {
   Tabs,
   Tab,
   Paper,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -18,6 +20,10 @@ import News from './News';
 import SEO from '../components/SEO';
 import ReturnToHome from '../components/ReturnToHome';
 
+// Import hero image for better performance and bundling
+const heroImagePath = '/edu2.jpg';
+const heroImageUrl = `${process.env.PUBLIC_URL || ''}${heroImagePath}`;
+
 // Styled components
 const HeroSection = styled(Box)(({ theme }) => ({
   backgroundImage: 'url("/edu2.jpg")',
@@ -25,8 +31,11 @@ const HeroSection = styled(Box)(({ theme }) => ({
   backgroundPosition: 'center 40%',
   backgroundRepeat: 'no-repeat',
   color: 'white',
-  minHeight: '500px',
+  minHeight: '60vh',
   padding: theme.spacing(10, 0),
+  [theme.breakpoints.up('md')]: {
+    minHeight: '70vh',
+  },
   position: 'relative',
   overflow: 'hidden',
   display: 'flex',
@@ -55,18 +64,39 @@ interface TabPanelProps {
   value: number;
 }
 
+// Extracted SchoolHubTab component for reusability and cleaner code
+interface SchoolHubTabProps {
+  icon: React.ElementType;
+  label: string;
+  index: number;
+}
+
+const SchoolHubTab: React.FC<SchoolHubTabProps> = ({ icon: Icon, label, index }) => (
+  <Tab
+    icon={<Icon sx={{ mb: 0.5 }} aria-hidden="true" />}
+    label={label}
+    iconPosition="start"
+    id={`school-hub-tab-${index}`}
+    aria-controls={`school-hub-tabpanel-${index}`}
+    data-testid={`school-hub-tab-${index}`}
+  />
+);
+
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
     <div
       role="tabpanel"
+      aria-label={`School Hub tab panel ${index + 1}`}
       hidden={value !== index}
       id={`school-hub-tabpanel-${index}`}
       aria-labelledby={`school-hub-tab-${index}`}
+      aria-live="polite"
+      data-testid={`school-hub-tabpanel-${index}`}
       {...other}
     >
-      {value === index && <TabPanel>{children}</TabPanel>}
+      {value === index && <TabPanel role="region">{children}</TabPanel>}
     </div>
   );
 }
@@ -74,6 +104,8 @@ function CustomTabPanel(props: TabPanelProps) {
 const SchoolHub: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeTab, setActiveTab] = useState(0);
 
   // Determine initial tab from URL hash
@@ -84,13 +116,16 @@ const SchoolHub: React.FC = () => {
     } else {
       setActiveTab(0);
     }
+    return () => {
+      // Cleanup function
+    };
   }, [location.hash]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
     // Update URL hash for bookmarking/sharing
     const hashMap = ['', '#announcements'];
-    navigate(`/school-hub${hashMap[newValue]}`, { replace: true });
+    navigate(`/school-hub${hashMap[newValue]}`, { replace: false });
   };
 
   return (
@@ -99,21 +134,24 @@ const SchoolHub: React.FC = () => {
         title="School Hub - Holy Cross Convent School"
         description="Stay updated with school events, calendar, announcements, and gallery. Find all important school information in one place."
         keywords="school events, calendar, announcements, gallery, Holy Cross Convent School"
+        image={heroImageUrl}
+        type="website"
       />
 
       {/* Hero Section */}
-      <HeroSection>
+      <HeroSection data-testid="school-hub-hero">
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Container maxWidth="lg">
+          <Container maxWidth="lg" sx={{ position: 'relative', py: 8 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography
+                component="h1"
                 variant="h1"
                 sx={{
                   fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
                   fontWeight: 900,
                   mb: 2,
                   color: '#ffd700',
-                  textShadow: '4px 4px 8px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9), 0 0 60px rgba(26,35,126,0.6)',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.6)',
                   letterSpacing: '0.5px'
                 }}
               >
@@ -128,7 +166,7 @@ const SchoolHub: React.FC = () => {
                   fontWeight: 600,
                   fontSize: { xs: '1.5rem', md: '2rem' },
                   lineHeight: 1.6,
-                  textShadow: '3px 3px 6px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)',
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.7), 0 0 10px rgba(0,0,0,0.5)',
                   mb: 3
                 }}
               >
@@ -143,7 +181,7 @@ const SchoolHub: React.FC = () => {
                   fontWeight: 400,
                   fontSize: { xs: '1rem', sm: '1.2rem' },
                   lineHeight: 1.6,
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
                 }}
               >
                 Stay connected with events, announcements, and everything happening at Holy Cross
@@ -153,39 +191,26 @@ const SchoolHub: React.FC = () => {
         </Box>
       </HeroSection>
 
-      <Container maxWidth="xl" sx={{ py: 6, mt: 4 }}>
-        {/* Return to Home - positioned to avoid header clash */}
+      <Container maxWidth="lg" sx={{ position: 'relative', py: 6, mt: 4 }} data-testid="school-hub-content">
+        {/* Return to Home - moved outside hero to avoid blocking content */}
         <Box sx={{ 
-          position: 'fixed', 
-          top: { xs: 80, sm: 100 }, 
-          left: 16, 
-          zIndex: 1000,
-          '& .MuiTypography-root': {
-            color: 'white !important',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
-            backgroundColor: 'rgba(26, 35, 126, 0.7)',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            display: 'inline-block',
-            backdropFilter: 'blur(4px)',
-            '&:hover': {
-              transform: 'translateX(-2px)',
-              backgroundColor: 'rgba(26, 35, 126, 0.9)',
-            },
-            transition: 'all 0.3s ease'
-          }
+          position: 'absolute',
+          top: { xs: 16, sm: 24 },
+          left: { xs: 16, sm: 24 },
+          zIndex: 10,
         }}>
-          <ReturnToHome />
+          <ReturnToHome data-testid="return-to-home-school-hub" />
         </Box>
 
         {/* Tabs Navigation */}
-        <Paper sx={{ mb: 4, borderRadius: 2, boxShadow: 2 }}>
+        <Paper sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }} data-testid="school-hub-tabs-paper">
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
             aria-label="School Hub tabs"
-            variant="scrollable"
+            variant={isMobile ? 'fullWidth' : 'scrollable'}
             scrollButtons="auto"
+            data-testid="school-hub-tabs"
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
@@ -204,16 +229,8 @@ const SchoolHub: React.FC = () => {
               },
             }}
           >
-            <Tab
-              icon={<CalendarToday sx={{ mb: 0.5 }} />}
-              label="Calendar & Events"
-              iconPosition="start"
-            />
-            <Tab
-              icon={<Announcement sx={{ mb: 0.5 }} />}
-              label="Announcements"
-              iconPosition="start"
-            />
+            <SchoolHubTab icon={CalendarToday} label="Calendar & Events" index={0} />
+            <SchoolHubTab icon={Announcement} label="Announcements" index={1} />
           </Tabs>
         </Paper>
 

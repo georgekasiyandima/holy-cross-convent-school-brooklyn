@@ -33,8 +33,10 @@ export class GalleryService {
     description?: string;
     albumType?: 'GENERAL' | 'CLASS';
     classGrade?: string;
+    phase?: string;
     isPublished?: boolean;
     coverImageId?: string;
+    parentAlbumId?: string;
   }) {
     // Check for duplicate album name (same title and albumType)
     const existingAlbum = await prisma.album.findFirst({
@@ -55,8 +57,10 @@ export class GalleryService {
         description: data.description,
         albumType: data.albumType || 'GENERAL',
         classGrade: data.classGrade,
+        phase: data.phase,
         isPublished: data.isPublished ?? true,
         coverImageId: data.coverImageId,
+        parentAlbumId: data.parentAlbumId || null,
       }
     });
   }
@@ -64,24 +68,62 @@ export class GalleryService {
   static async listAlbums(filters?: {
     albumType?: 'GENERAL' | 'CLASS';
     classGrade?: string;
+    phase?: string;
     isPublished?: boolean;
+    parentAlbumId?: string | null;
   }) {
     const where: any = {};
     if (filters?.albumType) where.albumType = filters.albumType;
     if (filters?.classGrade) where.classGrade = filters.classGrade;
+    if (filters?.phase) where.phase = filters.phase;
     if (filters?.isPublished !== undefined) where.isPublished = filters.isPublished;
+    if (filters?.parentAlbumId !== undefined) {
+      if (filters.parentAlbumId === null) {
+        where.parentAlbumId = null;
+      } else {
+        where.parentAlbumId = filters.parentAlbumId;
+      }
+    }
 
-    return await prisma.album.findMany({
+    const albums = await prisma.album.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      include: { coverImage: true, _count: { select: { items: true } } }
+      include: {
+        coverImage: true,
+        _count: { select: { items: true, subAlbums: true } },
+      },
     });
+
+    // For albums without coverImage, fetch the first image item as fallback
+    for (const album of albums) {
+      if (!album.coverImage && album._count?.items > 0) {
+        const firstItem = await prisma.galleryItem.findFirst({
+          where: {
+            albumId: album.id,
+            type: 'IMAGE',
+            isPublished: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        });
+        if (firstItem) {
+          (album as any).coverImage = firstItem;
+        }
+      }
+    }
+
+    return albums;
   }
 
   static async getAlbumById(id: string) {
     return await prisma.album.findUnique({
       where: { id },
-      include: { items: true, coverImage: true }
+      include: {
+        items: true,
+        coverImage: true,
+        subAlbums: {
+          orderBy: { order: 'asc' },
+        },
+      },
     });
   }
 
@@ -90,8 +132,10 @@ export class GalleryService {
     description?: string;
     albumType?: 'GENERAL' | 'CLASS';
     classGrade?: string | null;
+    phase?: string | null;
     isPublished?: boolean;
     coverImageId?: string | null;
+    parentAlbumId?: string | null;
   }) {
     return await prisma.album.update({
       where: { id },

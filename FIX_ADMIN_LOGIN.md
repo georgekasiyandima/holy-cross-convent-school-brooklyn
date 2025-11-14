@@ -265,3 +265,9 @@ Run this in your browser console on your Vercel site:
 4. Test the endpoints directly using the scripts above
 5. Check database connection is working
 
+
+
+
+
+
+

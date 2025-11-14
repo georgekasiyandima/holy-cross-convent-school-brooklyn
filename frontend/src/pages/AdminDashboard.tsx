@@ -7,7 +7,8 @@ import {
   Button, 
   Grid,
   Avatar,
-  alpha
+  alpha,
+  Paper
 } from '@mui/material';
 import {
   CalendarToday,
@@ -25,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { useAuth } from '../contexts/AuthContext';
 import AdminLayout from '../components/AdminLayout';
 import SEO from '../components/SEO';
 
@@ -54,11 +56,15 @@ const ModuleCard = styled(Card)(({ theme }) => ({
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Memoize navigate callback to prevent re-renders
   const handleNavigate = useCallback((path: string) => {
     navigate(path);
   }, [navigate]);
+
+  // Get user's first name for welcome message
+  const userName = user?.name?.split(' ')[0] || 'Admin';
 
   const mainModules = [
     {
@@ -152,14 +158,26 @@ const AdminDashboard: React.FC = () => {
       />
       
       {/* Welcome Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a237e', mb: 0.5 }}>
-          Dashboard
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 4, 
+          mb: 4, 
+          background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+          borderRadius: 3,
+          border: '1px solid #e0e0e0'
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a237e', mb: 1 }}>
+          Welcome back, {userName}!
         </Typography>
-        <Typography variant="body2" sx={{ color: '#6b7280' }}>
-          Manage your school's digital presence
+        <Typography variant="body1" sx={{ color: '#6b7280', mb: 2 }}>
+          Manage your school's digital presence and administrative tasks from one central dashboard.
         </Typography>
-      </Box>
+        <Typography variant="body2" sx={{ color: '#9ca3af' }}>
+          Select a module below to get started or use the sidebar navigation for quick access.
+        </Typography>
+      </Paper>
 
       {/* Main Management Modules */}
       <Box sx={{ mb: 4 }}>

@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import { createError } from '../middleware/errorHandler';
-import { AuthRequest, requireEditor } from '../middleware/auth';
+import { authMiddleware, AuthRequest, requireEditor } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -63,15 +63,6 @@ router.get('/', async (req, res, next) => {
     const [articles, total] = await Promise.all([
       prisma.newsArticle.findMany({
         where,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          tags: true
-        },
         orderBy: { publishedAt: 'desc' },
         skip,
         take: Number(limit)
@@ -96,6 +87,64 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+// Get all news articles for admin management (includes drafts)
+router.get('/manage', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
+  try {
+    const { status, search, priority, limit = 50 } = req.query;
+
+    const where: any = {};
+
+    const normalizedStatus =
+      typeof status === 'string' ? status.trim().toLowerCase() : undefined;
+    if (normalizedStatus === 'published') {
+      where.isPublished = true;
+    } else if (normalizedStatus === 'draft') {
+      where.isPublished = false;
+    }
+
+    const normalizedPriority =
+      typeof priority === 'string' ? priority.trim().toUpperCase() : undefined;
+    const validPriorities = ['LOW', 'NORMAL', 'MEDIUM', 'HIGH', 'URGENT'];
+    if (normalizedPriority && validPriorities.includes(normalizedPriority)) {
+      where.priority = normalizedPriority;
+    }
+
+    const searchTerm =
+      typeof search === 'string' ? search.trim() : undefined;
+    if (searchTerm) {
+      where.OR = [
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { content: { contains: searchTerm, mode: 'insensitive' } },
+        { summary: { contains: searchTerm, mode: 'insensitive' } },
+      ];
+    }
+
+    const parsedLimit = Number(limit);
+    const take = Math.min(
+      !Number.isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50,
+      200
+    );
+
+    const articles = await prisma.newsArticle.findMany({
+      where,
+      orderBy: [
+        { isPublished: 'desc' },
+        { publishedAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take,
+    });
+
+    res.json({
+      success: true,
+      data: articles,
+      count: articles.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get single news article (public)
 router.get('/:id', async (req, res, next) => {
   try {
@@ -105,15 +154,6 @@ router.get('/:id', async (req, res, next) => {
       where: { 
         id,
         isPublished: true 
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        tags: true
       }
     });
 
@@ -131,13 +171,31 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // Create news article (admin/editor only)
-router.post('/', requireEditor, async (req: AuthRequest, res, next) => {
+router.post('/', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
-    const { title, content, summary, imageUrl, isPublished, tagIds } = req.body;
+    const {
+      title,
+      content,
+      summary,
+      imageUrl,
+      attachmentUrl,
+      attachmentType,
+      isPublished,
+      publishedAt,
+      priority,
+    } = req.body;
 
     if (!title || !content) {
       throw createError('Title and content are required', 400);
     }
+
+    const isPublishedBoolean =
+      typeof isPublished === 'boolean' ? isPublished : isPublished === 'true';
+    const publishTimestamp = isPublishedBoolean
+      ? publishedAt
+        ? new Date(publishedAt)
+        : new Date()
+      : null;
 
     const article = await prisma.newsArticle.create({
       data: {
@@ -145,28 +203,18 @@ router.post('/', requireEditor, async (req: AuthRequest, res, next) => {
         content,
         summary,
         imageUrl,
-        isPublished: isPublished || false,
-        publishedAt: isPublished ? new Date() : null,
-        authorId: req.user!.id,
-        tags: tagIds ? {
-          connect: tagIds.map((id: string) => ({ id }))
-        } : undefined
+        attachmentUrl: attachmentUrl || null,
+        attachmentType: attachmentType || null,
+        isPublished: isPublishedBoolean,
+        publishedAt: publishTimestamp,
+        priority: priority || 'MEDIUM',
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        tags: true
-      }
     });
 
     res.status(201).json({
       success: true,
       message: 'News article created successfully',
-      data: { article }
+      data: { article },
     });
   } catch (error) {
     next(error);
@@ -174,39 +222,59 @@ router.post('/', requireEditor, async (req: AuthRequest, res, next) => {
 });
 
 // Update news article (admin/editor only)
-router.put('/:id', requireEditor, async (req: AuthRequest, res, next) => {
+router.put('/:id', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content, summary, imageUrl, isPublished, tagIds } = req.body;
+    const {
+      title,
+      content,
+      summary,
+      imageUrl,
+      attachmentUrl,
+      attachmentType,
+      isPublished,
+      publishedAt,
+      priority,
+    } = req.body;
+
+    const data: any = {
+      title,
+      content,
+      summary,
+      imageUrl,
+      attachmentUrl: typeof attachmentUrl !== 'undefined' ? attachmentUrl : undefined,
+      attachmentType:
+        typeof attachmentType !== 'undefined' ? attachmentType : undefined,
+      priority: priority || undefined,
+    };
+
+    if (typeof isPublished !== 'undefined') {
+      const isPublishedBoolean =
+        typeof isPublished === 'boolean' ? isPublished : isPublished === 'true';
+      data.isPublished = isPublishedBoolean;
+      data.publishedAt = isPublishedBoolean
+        ? publishedAt
+          ? new Date(publishedAt)
+          : new Date()
+        : null;
+    }
+
+    if (typeof attachmentUrl === 'string' && attachmentUrl.trim() === '') {
+      data.attachmentUrl = null;
+    }
+    if (typeof attachmentType === 'string' && attachmentType.trim() === '') {
+      data.attachmentType = null;
+    }
 
     const article = await prisma.newsArticle.update({
       where: { id },
-      data: {
-        title,
-        content,
-        summary,
-        imageUrl,
-        isPublished,
-        publishedAt: isPublished ? new Date() : null,
-        tags: tagIds ? {
-          set: tagIds.map((id: string) => ({ id }))
-        } : undefined
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        tags: true
-      }
+      data,
     });
 
     res.json({
       success: true,
       message: 'News article updated successfully',
-      data: { article }
+      data: { article },
     });
   } catch (error) {
     next(error);
@@ -214,7 +282,7 @@ router.put('/:id', requireEditor, async (req: AuthRequest, res, next) => {
 });
 
 // Delete news article (admin/editor only)
-router.delete('/:id', requireEditor, async (req: AuthRequest, res, next) => {
+router.delete('/:id', authMiddleware, requireEditor, async (req: AuthRequest, res, next) => {
   try {
     const { id } = req.params;
 
@@ -232,7 +300,7 @@ router.delete('/:id', requireEditor, async (req: AuthRequest, res, next) => {
 });
 
 // Upload document (admin only)
-router.post('/upload-document', requireEditor, upload.single('file'), async (req: AuthRequest, res, next) => {
+router.post('/upload-document', authMiddleware, requireEditor, upload.single('file'), async (req: AuthRequest, res, next) => {
   try {
     if (!req.file) {
       throw createError('No file uploaded', 400);
@@ -246,23 +314,10 @@ router.post('/upload-document', requireEditor, upload.single('file'), async (req
 
     const fileUrl = `/uploads/${req.file.filename}`;
 
-    // Save document record to database
-    const documentRecord = await prisma.fileUpload.create({
-      data: {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        url: fileUrl,
-        uploadedBy: req.user!.id
-      }
-    });
-
     res.json({
       success: true,
       message: 'Document uploaded successfully',
       data: {
-        id: documentRecord.id,
         title: title,
         description: description || '',
         category: category,
@@ -270,7 +325,8 @@ router.post('/upload-document', requireEditor, upload.single('file'), async (req
         fileUrl: fileUrl,
         fileName: req.file.originalname,
         fileSize: req.file.size,
-        uploadedAt: documentRecord.createdAt
+        mimeType: req.file.mimetype,
+        uploadedAt: new Date().toISOString()
       }
     });
   } catch (error) {

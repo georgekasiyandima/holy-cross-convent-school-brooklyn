@@ -839,29 +839,35 @@ const AdminApplicationManagement: React.FC = () => {
   const renderStatsCards = () => {
     if (!stats) return null;
 
-    const statItems = [
+    // Store icon components as references, not JSX elements to avoid React rendering issues
+    const statItems: Array<{
+      title: string;
+      value: number;
+      icon: React.ComponentType<{ sx?: any }>;
+      color: string;
+    }> = [
       {
         title: 'Total Applications',
         value: stats.totalApplications,
-        icon: <Assignment sx={{ fontSize: 32, color: '#1a237e' }} />,
+        icon: Assignment,
         color: '#1a237e'
       },
       {
         title: 'Pending Review',
         value: stats.pendingApplications,
-        icon: <Warning sx={{ fontSize: 32, color: '#f59e0b' }} />,
+        icon: Warning,
         color: '#f59e0b'
       },
       {
         title: 'Approved',
         value: stats.approvedApplications,
-        icon: <CheckCircle sx={{ fontSize: 32, color: '#10b981' }} />,
+        icon: CheckCircle,
         color: '#10b981'
       },
       {
         title: 'Enrolled',
         value: stats.enrolledApplications,
-        icon: <People sx={{ fontSize: 32, color: '#8b5cf6' }} />,
+        icon: People,
         color: '#8b5cf6'
       }
     ];
@@ -882,7 +888,7 @@ const AdminApplicationManagement: React.FC = () => {
                     </Typography>
                   </Box>
                   <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color }}>
-                    {stat.icon}
+                    {React.createElement(stat.icon, { sx: { fontSize: 32, color: stat.color } })}
                   </Avatar>
                 </Box>
               </CardContent>

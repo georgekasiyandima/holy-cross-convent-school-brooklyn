@@ -234,3 +234,9 @@ The updated code now:
 
 The enhanced logging will show exactly where the upload is failing!
 
+
+
+
+
+
+

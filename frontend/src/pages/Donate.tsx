@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Container,
@@ -58,6 +59,12 @@ const DonationCard = styled(Card)(({ theme }) => ({
     transform: 'translateY(-4px)',
     boxShadow: theme.shadows[8],
   },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
+  },
   '&.selected': {
     borderColor: '#ffd700',
     backgroundColor: 'rgba(255, 215, 0, 0.05)',
@@ -71,6 +78,12 @@ const ProjectCard = styled(Card)(({ theme }) => ({
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   cursor: 'pointer',
   '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[6],
+  },
+  '&:focus-visible': {
+    outline: '3px solid #ffd700',
+    outlineOffset: '4px',
     transform: 'translateY(-4px)',
     boxShadow: theme.shadows[6],
   },
@@ -210,6 +223,7 @@ const collageImages = [
 ];
 
 const Donate: React.FC = () => {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [donationType, setDonationType] = useState<'tier' | 'project' | 'custom'>('tier');
   const [selectedTier, setSelectedTier] = useState<string>('');
@@ -267,7 +281,16 @@ const Donate: React.FC = () => {
   const handleSubmit = async () => {
     setProcessing(true);
     
-    // Simulate payment processing
+    // TODO: Integrate real payment gateway (PayFast/Zapper)
+    // For now, simulating payment processing
+    // In production, replace with actual payment API call:
+    // const response = await fetch('/api/create-payment', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ amount: getSelectedAmount(), donor: donorInfo })
+    // });
+    // const { paymentUrl } = await response.json();
+    // window.location.href = paymentUrl;
+    
     setTimeout(() => {
       setProcessing(false);
       setShowSuccess(true);
@@ -290,6 +313,8 @@ const Donate: React.FC = () => {
       anonymous: false,
       message: ''
     });
+    // Navigate to thank you page or home
+    navigate('/');
   };
 
   const renderStepContent = (step: number) => {
@@ -459,7 +484,11 @@ const Donate: React.FC = () => {
                   label="Donation Amount (R)"
                   type="number"
                   value={customAmount}
-                  onChange={(e) => setCustomAmount(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= 1) setCustomAmount(val);
+                  }}
+                  inputProps={{ min: 1, step: 1 }}
                   InputProps={{
                     startAdornment: <Typography sx={{ mr: 1 }}>R</Typography>,
                   }}
@@ -526,6 +555,8 @@ const Donate: React.FC = () => {
                       <Radio
                         checked={donorInfo.anonymous}
                         onChange={(e) => setDonorInfo({...donorInfo, anonymous: e.target.checked})}
+                        name="anonymous"
+                        aria-label="Make donation anonymous"
                       />
                     }
                     label="Make this donation anonymous"
@@ -566,10 +597,11 @@ const Donate: React.FC = () => {
                   <RadioGroup
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
+                    name="payment-method"
                   >
                     <FormControlLabel
                       value="cash"
-                      control={<Radio />}
+                      control={<Radio name="payment-method" aria-label="Cash Deposit payment method" />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Payment sx={{ mr: 1 }} />
@@ -579,7 +611,7 @@ const Donate: React.FC = () => {
                     />
                     <FormControlLabel
                       value="eft"
-                      control={<Radio />}
+                      control={<Radio name="payment-method" aria-label="EFT Direct Deposit payment method" />}
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Receipt sx={{ mr: 1 }} />
@@ -636,6 +668,7 @@ const Donate: React.FC = () => {
         title="Donate - Holy Cross Convent School"
         description="Support Holy Cross Convent School Brooklyn through donations. Choose from donation tiers, project-specific funding, or custom amounts."
         keywords="donate, school funding, Holy Cross Convent School, education support, charitable giving"
+        image="/ROBTX1.jpg"
       />
       
       {/* Hero Section */}
@@ -661,32 +694,33 @@ const Donate: React.FC = () => {
           '& > *': { position: 'relative', zIndex: 1 }
         }}
       >
-        {/* Return to Home - positioned to avoid header clash */}
-        <Box sx={{ 
-          position: 'fixed', 
-          top: { xs: 80, sm: 100 }, 
-          left: 16, 
-          zIndex: 1000,
-          '& .MuiTypography-root': {
-            color: 'white !important',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
-            backgroundColor: 'rgba(26, 35, 126, 0.7)',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            display: 'inline-block',
-            backdropFilter: 'blur(4px)',
-            '&:hover': {
-              transform: 'translateX(-2px)',
-              backgroundColor: 'rgba(26, 35, 126, 0.9)',
-            },
-            transition: 'all 0.3s ease'
-          }
-        }}>
-          <ReturnToHome />
-        </Box>
+        <Container maxWidth="lg" sx={{ position: 'relative', px: { xs: 2, sm: 4 }, py: 8 }}>
+          {/* Return to Home - positioned to avoid header/logo */}
+          <Box sx={{ 
+            position: 'absolute',
+            top: { xs: 16, sm: 24 },
+            right: { xs: 16, sm: 24 },
+            zIndex: 10,
+            '& .MuiTypography-root': {
+              color: 'white !important',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(26, 35, 126, 0.7)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              display: 'inline-block',
+              backdropFilter: 'blur(4px)',
+              '&:hover': {
+                transform: 'translateX(-2px)',
+                backgroundColor: 'rgba(26, 35, 126, 0.9)',
+              },
+              transition: 'all 0.3s ease'
+            }
+          }}>
+            <ReturnToHome />
+          </Box>
 
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 4 } }}>
           <Typography 
+            component="h1"
             variant="h1" 
             sx={{ 
               fontWeight: 900,
@@ -754,13 +788,14 @@ const Donate: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 720, mx: 'auto', mb: 4 }}>
             The generosity of families, alumni, and friends of Holy Cross Convent School has helped us turn an outdated computer lab into a bright, collaborative digital learning hub. Take a look at the journey from humble beginnings to a state-of-the-art facility.
           </Typography>
-          <Grid container spacing={4}>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Card sx={{ height: '100%', boxShadow: 6 }}>
                 <CardMedia
                   component="img"
                   image="/bfaf.jpg"
                   alt="Computer lab before refurbishment"
+                  loading="lazy"
                   sx={{ height: { xs: 240, md: 320 }, objectFit: 'cover' }}
                 />
                 <CardContent sx={{ textAlign: 'center' }}>
@@ -782,6 +817,7 @@ const Donate: React.FC = () => {
                   component="img"
                   image="/support06.jpg"
                   alt="Computer lab after refurbishment"
+                  loading="lazy"
                   sx={{ height: { xs: 240, md: 320 }, objectFit: 'cover' }}
                 />
                 <CardContent sx={{ textAlign: 'center' }}>
@@ -868,7 +904,7 @@ const Donate: React.FC = () => {
         </Paper>
 
         <Paper ref={donationSectionRef} id="donation-workflow" sx={{ p: 4, borderRadius: 3 }}>
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          <Stepper activeStep={activeStep} aria-label="Donation process" sx={{ mb: 4 }}>
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>

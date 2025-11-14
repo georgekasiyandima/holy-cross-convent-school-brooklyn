@@ -17,6 +17,24 @@ import fs from 'fs';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+const parseBooleanQueryParam = (value: any, defaultValue?: boolean): boolean | undefined => {
+  if (value === undefined || value === null || value === '') {
+    return defaultValue;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+  }
+
+  return Boolean(value);
+};
+
 // Configure multer for file uploads
 // Use absolute path to ensure files are saved in the correct location
 const uploadsBaseDir = path.join(process.cwd(), 'uploads', 'gallery');
@@ -71,11 +89,14 @@ const GalleryCategory = {
 // Albums endpoints - MUST come before /:id routes to avoid route conflicts
 router.get('/albums', async (req, res) => {
   try {
-    const { albumType, classGrade, isPublished } = req.query as any;
+    const { albumType, classGrade, isPublished, parentAlbumId, phase } = req.query as any;
+    const publishedFilter = parseBooleanQueryParam(isPublished, undefined);
     const albums = await GalleryService.listAlbums({
       albumType,
       classGrade,
-      isPublished: isPublished !== undefined ? isPublished === 'true' : undefined, // Allow all for admin
+      isPublished: publishedFilter,
+      parentAlbumId: parentAlbumId === 'null' ? null : parentAlbumId,
+      phase,
     });
     return res.json({
       success: true,
@@ -128,11 +149,13 @@ router.get('/', validateQueryParams, async (req, res) => {
   try {
     const { category, type, albumId, page, limit, isPublished } = req.query;
     
+    const publishedFilter = parseBooleanQueryParam(isPublished, true);
+
     const result = await GalleryService.getGalleryItems({
       category: category as string,
       type: type as string,
       albumId: albumId as string,
-      isPublished: isPublished !== undefined ? isPublished === 'true' : true, // Default to published for public
+      isPublished: publishedFilter,
       limit: Number(limit),
       offset: (Number(page) - 1) * Number(limit),
     });
@@ -273,7 +296,7 @@ router.post('/upload',
       const tagsArray = tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : (Array.isArray(tags) ? tags : [])) : [];
       
       // Parse isPublished - handle string 'true'/'false' or boolean
-      const published = isPublished === undefined || isPublished === '' || isPublished === 'true' || isPublished === true;
+      const published = parseBooleanQueryParam(isPublished, true) ?? true;
       
       console.log('🔍 Gallery Upload Route: Creating gallery item in database...');
       
@@ -372,6 +395,8 @@ router.put('/:id',
     try {
       const { title, description, category, tags, albumId, isPublished } = req.body;
 
+      const publishedFilter = parseBooleanQueryParam(isPublished, undefined);
+
       // Check if item exists
       const existingItem = await GalleryService.getGalleryItemById(req.params.id);
       if (!existingItem) {
@@ -381,14 +406,19 @@ router.put('/:id',
         });
       }
 
-      const item = await GalleryService.updateGalleryItem(req.params.id, {
+      const updatePayload: any = {
         title,
         description,
         category,
         tags: tags ? (typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags) : undefined,
         albumId,
-        isPublished: isPublished !== undefined ? isPublished === 'true' : undefined,
-      });
+      };
+
+      if (publishedFilter !== undefined) {
+        updatePayload.isPublished = publishedFilter;
+      }
+
+      const item = await GalleryService.updateGalleryItem(req.params.id, updatePayload);
 
       return res.json({
         success: true,
@@ -455,7 +485,7 @@ router.post('/albums',
   validateCreateAlbum,
   async (req, res) => {
     try {
-      const { title, description, albumType, classGrade, isPublished, coverImageId } = req.body;
+    const { title, description, albumType, classGrade, phase, parentAlbumId, isPublished, coverImageId } = req.body;
       
       // Validate coverImageId if provided
       if (coverImageId) {
@@ -474,13 +504,25 @@ router.post('/albums',
         }
       }
       
+      if (parentAlbumId) {
+        const parentAlbum = await GalleryService.getAlbumById(parentAlbumId);
+        if (!parentAlbum) {
+          return res.status(400).json({
+            success: false,
+            error: 'Parent album not found',
+          });
+        }
+      }
+
       const album = await GalleryService.createAlbum({
         title,
         description,
         albumType,
         classGrade,
+        phase,
         isPublished,
         coverImageId,
+        parentAlbumId,
       });
       return res.status(201).json({
         success: true,
@@ -529,8 +571,44 @@ router.put('/albums/:id',
           });
         }
       }
+      if (req.body.parentAlbumId) {
+        if (req.body.parentAlbumId === req.params.id) {
+          return res.status(400).json({
+            success: false,
+            error: 'Album cannot be its own parent',
+          });
+        }
+
+        // Prevent cyclical hierarchy by ensuring parent is not a descendant
+        let ancestorId: string | null | undefined = req.body.parentAlbumId;
+        while (ancestorId) {
+          if (ancestorId === req.params.id) {
+            return res.status(400).json({
+              success: false,
+              error: 'Cannot assign a child album as parent',
+            });
+          }
+          const ancestor = await GalleryService.getAlbumById(ancestorId);
+          if (!ancestor) {
+            return res.status(400).json({
+              success: false,
+              error: 'Parent album not found',
+            });
+          }
+          ancestorId = ancestor.parentAlbumId;
+        }
+      }
       
-      const album = await GalleryService.updateAlbum(req.params.id, req.body);
+      const album = await GalleryService.updateAlbum(req.params.id, {
+        title,
+        description,
+        albumType,
+        classGrade,
+        phase: req.body.phase ?? null,
+        isPublished,
+        coverImageId,
+        parentAlbumId: req.body.parentAlbumId ?? null,
+      });
       return res.json({
         success: true,
         data: album,

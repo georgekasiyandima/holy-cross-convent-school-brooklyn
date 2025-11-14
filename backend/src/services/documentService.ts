@@ -1,45 +1,124 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import path from 'path';
 import fs from 'fs';
 
 const prisma = new PrismaClient();
 
+type PrismaDocument = Prisma.DocumentGetPayload<{ select: {
+  id: true;
+  title: true;
+  description: true;
+  category: true;
+  type: true;
+  tags: true;
+  isPublished: true;
+  filePath: true;
+  fileName: true;
+  fileUrl: true;
+  fileSize: true;
+  mimeType: true;
+  authorId: true;
+  authorName: true;
+  createdAt: true;
+  updatedAt: true;
+} }>;
+
 export interface Document {
   id: string;
   title: string;
   description: string;
-  fileName: string;
-  fileUrl: string;
-  fileSize: number;
-  mimeType: string;
   category: string;
+  type?: string | null;
   tags: string[];
   isPublished: boolean;
-  authorId: string;
-  authorName: string;
+  filePath?: string | null;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: number | null;
+  mimeType?: string | null;
+  authorId?: string | null;
+  authorName?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Export instance type for use in other files
+const mapDocument = (doc: PrismaDocument): Document => {
+  let tags: string[] = [];
+  if (doc.tags) {
+    try {
+      const parsed = JSON.parse(doc.tags);
+      if (Array.isArray(parsed)) {
+        tags = parsed;
+      }
+    } catch (error) {
+      console.warn('Failed to parse document tags JSON:', error);
+    }
+  }
+
+  return {
+    id: doc.id,
+    title: doc.title,
+    description: doc.description ?? '',
+    category: doc.category,
+    type: doc.type,
+    tags,
+    isPublished: doc.isPublished,
+    filePath: doc.filePath,
+    fileName: doc.fileName ?? '',
+    fileUrl: doc.fileUrl ?? '',
+    fileSize: doc.fileSize,
+    mimeType: doc.mimeType,
+    authorId: doc.authorId,
+    authorName: doc.authorName,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt
+  };
+};
+
+const serializeTags = (tags?: string[]): string | null => {
+  if (!tags) return null;
+  try {
+    return JSON.stringify(tags);
+  } catch (error) {
+    console.warn('Failed to stringify document tags:', error);
+    return null;
+  }
+};
+
 export type DocumentServiceInstance = {
   getDocumentsByCategory: (category: string, published?: boolean) => Promise<Document[]>;
   getAllPublishedDocuments: () => Promise<Document[]>;
   getDocumentById: (id: string) => Promise<Document | null>;
   createDocument: (documentData: {
     title: string;
+    description?: string;
+    category: string;
+    type?: string;
+    tags?: string[];
+    isPublished?: boolean;
+    filePath?: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize?: number;
+    mimeType?: string;
+    authorId?: string;
+    authorName?: string;
+  }) => Promise<Document>;
+  updateDocument: (id: string, updates: Partial<{
+    title: string;
     description: string;
+    category: string;
+    type: string | null;
+    tags: string[];
+    isPublished: boolean;
+    filePath: string | null;
     fileName: string;
     fileUrl: string;
     fileSize: number;
     mimeType: string;
-    category: string;
-    tags: string[];
-    isPublished: boolean;
-    authorId: string;
-    authorName: string;
-  }) => Promise<Document>;
-  updateDocument: (id: string, updates: Partial<Document>) => Promise<Document>;
+    authorId: string | null;
+    authorName: string | null;
+  }>) => Promise<Document>;
   deleteDocument: (id: string) => Promise<void>;
   getDocumentStats: () => Promise<{
     total: number;
@@ -59,41 +138,19 @@ export class DocumentService {
     return DocumentService.instance as DocumentServiceInstance;
   }
 
-  private constructor() {
-    // Private constructor for singleton pattern
-  }
+  private constructor() {}
 
-  // Public methods
   public async getDocumentsByCategory(category: string, published: boolean = true): Promise<Document[]> {
     try {
-      // TODO: Document model not in schema - using Policy as placeholder
-      // This should be fixed when Document model is added to schema
-      const documents = await (prisma as any).policy?.findMany({
+      const documents = await prisma.document.findMany({
         where: {
-          category: category,
-          isPublished: published
+          category,
+          ...(published !== undefined ? { isPublished: published } : {})
         },
-        orderBy: {
-          createdAt: 'desc'
-        }
+        orderBy: { createdAt: 'desc' }
       });
 
-      return documents.map(doc => ({
-        id: doc.id,
-        title: doc.title,
-        description: doc.description || '',
-        fileName: doc.fileName,
-        fileUrl: doc.fileUrl,
-        fileSize: doc.fileSize,
-        mimeType: doc.mimeType,
-        category: doc.category,
-        tags: JSON.parse(doc.tags || '[]') as string[],
-        isPublished: doc.isPublished,
-        authorId: doc.authorId,
-        authorName: doc.authorName,
-        createdAt: doc.createdAt,
-        updatedAt: doc.updatedAt
-      }));
+      return documents.map(mapDocument);
     } catch (error) {
       console.error('Error fetching documents by category:', error);
       throw new Error('Failed to fetch documents');
@@ -102,57 +159,22 @@ export class DocumentService {
 
   public async getAllPublishedDocuments(): Promise<Document[]> {
     try {
-      // TODO: Document model not in schema - return empty array for now
-      // This should be fixed when Document model is added to schema
-      return [];
-      /* const documents: any[] = [];
+      const documents = await prisma.document.findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: 'desc' }
+      });
 
-      return documents.map(doc => ({
-        id: doc.id,
-        title: doc.title,
-        description: doc.description || '',
-        fileName: doc.fileName,
-        fileUrl: doc.fileUrl,
-        fileSize: doc.fileSize,
-        mimeType: doc.mimeType,
-        category: doc.category,
-        tags: JSON.parse(doc.tags || '[]') as string[],
-        isPublished: doc.isPublished,
-        authorId: doc.authorId,
-        authorName: doc.authorName,
-        createdAt: doc.createdAt,
-        updatedAt: doc.updatedAt
-      }));
+      return documents.map(mapDocument);
     } catch (error) {
-      console.error('Error fetching all published documents:', error);
+      console.error('Error fetching all documents:', error);
       throw new Error('Failed to fetch documents');
     }
   }
 
   public async getDocumentById(id: string): Promise<Document | null> {
     try {
-      // TODO: Document model not in schema - return null for now
-      // This should be fixed when Document model is added to schema
-      const document: any = null;
-
-      if (!document) return null;
-
-      return {
-        id: document.id,
-        title: document.title,
-        description: document.description || '',
-        fileName: document.fileName,
-        fileUrl: document.fileUrl,
-        fileSize: document.fileSize,
-        mimeType: document.mimeType,
-        category: document.category,
-        tags: JSON.parse(document.tags || '[]') as string[],
-        isPublished: document.isPublished,
-        authorId: document.authorId,
-        authorName: document.authorName,
-        createdAt: document.createdAt,
-        updatedAt: document.updatedAt
-      };
+      const document = await prisma.document.findUnique({ where: { id } });
+      return document ? mapDocument(document) : null;
     } catch (error) {
       console.error('Error fetching document by ID:', error);
       throw new Error('Failed to fetch document');
@@ -161,130 +183,84 @@ export class DocumentService {
 
   public async createDocument(documentData: {
     title: string;
+    description?: string;
+    category: string;
+    type?: string;
+    tags?: string[];
+    isPublished?: boolean;
+    filePath?: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize?: number;
+    mimeType?: string;
+    authorId?: string;
+    authorName?: string;
+  }): Promise<Document> {
+    try {
+      const document = await prisma.document.create({
+        data: {
+          title: documentData.title,
+          description: documentData.description ?? '',
+          category: documentData.category,
+          type: documentData.type ?? null,
+          tags: serializeTags(documentData.tags),
+          isPublished: documentData.isPublished ?? true,
+          filePath: documentData.filePath ?? null,
+          fileName: documentData.fileName,
+          fileUrl: documentData.fileUrl,
+          fileSize: documentData.fileSize ?? null,
+          mimeType: documentData.mimeType ?? null,
+          authorId: documentData.authorId ?? null,
+          authorName: documentData.authorName ?? null
+        }
+      });
+
+      return mapDocument(document);
+    } catch (error: any) {
+      console.error('Error creating document:', error);
+      if (error?.code === 'P2002') {
+        throw new Error('A document with this title already exists');
+      }
+      throw new Error(error?.message || 'Failed to create document');
+    }
+  }
+
+  public async updateDocument(id: string, updates: Partial<{
+    title: string;
     description: string;
+    category: string;
+    type: string | null;
+    tags: string[];
+    isPublished: boolean;
+    filePath: string | null;
     fileName: string;
     fileUrl: string;
     fileSize: number;
     mimeType: string;
-    category: string;
-    tags: string[];
-    isPublished: boolean;
-    authorId: string;
-    authorName: string;
-  }): Promise<Document> {
+    authorId: string | null;
+    authorName: string | null;
+  }>): Promise<Document> {
     try {
-      // TODO: Document model not in schema - return dummy data for now
-      // This should be fixed when Document model is added to schema
-      console.warn('Document model not available in schema. Returning dummy document.');
-      return {
-        id: `dummy-${Date.now()}`,
-        title: documentData.title,
-        description: documentData.description,
-        fileName: documentData.fileName,
-        fileUrl: documentData.fileUrl,
-        fileSize: documentData.fileSize,
-        mimeType: documentData.mimeType,
-        category: documentData.category,
-        tags: documentData.tags,
-        isPublished: documentData.isPublished,
-        authorId: documentData.authorId,
-        authorName: documentData.authorName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      /* const document = await (prisma as any).document.create({
-        data: {
-          title: documentData.title,
-          description: documentData.description,
-          fileName: documentData.fileName,
-          fileUrl: documentData.fileUrl,
-          fileSize: documentData.fileSize,
-          mimeType: documentData.mimeType,
-          category: documentData.category,
-          tags: JSON.stringify(documentData.tags || []),
-          isPublished: documentData.isPublished,
-          authorId: documentData.authorId,
-          authorName: documentData.authorName
-        }
-      });
-
-      return {
-        id: document.id,
-        title: document.title,
-        description: document.description || '',
-        fileName: document.fileName,
-        fileUrl: document.fileUrl,
-        fileSize: document.fileSize,
-        mimeType: document.mimeType,
-        category: document.category,
-        tags: JSON.parse(document.tags || '[]') as string[],
-        isPublished: document.isPublished,
-        authorId: document.authorId,
-        authorName: document.authorName,
-        createdAt: document.createdAt,
-        updatedAt: document.updatedAt
-      };
-    } catch (error: any) {
-      console.error('Error creating document:', error);
-      console.error('Error details:', {
-        message: error?.message,
-        name: error?.name,
-        code: error?.code,
-        meta: error?.meta,
-        stack: error?.stack
-      });
-      console.error('Document data attempted:', documentData);
-      
-      // Provide more specific error message
-      if (error?.code === 'P2002') {
-        throw new Error('A document with this title already exists');
-      } else if (error?.message) {
-        throw new Error(`Failed to create document: ${error.message}`);
-      } else {
-        throw new Error('Failed to create document. Please check the server logs for details.');
-      }
-    }
-  }
-
-  public async updateDocument(id: string, updates: Partial<Document>): Promise<Document> {
-    try {
-      // TODO: Document model not in schema - return dummy data for now
-      console.warn('Document model not available in schema. Returning dummy document.');
-      const existing = await this.getDocumentById(id);
-      if (!existing) {
-        throw new Error('Document not found');
-      }
-      return {
-        ...existing,
-        ...updates,
-        updatedAt: new Date(),
-      };
-      /* const document = await (prisma as any).document.update({
+      const document = await prisma.document.update({
         where: { id },
         data: {
-          ...(updates.title && { title: updates.title }),
-          ...(updates.description && { description: updates.description }),
-          ...(updates.tags && { tags: JSON.stringify(updates.tags) }),
-          ...(updates.isPublished !== undefined && { isPublished: updates.isPublished })
+          ...(updates.title !== undefined && { title: updates.title }),
+          ...(updates.description !== undefined && { description: updates.description }),
+          ...(updates.category !== undefined && { category: updates.category }),
+          ...(updates.type !== undefined && { type: updates.type }),
+          ...(updates.tags !== undefined && { tags: serializeTags(updates.tags) }),
+          ...(updates.isPublished !== undefined && { isPublished: updates.isPublished }),
+          ...(updates.filePath !== undefined && { filePath: updates.filePath }),
+          ...(updates.fileName !== undefined && { fileName: updates.fileName }),
+          ...(updates.fileUrl !== undefined && { fileUrl: updates.fileUrl }),
+          ...(updates.fileSize !== undefined && { fileSize: updates.fileSize }),
+          ...(updates.mimeType !== undefined && { mimeType: updates.mimeType }),
+          ...(updates.authorId !== undefined && { authorId: updates.authorId }),
+          ...(updates.authorName !== undefined && { authorName: updates.authorName })
         }
       });
 
-      return {
-        id: document.id,
-        title: document.title,
-        description: document.description || '',
-        fileName: document.fileName,
-        fileUrl: document.fileUrl,
-        fileSize: document.fileSize,
-        mimeType: document.mimeType,
-        category: document.category,
-        tags: JSON.parse(document.tags || '[]') as string[],
-        isPublished: document.isPublished,
-        authorId: document.authorId,
-        authorName: document.authorName,
-        createdAt: document.createdAt,
-        updatedAt: document.updatedAt
-      };
+      return mapDocument(document);
     } catch (error) {
       console.error('Error updating document:', error);
       throw new Error('Failed to update document');
@@ -293,23 +269,27 @@ export class DocumentService {
 
   public async deleteDocument(id: string): Promise<void> {
     try {
-      // TODO: Document model not in schema - just log for now
-      console.warn('Document model not available in schema. Delete operation skipped.');
-      /* const document = await (prisma as any).document.findUnique({
-        where: { id }
-      });
-
-      if (document) {
-        // Delete physical file
-        const filePath = path.join(process.cwd(), document.fileUrl);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
+      const document = await prisma.document.findUnique({ where: { id } });
+      if (!document) {
+        throw new Error('Document not found');
       }
 
-      await (prisma as any).document.delete({
-        where: { id }
-      }); */
+      await prisma.document.delete({ where: { id } });
+
+      const candidatePaths = [
+        document.filePath ?? undefined,
+        document.fileUrl ? path.join(process.cwd(), document.fileUrl.replace(/^\//, '')) : undefined
+      ].filter(Boolean) as string[];
+
+      for (const filePath of candidatePaths) {
+        try {
+          if (filePath && fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (error) {
+          console.warn('Error deleting document file:', error);
+        }
+      }
     } catch (error) {
       console.error('Error deleting document:', error);
       throw new Error('Failed to delete document');
@@ -323,33 +303,23 @@ export class DocumentService {
     unpublished: number;
   }> {
     try {
-      // TODO: Document model not in schema - return empty stats for now
-      const total = 0;
-      const published = 0;
-      const unpublished = 0;
-      const categoryStats: any[] = [];
-      /* const total = await (prisma as any).document?.count() || 0;
-      const published = await (prisma as any).document?.count({
-        where: { isPublished: true }
-      }) || 0;
-      const unpublished = total - published;
-
-      // Get counts by category
-      const categoryStats = await (prisma as any).document?.groupBy({
-        by: ['category'],
-        _count: {
-          category: true
-        }
-      }) || []; */
+      const [total, published, categoryStats] = await Promise.all([
+        prisma.document.count(),
+        prisma.document.count({ where: { isPublished: true } }),
+        prisma.document.groupBy({
+          by: ['category'],
+          _count: { category: true }
+        })
+      ]);
 
       const byCategory: Record<string, number> = {};
+      for (const stat of categoryStats) {
+        byCategory[stat.category] = stat._count.category;
+      }
 
-      return {
-        total,
-        byCategory,
-        published,
-        unpublished
-      };
+      const unpublished = total - published;
+
+      return { total, byCategory, published, unpublished };
     } catch (error) {
       console.error('Error fetching document stats:', error);
       throw new Error('Failed to fetch document statistics');
