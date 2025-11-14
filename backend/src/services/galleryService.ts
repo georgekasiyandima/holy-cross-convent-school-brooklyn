@@ -121,7 +121,7 @@ export class GalleryService {
         items: true,
         coverImage: true,
         subAlbums: {
-          orderBy: { order: 'asc' },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });

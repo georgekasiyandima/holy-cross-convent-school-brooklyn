@@ -620,7 +620,7 @@ router.get('/announcements', async (req, res, next) => {
       }
 
       try {
-        const newsletters = await prisma.newsletters.findMany({
+        const newsletters = await prisma.newsletter.findMany({
           where: newsletterWhere,
           orderBy: [
             { publishedAt: 'desc' },
@@ -735,7 +735,7 @@ router.get('/announcements/latest', async (req, res, next) => {
 
     // Fetch latest published newsletters
     try {
-      const newsletters = await prisma.newsletters.findMany({
+      const newsletters = await prisma.newsletter.findMany({
         where: {
           isPublished: true,
         },

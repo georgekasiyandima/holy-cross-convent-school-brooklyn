@@ -546,6 +546,18 @@ router.put('/albums/:id',
   validateUpdateAlbum,
   async (req, res) => {
     try {
+      // Extract fields from request body
+      const {
+        title,
+        description,
+        albumType,
+        classGrade,
+        phase,
+        isPublished,
+        coverImageId,
+        parentAlbumId
+      } = req.body;
+
       // Check if album exists
       const existingAlbum = await GalleryService.getAlbumById(req.params.id);
       if (!existingAlbum) {
@@ -556,8 +568,8 @@ router.put('/albums/:id',
       }
       
       // Validate coverImageId if provided
-      if (req.body.coverImageId) {
-        const coverImage = await GalleryService.getGalleryItemById(req.body.coverImageId);
+      if (coverImageId) {
+        const coverImage = await GalleryService.getGalleryItemById(coverImageId);
         if (!coverImage) {
           return res.status(400).json({ 
             success: false,
@@ -571,8 +583,8 @@ router.put('/albums/:id',
           });
         }
       }
-      if (req.body.parentAlbumId) {
-        if (req.body.parentAlbumId === req.params.id) {
+      if (parentAlbumId) {
+        if (parentAlbumId === req.params.id) {
           return res.status(400).json({
             success: false,
             error: 'Album cannot be its own parent',
@@ -580,7 +592,7 @@ router.put('/albums/:id',
         }
 
         // Prevent cyclical hierarchy by ensuring parent is not a descendant
-        let ancestorId: string | null | undefined = req.body.parentAlbumId;
+        let ancestorId: string | null | undefined = parentAlbumId;
         while (ancestorId) {
           if (ancestorId === req.params.id) {
             return res.status(400).json({
@@ -604,10 +616,10 @@ router.put('/albums/:id',
         description,
         albumType,
         classGrade,
-        phase: req.body.phase ?? null,
+        phase: phase ?? null,
         isPublished,
         coverImageId,
-        parentAlbumId: req.body.parentAlbumId ?? null,
+        parentAlbumId: parentAlbumId ?? null,
       });
       return res.json({
         success: true,
