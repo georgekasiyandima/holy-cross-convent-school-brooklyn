@@ -18,6 +18,7 @@ import { Announcement, Event, CalendarToday, ArrowForward } from '@mui/icons-mat
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import AnnouncementsService, { Announcement as AnnouncementType } from '../services/announcementsService';
+import { API_BASE_URL_WITH_PREFIX } from '../services/apiConfig';
 
 const SectionContainer = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
@@ -104,7 +105,7 @@ const HomeAnnouncements: React.FC<HomeAnnouncementsProps> = ({
         setLoading(true);
         const [announcementsRes, eventsRes] = await Promise.all([
           AnnouncementsService.getLatestAnnouncements(announcementsLimit),
-          fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/school-hub/events/upcoming?limit=${eventsLimit}`)
+          fetch(`${API_BASE_URL_WITH_PREFIX}/school-hub/events/upcoming?limit=${eventsLimit}`)
             .then(res => res.json())
             .then(data => data.data || [])
             .catch(() => []),
