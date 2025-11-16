@@ -88,7 +88,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   if (!item) return null;
 
   const imageUrl = item.type === 'IMAGE' 
-    ? GalleryService.getItemImageUrl(item.fileName)
+    ? GalleryService.getItemImageUrl(item.fileName, item.filePath)
     : null;
 
   // Debug: Log image URL

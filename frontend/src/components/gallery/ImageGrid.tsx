@@ -156,7 +156,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ items, loading = false, onImageCl
       <Grid container spacing={3}>
         {items.map((item, index) => {
           const imageUrl = item.type === 'IMAGE' 
-            ? GalleryService.getItemImageUrl(item.fileName)
+            ? GalleryService.getItemImageUrl(item.fileName, item.filePath)
             : null;
 
           // Debug: Log image URLs to help troubleshoot (dev only)

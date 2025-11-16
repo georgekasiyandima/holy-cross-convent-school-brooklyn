@@ -58,13 +58,13 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
   const getCoverImageUrl = () => {
     // First try coverImage
     if (album.coverImage?.fileName) {
-      return GalleryService.getItemImageUrl(album.coverImage.fileName);
+      return GalleryService.getItemImageUrl(album.coverImage.fileName, album.coverImage.filePath);
     }
     // Fallback to first item in album if available
     if (album.items && album.items.length > 0) {
       const firstImage = album.items.find(item => item.type === 'IMAGE');
       if (firstImage?.fileName) {
-        return GalleryService.getItemImageUrl(firstImage.fileName);
+        return GalleryService.getItemImageUrl(firstImage.fileName, firstImage.filePath);
       }
     }
     return null;

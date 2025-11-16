@@ -187,7 +187,7 @@ const AlbumModal: React.FC<AlbumModalProps> = ({ open, album, onClose }) => {
               <ImageGrid container spacing={2}>
                 {items.map((item, index) => {
                   const imageUrl = item.type === 'IMAGE'
-                    ? GalleryService.getItemImageUrl(item.fileName)
+                    ? GalleryService.getItemImageUrl(item.fileName, item.filePath)
                     : null;
 
                   return (

@@ -100,14 +100,23 @@ class GalleryService {
   }
 
   // Get image URL helper (public method)
-  getItemImageUrl(fileName: string): string {
-    if (!fileName) {
+  // Now supports both Cloudinary URLs (full URLs) and local filenames
+  getItemImageUrl(fileNameOrUrl: string, filePath?: string): string {
+    // If filePath is provided and it's a full URL (Cloudinary), use it directly
+    if (filePath && filePath.startsWith('http')) {
+      return filePath;
+    }
+    
+    if (!fileNameOrUrl) {
       return '/placeholder-image.jpg'; // Fallback for missing images
     }
-    if (fileName.startsWith('http')) {
-      return fileName;
+    
+    // If fileNameOrUrl is already a full URL (Cloudinary), use it directly
+    if (fileNameOrUrl.startsWith('http')) {
+      return fileNameOrUrl;
     }
-    // Construct the URL using the backend base URL
+    
+    // Otherwise, construct the URL using the backend base URL (legacy local files)
     // Remove /api if present to get base URL
     let baseUrl = API_URL;
     if (baseUrl.includes('/api')) {
@@ -116,9 +125,9 @@ class GalleryService {
     // Remove trailing slash if present
     baseUrl = baseUrl.replace(/\/$/, '');
     // Return the full URL - files are stored in uploads/gallery/ directory
-    const imageUrl = `${baseUrl}/uploads/gallery/${encodeURIComponent(fileName)}`;
+    const imageUrl = `${baseUrl}/uploads/gallery/${encodeURIComponent(fileNameOrUrl)}`;
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔗 Gallery image URL:', { fileName, imageUrl, baseUrl });
+      console.log('🔗 Gallery image URL:', { fileNameOrUrl, filePath, imageUrl, baseUrl });
     }
     return imageUrl;
   }
