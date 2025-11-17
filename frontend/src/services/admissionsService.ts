@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL, API_BASE_URL_WITH_PREFIX } from './apiConfig';
 
 export interface ApplicationData {
   // Learner Information
@@ -213,7 +212,7 @@ export const admissionsService = {
   // Submit a new application
   async submitApplication(data: ApplicationData): Promise<ApplicationResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/admissions/submit`, data);
+      const response = await axios.post(`${API_BASE_URL_WITH_PREFIX}/admissions/submit`, data);
       return response.data;
     } catch (error: any) {
       console.error('Error submitting application:', error);
@@ -227,7 +226,7 @@ export const admissionsService = {
   // Get all applications (admin only)
   async getApplications(): Promise<ApplicationsResponse> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/admissions/applications`);
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching applications:', error);
@@ -241,7 +240,7 @@ export const admissionsService = {
   // Get application by ID (admin only)
   async getApplication(id: number): Promise<{ success: boolean; application: Application }> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/admissions/applications/${id}`);
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/applications/${id}`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching application:', error);
@@ -259,7 +258,7 @@ export const admissionsService = {
     notes?: string
   ): Promise<{ success: boolean; application: Application }> {
     try {
-      const response = await axios.patch(`${API_BASE_URL}/admissions/applications/${id}/status`, {
+      const response = await axios.patch(`${API_BASE_URL_WITH_PREFIX}/admissions/applications/${id}/status`, {
         status,
         notes,
       });
@@ -276,7 +275,7 @@ export const admissionsService = {
   // Get application statistics (admin only)
   async getApplicationStatistics(): Promise<{ success: boolean; statistics: ApplicationStatistics }> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/admissions/statistics`);
+      const response = await axios.get(`${API_BASE_URL_WITH_PREFIX}/admissions/statistics`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching application statistics:', error);
