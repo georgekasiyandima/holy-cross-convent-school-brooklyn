@@ -212,12 +212,36 @@ export const admissionsService = {
   // Submit a new application
   async submitApplication(data: ApplicationData): Promise<ApplicationResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL_WITH_PREFIX}/admissions/submit`, data);
+      console.log('Submitting application to:', `${API_BASE_URL_WITH_PREFIX}/admissions/submit`);
+      const response = await axios.post(
+        `${API_BASE_URL_WITH_PREFIX}/admissions/submit`, 
+        data,
+        {
+          timeout: 30000, // 30 second timeout
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       return response.data;
     } catch (error: any) {
       console.error('Error submitting application:', error);
+      console.error('Request URL:', error.config?.url);
+      console.error('Response status:', error.response?.status);
+      console.error('Response data:', error.response?.data);
+      
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Request timed out. Please check your internet connection and try again.');
+      }
+      
+      if (error.response?.status === 404) {
+        throw new Error('Application endpoint not found. Please contact support.');
+      }
+      
       throw new Error(
         error.response?.data?.message || 
+        error.response?.data?.error ||
+        error.message ||
         'Failed to submit application. Please try again.'
       );
     }

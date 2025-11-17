@@ -744,7 +744,9 @@ const ApplicationProcess: React.FC = () => {
         agreeToPrivacy: formData.agreeToPrivacy,
       };
 
+      console.log('Submitting application data:', applicationData);
       const response = await admissionsService.submitApplication(applicationData);
+      console.log('Application submission response:', response);
       
       if (response.success) {
         const newApplicationId = response.applicationId || null;
@@ -767,7 +769,26 @@ const ApplicationProcess: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error submitting application:', error);
-      const errorMsg = error?.response?.data?.message || error.message || 'Unexpected error submitting application';
+      console.error('Error details:', {
+        message: error?.message,
+        response: error?.response,
+        config: error?.config,
+      });
+      
+      let errorMsg = 'Unexpected error submitting application';
+      
+      if (error?.message) {
+        errorMsg = error.message;
+      } else if (error?.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMsg = error.response.data.error;
+      } else if (error?.response?.status === 404) {
+        errorMsg = 'Application endpoint not found. Please refresh the page and try again, or contact support if the issue persists.';
+      } else if (error?.response?.status === 500) {
+        errorMsg = 'Server error. Please try again in a few moments. If the problem persists, contact support.';
+      }
+      
       setValidationError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
@@ -2186,15 +2207,34 @@ const ApplicationProcess: React.FC = () => {
         </Box>
 
         {/* Application Form */}
-        <Paper sx={{ p: 4 }}>
-          <Typography variant="h4" component="h2" gutterBottom sx={{ textAlign: 'center', color: '#1a237e', fontWeight: 700, mb: 4 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, maxWidth: '100%', overflow: 'hidden' }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            gutterBottom 
+            sx={{ 
+              textAlign: 'center', 
+              color: '#1a237e', 
+              fontWeight: 700, 
+              mb: 4,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' }
+            }}
+          >
             Online Application Form
           </Typography>
           
           <Stepper 
             activeStep={activeStep} 
             orientation={isMobile ? 'vertical' : 'horizontal'}
-            sx={{ mb: 4 }}
+            sx={{ 
+              mb: 4,
+              '& .MuiStepLabel-root': {
+                overflow: 'visible'
+              },
+              '& .MuiStepLabel-label': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }
+              }
+            }}
           >
             {steps.map((label) => (
               <Step key={label}>
@@ -2204,12 +2244,33 @@ const ApplicationProcess: React.FC = () => {
           </Stepper>
 
           {validationError && (
-            <Alert severity="error" sx={{ mt: 2, mb: 2 }} role="alert" aria-live="polite">
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mt: 2, 
+                mb: 2,
+                '& .MuiAlert-message': {
+                  width: '100%',
+                  wordBreak: 'break-word'
+                }
+              }} 
+              role="alert" 
+              aria-live="polite"
+            >
               {validationError}
             </Alert>
           )}
 
-          {renderStepContent(activeStep)}
+          <Box sx={{ 
+            minHeight: '400px',
+            width: '100%',
+            overflow: 'auto',
+            '& > *': {
+              maxWidth: '100%'
+            }
+          }}>
+            {renderStepContent(activeStep)}
+          </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
             <Button
