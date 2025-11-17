@@ -189,7 +189,7 @@ router.post('/submit', async (req, res) => {
         status: 'PENDING',
         submittedAt: new Date(),
       },
-    });
+      });
 
       await applicationWorkflowService.initializeWorkflow(createdApplication.id, tx);
 
@@ -204,8 +204,14 @@ router.post('/submit', async (req, res) => {
       message: 'Application submitted successfully',
       applicationId: application.id,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting application:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      code: error?.code,
+    });
     
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -215,9 +221,18 @@ router.post('/submit', async (req, res) => {
       });
     }
 
+    // Provide more detailed error information in development
+    const errorMessage = process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : error?.message || 'Internal server error';
+
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: errorMessage,
+      ...(process.env.NODE_ENV !== 'production' && {
+        error: error?.message,
+        stack: error?.stack,
+      }),
     });
   }
 });
