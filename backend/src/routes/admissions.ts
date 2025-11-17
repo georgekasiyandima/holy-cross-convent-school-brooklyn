@@ -191,7 +191,14 @@ router.post('/submit', async (req, res) => {
       },
       });
 
-      await applicationWorkflowService.initializeWorkflow(createdApplication.id, tx);
+      try {
+        await applicationWorkflowService.initializeWorkflow(createdApplication.id, tx);
+      } catch (workflowError: any) {
+        console.error('Error initializing workflow:', workflowError);
+        // Don't fail the application creation if workflow initialization fails
+        // The workflow can be initialized later manually if needed
+        console.warn('Application created but workflow initialization failed. Application ID:', createdApplication.id);
+      }
 
       return createdApplication;
     });
