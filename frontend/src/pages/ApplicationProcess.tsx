@@ -1067,8 +1067,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 1:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Parent/Guardian Details
             </Typography>
             
@@ -1299,8 +1299,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 2:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Religious & Family Information
             </Typography>
             
@@ -1420,8 +1420,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 3:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Employment Details
             </Typography>
             
@@ -1607,8 +1607,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 4:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Current School Information
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
@@ -1663,8 +1663,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 5:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Payment Method & Required Documents
             </Typography>
             
@@ -1796,31 +1796,43 @@ const ApplicationProcess: React.FC = () => {
 
       case 6:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Upload Supporting Documents
             </Typography>
-            <Typography variant="body1" sx={{ mb: 3, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
-              Please upload all required supporting documents for your application. You can upload multiple documents of different types.
-            </Typography>
-            {applicationId && (
-              <ApplicationDocumentUpload 
-                applicationId={applicationId}
-                onDocumentsChange={(documents) => {
-                  setUploadedDocuments(documents);
-                  // Clear document error when documents are uploaded
-                  if (documents.length > 0 && fieldErrors.documents) {
-                    setFieldErrors(prev => {
-                      const newErrors = { ...prev };
-                      delete newErrors.documents;
-                      return newErrors;
-                    });
-                  }
-                  if (process.env.NODE_ENV === 'development') {
-                    console.log('Documents updated:', documents);
-                  }
-                }}
-              />
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+                <strong>Important:</strong> Please upload all required supporting documents before proceeding to review and submit your application. 
+                You can upload multiple documents of different types. Documents can be uploaded in any order.
+              </Typography>
+            </Alert>
+            {!applicationId ? (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                <Typography variant="body2">
+                  Please complete the previous steps and submit your application form first. 
+                  Once your application is created, you'll be able to upload documents here.
+                </Typography>
+              </Alert>
+            ) : (
+              <Box sx={{ width: '100%', maxWidth: '100%' }}>
+                <ApplicationDocumentUpload 
+                  applicationId={applicationId}
+                  onDocumentsChange={(documents) => {
+                    setUploadedDocuments(documents);
+                    // Clear document error when documents are uploaded
+                    if (documents.length > 0 && fieldErrors.documents) {
+                      setFieldErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.documents;
+                        return newErrors;
+                      });
+                    }
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('Documents updated:', documents);
+                    }
+                  }}
+                />
+              </Box>
             )}
             {fieldErrors.documents && (
               <Alert severity="error" sx={{ mt: 2 }}>
@@ -1832,8 +1844,8 @@ const ApplicationProcess: React.FC = () => {
 
       case 7:
         return (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif' }}>
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', fontWeight: 600, fontFamily: '"Lato", "Open Sans", sans-serif', mb: 2 }}>
               Review Your Application
             </Typography>
             <Paper sx={{ p: 3, mb: 3 }}>
